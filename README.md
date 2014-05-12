@@ -2,7 +2,7 @@
 
 These release notes are for the Buddy Platform .NET SDK.
 
-Please refer to [dev.buddyplatform.com/docs](http://dev.buddyplatform.com/docs) for more details on the .NET SDK.
+Please refer to [buddyplatform.com/docs](http://buddyplatform.com/docs) for more details on the .NET SDK.
 
 ## Introduction
 
@@ -27,11 +27,11 @@ For developers the Buddy Platform offers turnkey support for features like the f
 
 ## Getting Started
 
-To get started with the Buddy Platform SDK, please reference the "Getting Started" series of documents at [dev.buddyplatform.com/docs](http://dev.buddyplatform.com/docs). You will need an App ID and Key before you can use the SDK, and these documents will walk you through obtaining those, and installing the SDK.
+To get started with the Buddy Platform SDK, please reference the "Getting Started" series of documents at [buddyplatform.com/docs](http://buddyplatform.com/docs). You will need an App ID and Key before you can use the SDK, and these documents will walk you through obtaining those, and installing the SDK.
 
-App IDs and Keys can be obtained at the Buddy Developer Dashboard at [dev.buddyplatform.com](http://dev.buddyplatform.com).
+App IDs and Keys can be obtained at the Buddy Developer Dashboard at [buddyplatform.com](http://buddyplatform.com).
 
-Full documentation for Buddy's services are available at [dev.buddyplatform.com/docs](http://dev.buddyplatform.com/docs).
+Full documentation for Buddy's services are available at [buddyplatform.com/docs](http://buddyplatform.com/docs).
 
 ## Contributing Back: Pull Requests
 
