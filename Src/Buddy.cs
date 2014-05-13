@@ -17,7 +17,7 @@ namespace BuddySDK
         Default = AutoCrashReport | AutoTrackLocation,
     }
 
-    public partial class Buddy
+    public static partial class Buddy
     {
         static BuddyClient _client;
         static Tuple<string, string, BuddyClientFlags> _creds;
@@ -115,7 +115,7 @@ namespace BuddySDK
             }
         }
 
-        public static void Init(string appId, string appKey, BuddyClientFlags flags = BuddyClientFlags.Default)
+        public static void Init(string appId, string appKey, BuddyClientFlags flags = PlatformAccess.DefaultFlags)
         {
             if (_creds != null && !flags.HasFlag(BuddyClientFlags.AllowReinitialize))
             {
