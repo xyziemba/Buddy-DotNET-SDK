@@ -16,7 +16,8 @@ namespace BuddySDK
         /// <summary>
         /// Gets the unique user token that is the secret used to log-in this user. Each user has a unique ID, a secret user token and a user/pass combination.
         /// </summary>
-        public string AccessToken {
+        public string AccessToken
+        {
             get
             {
                 return GetValueOrDefault<string>("AccessToken");
@@ -33,39 +34,43 @@ namespace BuddySDK
             this.AccessToken = accessToken;
         }
 
-        public override string ToString ()
+        public override string ToString()
         {
-            return base.ToString () + ", Email: " + this.Email;
+            return base.ToString() + ", Email: " + this.Email;
         }
 
 
         public Task<BuddyResult<bool>> AddIdentityAsync(string identityProviderName, string identityID)
         {
             return AddRemoveIdentityCoreAsync("POST", "/users/me/identities/" + Uri.EscapeDataString(identityProviderName), new
-                {
-                    IdentityID = identityID
-                });
+            {
+                IdentityID = identityID
+            });
         }
 
         public Task<BuddyResult<bool>> RemoveIdentityAsync(string identityProviderName, string identityID)
         {
-            return AddRemoveIdentityCoreAsync("DELETE", "/user/me/identities/" + Uri.EscapeDataString(identityProviderName), new { IdentityID = identityID });
+            return AddRemoveIdentityCoreAsync("DELETE", "/users/me/identities/" + Uri.EscapeDataString(identityProviderName), new { IdentityID = identityID });
         }
 
         private Task<BuddyResult<bool>> AddRemoveIdentityCoreAsync(string verb, string path, object parameters)
         {
             return Task.Run<BuddyResult<bool>>(() =>
-                {
-                    var r = Client.CallServiceMethod<string>(verb, path, parameters);
-                    return r.Result.Convert(s  => r.Result.IsSuccess);
-                });
+            {
+                var r = Client.CallServiceMethod<string>(verb, path, parameters);
+                return r.Result.Convert(s => r.Result.IsSuccess);
+            });
 
         }
 
         public Task<BuddyResult<IEnumerable<string>>> GetIdentitiesAsync(string identityProviderName)
         {
-            return Client.CallServiceMethod<IEnumerable<string>>("GET",  "/users/me/identities/" + Uri.EscapeDataString(identityProviderName));
-        }
+            return Task.Run<BuddyResult<IEnumerable<string>>>(() =>
+            {
+                var r = Client.CallServiceMethod<IEnumerable<Newtonsoft.Json.Linq.JObject>>("GET", "/users/me/identities/" + Uri.EscapeDataString(identityProviderName));
 
+                return r.Result.Convert<IEnumerable<string>>(jObjects => jObjects.Select(jObject => jObject.Value<string>("identityProviderID")));
+            });
+        }
     }
 }
