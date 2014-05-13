@@ -31,17 +31,16 @@ namespace BuddySDK
 
                 });
 
-        } 
+        }
 
-        public Task<BuddyResult<IEnumerable<User>>> FindByIdentitiesAsync(string identityProviderName, string identityId = null)
+        public Task<BuddyResult<User>> FindByIdentityAsync(string identityProviderName, string identityId)
         {
-            return Task.Run<BuddyResult<IEnumerable<User>>>(() =>
+            return Task.Run<BuddyResult<User>>(() =>
             {
-                    var url = string.Format("{0}/identities/{1}/{2}", Path, Uri.EscapeDataString(identityProviderName), Uri.EscapeDataString(identityId));
-                    var r = Client.CallServiceMethod<IEnumerable<string>>("GET", url);
-                    return r.Result.Convert(uids => uids.Select(uid => new User(uid, Client)));
+                var url = string.Format("{0}/identities/{1}/{2}", Path, Uri.EscapeDataString(identityProviderName), Uri.EscapeDataString(identityId));
+                var r = Client.CallServiceMethod<string>("GET", url);
+                return r.Result.Convert(userID => new User(userID, Client));
             });
-
         }
     }
 }
