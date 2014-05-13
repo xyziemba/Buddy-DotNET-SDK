@@ -70,9 +70,8 @@ namespace BuddySDK
         }
     }
 
-    public abstract partial class PlatformAccess {
-
-
+    public abstract partial class PlatformAccess
+    {
         public const BuddyClientFlags DefaultFlags = BuddyClientFlags.Default;
 
         private static WindowsPhonePlatformAccess CreatePlatformAccess()
@@ -83,7 +82,6 @@ namespace BuddySDK
 
     internal class WindowsPhonePlatformAccess : DotNetPlatformAccessBase
     {
-
         public override string Platform
         {
             get { 
@@ -165,7 +163,6 @@ namespace BuddySDK
 
         private class WindowsPhoneIsoStore : IsolatedStorageSettings
         {
-
             protected override IsolatedStorageFile GetIsolatedStorageFile()
             {
                 return IsolatedStorageFile.GetUserStoreForApplication();
@@ -187,6 +184,16 @@ namespace BuddySDK
         public override string GetUserSetting(string key)
         {
             return _settings.GetUserSetting(key);
+        }
+
+        public override string GetConfigSetting(string key)
+        {
+            return null;
+        }
+
+        public override bool SupportsFlags(BuddyClientFlags flags)
+        {
+            return true;
         }
     }
 }
