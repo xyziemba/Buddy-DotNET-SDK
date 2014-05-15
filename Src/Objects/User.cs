@@ -184,9 +184,11 @@ namespace BuddySDK
         {
         }
 
-        public async Task<BuddyResult<Picture>> AddProfilePictureAsync(string caption, Stream pictureData, string contentType, BuddyGeoLocation location = null, BuddyPermissions read = BuddyPermissions.User, BuddyPermissions write = BuddyPermissions.User)
+        public async Task<BuddyResult<Picture>> AddProfilePictureAsync(string caption, Stream pictureData, string contentType, BuddyGeoLocation location = null,
+            BuddyPermissions readPermissions = BuddyPermissions.Default, BuddyPermissions writePermissions = BuddyPermissions.Default)
         {
-           var result = await PictureCollection.AddAsync(this.Client, caption, pictureData, contentType, location, read, write);
+           var result = await PictureCollection.AddAsync(this.Client, caption, pictureData, contentType, location,
+               readPermissions, writePermissions);
 
            if (result.IsSuccess)
            {

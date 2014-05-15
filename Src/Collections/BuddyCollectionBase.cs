@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Reflection;
 
 namespace BuddySDK
 {
@@ -62,26 +59,29 @@ namespace BuddySDK
             return Task.Run<SearchResult<T>>(() =>
             {
                     IDictionary<string,object> obj = new Dictionary<string, object>(DotNetDeltas.InvariantComparer(true)){
-                        {"userID", userId},
+                        {"ownerID", userId},
                         {"created", created},
                         {"lastModified", lastModified},
-                        {"locationRange", locationRange},
-                        {"limit", pageSize}
+                        {"locationRange", locationRange}
                     };
 
-                    if (pagingToken != null) {
-                        obj.Clear();
-                        obj["token"] = pagingToken;
-                    }
-
-                    if (parameterCallback != null) {
+                    if (parameterCallback != null)
+                    {
                         parameterCallback(obj);
                     }
 
-                    var r = Client.CallServiceMethod<SearchResult<IDictionary<string, object>>>("GET",
-                            Path, obj
-                            ).Result;
+                    if (pagingToken == null)
+                    {
+                        obj["pagingToken"] = string.Format("{0};0", pageSize);
+                    }
+                    else
+                    {
+                        obj.Clear();
+                        obj["pagingToken"] = pagingToken;
+                    }
 
+                    var r = Client.CallServiceMethod<SearchResult<IDictionary<string, object>>>("GET",
+                                Path, obj).Result;
 
                     var sr = new SearchResult<T>();
 

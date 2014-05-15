@@ -62,15 +62,18 @@ namespace BuddySDK
       
         private Task<BuddyResult<bool>> SetMetadataCore(string key, object value, BuddyPermissions? visibility = null)
         {
-            var callParams = new Dictionary<string, object>();
-            callParams[key] = value;
+            var callParams = new Dictionary<string, object>()
+                {
+                    {"key", key},
+                    {"value", value}
+                };
 
             if (visibility != null)
             {
                 callParams["visibility"] = visibility;
             }
 
-            return Client.CallServiceMethod<bool>("PUT", GetMetadataPath(key),callParams);
+            return Client.CallServiceMethod<bool>("PUT", GetMetadataPath(key), callParams);
         }
 
         private Task<BuddyResult<bool>> SetMetadataCore(IDictionary<string, object> values, BuddyPermissions? visibility = null)
