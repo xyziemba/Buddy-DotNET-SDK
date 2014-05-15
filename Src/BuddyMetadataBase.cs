@@ -70,7 +70,7 @@ namespace BuddySDK
                 callParams["visibility"] = visibility;
             }
 
-            return Client.CallServiceMethod<bool>("PUT", GetMetadataPath(key),callParams);
+            return Client.CallServiceMethod<bool>("PUT", GetMetadataPath(key), callParams);
         }
 
         private Task<BuddyResult<bool>> SetMetadataCore(IDictionary<string, object> values, BuddyPermissions? visibility = null)
@@ -96,12 +96,14 @@ namespace BuddySDK
             return SetMetadataCore(values, visibility);
         }
 
-        public async Task<BuddyResult<object>> GetMetadataValueAsync(string key, BuddyPermissions? visibility = null)
+        public Task<BuddyResult<object>> GetMetadataValueAsync(string key, BuddyPermissions? visibility = null)
         {
-            var t2 = await GetMetadataItemAsync(key, visibility);
+            return Task.Run<BuddyResult<object>>(() =>
+            {
+                var t2 = GetMetadataItemAsync(key, visibility);
 
-            return t2.Convert<object> (i => i == null ? null : i.Value);
-
+                return t2.Result.Convert<object>(i => i == null ? null : i.Value);
+            });
         }
 
         public Task<BuddyResult<MetadataItem>> GetMetadataItemAsync(string key, BuddyPermissions? visibility = null)

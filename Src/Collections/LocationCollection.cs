@@ -30,9 +30,9 @@ namespace BuddySDK
             string faxNumber,
             string website,
             string category,
-            string tag = null, 
-            BuddyPermissions read = BuddyPermissions.User, 
-            BuddyPermissions write = BuddyPermissions.User)
+            string tag = null,
+            BuddyPermissions readPermissions = BuddyPermissions.Default,
+            BuddyPermissions writePermissions = BuddyPermissions.Default)
         {
 
             var c = new Location(null, this.Client)
@@ -50,14 +50,16 @@ namespace BuddySDK
                 PostalCode = postalCode,
                 Category = category,
                 Tag = tag,
-                Website = new Uri(website)
+                Website = new Uri(website),
+                ReadPermissions = readPermissions,
+                WritePermissions = writePermissions
             };
 
             var r = await c.SaveAsync();
             return r.Convert(b => c);
         }
 
-        public Task<SearchResult<Location>> FindAsync(string name = null, string category = null,  string ownerUserId = null, BuddyGeoLocationRange locationRange = null, DateRange created = null, DateRange lastModified = null, int pageSize = 100, string pagingToken = null)
+        public Task<SearchResult<Location>> FindAsync(string name = null, string category = null, string ownerUserId = null, BuddyGeoLocationRange locationRange = null, DateRange created = null, DateRange lastModified = null, int pageSize = 100, string pagingToken = null)
         {
             return base.FindAsync(userId: ownerUserId,
                 created: created,

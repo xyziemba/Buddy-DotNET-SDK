@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BuddySDK
 {
@@ -11,6 +7,15 @@ namespace BuddySDK
     {
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
-    }
-    
+
+        public override string ToString()
+        {
+            return string.Format("{0}-{1}", Convert(StartDate), Convert(EndDate));
+        }
+
+        private string Convert(DateTime? dateTime)
+        {
+            return dateTime.HasValue ? dateTime.Value.ToUniversalTime().ToString() : "";
+        }
+    } 
 }

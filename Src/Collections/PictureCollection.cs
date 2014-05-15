@@ -14,7 +14,8 @@ namespace BuddySDK
         {
         }
 
-        internal static Task<BuddyResult<Picture>> AddAsync(BuddyClient client, string caption, Stream pictureData, string contentType, BuddyGeoLocation location = null, BuddyPermissions read = BuddyPermissions.User, BuddyPermissions write = BuddyPermissions.User)
+        internal static Task<BuddyResult<Picture>> AddAsync(BuddyClient client, string caption, Stream pictureData, string contentType, BuddyGeoLocation location = null,
+            BuddyPermissions readPermissions = BuddyPermissions.Default, BuddyPermissions writePermissions = BuddyPermissions.Default)
         {
             return Task.Run<BuddyResult<Picture>>(() =>
             {
@@ -28,8 +29,8 @@ namespace BuddySDK
                         Data = pictureData,
                         Name = "data"
                     },
-                    ReadPermissions = read,
-                    WritePermissions = write
+                    ReadPermissions = readPermissions,
+                    WritePermissions = writePermissions
                 };
 
                 var t = c.SaveAsync();
@@ -38,9 +39,11 @@ namespace BuddySDK
             });    
         }
 
-        public Task<BuddyResult<Picture>> AddAsync(string caption, Stream pictureData, string contentType, BuddyGeoLocation location = null, BuddyPermissions read = BuddyPermissions.User, BuddyPermissions write = BuddyPermissions.User)
+        public Task<BuddyResult<Picture>> AddAsync(string caption, Stream pictureData, string contentType, BuddyGeoLocation location = null,
+            BuddyPermissions readPermissions = BuddyPermissions.Default, BuddyPermissions writePermissions = BuddyPermissions.Default)
         {
-            return PictureCollection.AddAsync(this.Client, caption, pictureData, contentType, location, read, write);
+            return PictureCollection.AddAsync(this.Client, caption, pictureData, contentType, location,
+                readPermissions, writePermissions);
         }
 
         public Task<SearchResult<Picture>> FindAsync(string caption = null, string contentType = null, string ownerUserId = null, BuddyGeoLocationRange locationRange = null, DateRange created = null, DateRange lastModified = null, int pageSize = 100, string pagingToken = null)

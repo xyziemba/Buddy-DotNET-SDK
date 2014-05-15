@@ -56,23 +56,23 @@ namespace BuddySDK
                 return _items;
             }
         }
-		
-        public async Task<AlbumItem> AddItemAsync(string itemId, string caption, BuddyGeoLocation location, string tag = null)
+
+        public async Task<BuddyResult<AlbumItem>> AddItemAsync(string itemId, string caption, BuddyGeoLocation location, string tag = null,
+            BuddyPermissions readPermissions = BuddyPermissions.Default, BuddyPermissions writePermissions = BuddyPermissions.Default)
 		{
-	
 			var c = new AlbumItem(this.GetObjectPath() + PlatformAccess.GetCustomAttribute<BuddyObjectPathAttribute>(typeof(AlbumItem)).Path, this.Client)
 			{
 				ItemId = itemId,
                 Caption = caption,
 				Location = location,
-				Tag = tag
+				Tag = tag,
+                ReadPermissions = readPermissions,
+                WritePermissions = writePermissions
 			};
 
             var r = await c.SaveAsync();
 					
-            return r.Convert<AlbumItem> (b => c).Value;
+            return r.Convert<AlbumItem>(b => c);
 		}
 	}
-
-   
 }
