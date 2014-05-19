@@ -1120,9 +1120,8 @@ namespace BuddySDK
         }
 
 
-        public Task<BuddyResult<string>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null)
+        public Task<BuddyResult<string>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
         {
-
             int? timeoutInSeconds = null;
 
             if (timeout != null)
@@ -1136,7 +1135,8 @@ namespace BuddySDK
                 var r = CallServiceMethod<MetricsResult>("POST", String.Format("/metrics/events/{0}", Uri.EscapeDataString(key)), new
                 {
                     value = value,
-                    timeoutInSeconds = timeoutInSeconds
+                    timeoutInSeconds = timeoutInSeconds,
+                    timeStamp = timeStamp
                 });
                
                 

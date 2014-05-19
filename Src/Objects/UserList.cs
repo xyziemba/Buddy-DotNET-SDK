@@ -44,7 +44,7 @@ namespace BuddySDK
             }
         }
 
-        public async Task<UserListItem> AddUserAsync(User user, BuddyGeoLocation location, string tag = null)
+        public async Task<BuddyResult<UserListItem>> AddUserAsync(User user, BuddyGeoLocation location, string tag = null)
         {
             var c = new UserListItem(this.GetObjectPath() + PlatformAccess.GetCustomAttribute<BuddyObjectPathAttribute>(typeof(UserListItem)).Path, this.Client)
             {
@@ -55,9 +55,7 @@ namespace BuddySDK
 
             var r = await c.SaveAsync();
 
-            return r.Convert<UserListItem>(b => c).Value;
+            return r.Convert<UserListItem>(b => c);
         }
     }
-
-    
 }

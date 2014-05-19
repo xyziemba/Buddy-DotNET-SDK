@@ -14,6 +14,22 @@ namespace BuddySDK.BuddyServiceClient
             return (long)dt.ToUniversalTime().Subtract(UnixStart).TotalMilliseconds;
         }
 
+        public override bool CanRead
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override bool CanConvert(Type objectType)
         {
             return objectType == typeof(string);

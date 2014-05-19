@@ -179,8 +179,9 @@ namespace BuddySDK
         // Metrics
         //
 
-        public static Task<BuddyResult<string>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null) {
-            return Instance.RecordMetricAsync (key, value, timeout);
+        public static Task<BuddyResult<string>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
+        {
+            return Instance.RecordMetricAsync(key, value, timeout, timeStamp);
         }
 
         public static Task<BuddyResult<TimeSpan?>> RecordTimedMetricEndAsync(string timedMetricId) {

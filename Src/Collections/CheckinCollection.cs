@@ -13,7 +13,8 @@ namespace BuddySDK
         {
         }
 
-        public Task<BuddyResult<Checkin>> AddAsync(string comment, string description, BuddyGeoLocation location, string tag = null, BuddyPermissions read = BuddyPermissions.User, BuddyPermissions write = BuddyPermissions.User)
+        public Task<BuddyResult<Checkin>> AddAsync(string comment, string description, BuddyGeoLocation location, string tag = null,
+            BuddyPermissions readPermissions = BuddyPermissions.Default, BuddyPermissions writePermissions = BuddyPermissions.Default)
         {
             return Task.Run<BuddyResult<Checkin>>(() =>{
                 var c = new Checkin(null, this.Client)
@@ -22,8 +23,8 @@ namespace BuddySDK
                         Description = description,
                         Location = location,
                         Tag = tag,
-                        ReadPermissions = read,
-                        WritePermissions = write
+                        ReadPermissions = readPermissions,
+                        WritePermissions = writePermissions
                     };
 
                 var t = c.SaveAsync();
