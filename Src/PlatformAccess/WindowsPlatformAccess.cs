@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 using System.Xml.Linq;
 using System.Reflection;
 using Windows.Storage;
@@ -68,6 +69,8 @@ namespace BuddySDK
 
     internal class WindowsPlatformAccess : DotNetPlatformAccessBase
     {
+        private const string AppManifest = "AppManifest.xml";
+        private const string AppXManifest = "AppxManifest.xml";
 
         public override string Platform
         {
@@ -76,11 +79,41 @@ namespace BuddySDK
             }
         }
 
+        public override string Model
+        {
+            get
+            {
+                return "Unknown Desktop PC"; //TODO: Figure out how to get device info on windows store
+            }
+        }
+
+
+        public override string OSVersion
+        {
+            get
+            {
+                return "Unknown WinRT";
+            }
+        }
+
+
         public override string ApplicationID
         {
             get
             {
-                var xDocument = XDocument.Load("AppManifest.xml");
+                XDocument xDocument = null;
+                try
+                {
+                    xDocument = XDocument.Load(AppManifest);
+                }
+                catch (FileNotFoundException)
+                {
+                    xDocument = XDocument.Load(AppXManifest);
+                }
+                if (xDocument == null)
+                {
+                    return null;
+                }
 
                 var xNamespace = XNamespace.Get("http://schemas.microsoft.com/appx/2010/manifest");
 
@@ -92,9 +125,22 @@ namespace BuddySDK
 
         protected override Assembly EntryAssembly
         {
-            get { 
+            get
+            {
                 // get the type name
-                var xDocument = XDocument.Load("AppManifest.xml");
+                XDocument xDocument = null;
+                try
+                {
+                    xDocument = XDocument.Load(AppManifest);
+                }
+                catch (FileNotFoundException)
+                {
+                    xDocument = XDocument.Load(AppXManifest);
+                }
+                if (xDocument == null)
+                {
+                    return null;
+                }
 
                 var xNamespace = XNamespace.Get("http://schemas.microsoft.com/appx/2010/manifest");
 
@@ -154,7 +200,10 @@ namespace BuddySDK
         }
         public static ConstructorInfo GetConstructor(this System.Type t, params Type[] paramTypes)
         {
-            return t.GetConstructor(paramTypes);
+            return t.GetTypeInfo().DeclaredConstructors
+                .Where(ctor => ctor.GetParameters().Count() == paramTypes.Count())
+                .First(ctor => ctor.GetParameters().All(p => p.ParameterType.Equals(paramTypes.ElementAt(p.Position)))); //return the first constructor where all the parameters match types
+
         }
         public static T GetCustomAttribute<T>(this System.Reflection.PropertyInfo pi) where T : System.Attribute
         {
