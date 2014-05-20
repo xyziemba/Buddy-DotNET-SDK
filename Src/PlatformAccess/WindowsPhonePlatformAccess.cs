@@ -188,13 +188,9 @@ namespace BuddySDK
 
         public override string GetConfigSetting(string key)
         {
-            // look in app.xaml resources
-            var val = System.Windows.Application.Current.Resources[key];
-            if (val is string)
-            {
-                return val as string;
-            }
-            return System.IO.IsolatedStorage.IsolatedStorageSettings.ApplicationSettings[key] as string;
+            var appSettings = System.IO.IsolatedStorage.IsolatedStorageSettings.ApplicationSettings;
+
+            return appSettings.Contains(key) ? appSettings[key] as string : null;
         }
 
         public override bool SupportsFlags(BuddyClientFlags flags)

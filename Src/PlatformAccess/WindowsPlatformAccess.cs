@@ -78,7 +78,11 @@ namespace BuddySDK
         public override string Platform
         {
             get { 
-                return "WindowsStore"; 
+#if WINDOWS_PHONE_APP
+                return "WindowsPhone";
+#else
+                return "WindowsStore";
+#endif
             }
         }
 
@@ -112,6 +116,16 @@ namespace BuddySDK
             }
         }
 
+        public override string AppVersion
+        {
+            get
+            {
+                var pv = Windows.ApplicationModel.Package.Current.Id.Version;
+
+                return new Version(pv.Major, pv.Minor, pv.Build, pv.Revision).ToString();
+            }
+        }
+
         protected override Assembly EntryAssembly
         {
             get {
@@ -126,8 +140,7 @@ namespace BuddySDK
 
         private void EnsureSettings(string key)
         {
-            Windows.Storage.ApplicationData.Current.LocalSettings.CreateContainer(key, ApplicationDataCreateDisposition.Always);
-         
+            Windows.Storage.ApplicationData.Current.LocalSettings.CreateContainer(key, ApplicationDataCreateDisposition.Always);        
         }
 
         public override string GetUserSetting(string key)
@@ -150,7 +163,7 @@ namespace BuddySDK
         public override void SetUserSetting(string key, string value, DateTime? expires = default(DateTime?))
         {
             EnsureSettings(key);
-             Windows.Storage.ApplicationData.Current.LocalSettings.Values[key] = PlatformAccess.EncodeUserSetting(value, expires) ;
+            Windows.Storage.ApplicationData.Current.LocalSettings.Values[key] = PlatformAccess.EncodeUserSetting(value, expires) ;
         }
 
         public override void ClearUserSetting(string str)
