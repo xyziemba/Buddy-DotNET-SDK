@@ -57,6 +57,7 @@ namespace BuddySDK
             if (IsSuccess && map != null) {
                 br.Value = map (Value);
             }
+
             return br;
         }
     }

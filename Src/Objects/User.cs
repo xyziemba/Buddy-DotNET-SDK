@@ -159,7 +159,7 @@ namespace BuddySDK
         {
             get
             {
-                if (profilePicture == null || profilePicture.ID != ProfilePictureID || profilePicture.SignedUrl != ProfilePictureUrl)
+                if (ProfilePictureID != null && (profilePicture == null || profilePicture.ID != ProfilePictureID || profilePicture.SignedUrl != ProfilePictureUrl))
                 {
                     ProfilePicture = new Picture(ProfilePictureID, ProfilePictureUrl);
                 }

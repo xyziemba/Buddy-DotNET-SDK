@@ -1130,20 +1130,11 @@ namespace BuddySDK
                 timeoutInSeconds = (int)timeout.Value.TotalSeconds;
             }
 
-            return Task.Run<BuddyResult<string>>(() =>
+            return CallServiceMethod<MetricsResult>("POST", String.Format("/metrics/events/{0}", Uri.EscapeDataString(key)), new
             {
-
-                var r = CallServiceMethod<MetricsResult>("POST", String.Format("/metrics/events/{0}", Uri.EscapeDataString(key)), new
-                {
-                    value = value,
-                    timeoutInSeconds = timeoutInSeconds
-                });
-               
-                
-                return r.Result.Convert((mr) => mr.id);
-
-              
-            });
+                value = value,
+                timeoutInSeconds = timeoutInSeconds
+            }).WrapResult<MetricsResult, string>((r1) => r1.Value != null ? r1.Value.id : null);
         }
 
         private class CompleteMetricResult
@@ -1153,49 +1144,43 @@ namespace BuddySDK
 
         public Task<BuddyResult<TimeSpan?>> RecordTimedMetricEndAsync(string timedMetricId)
         {
-            return Task<TimeSpan?>.Run(() =>
-            {
+            
+             var r = CallServiceMethod<CompleteMetricResult>("DELETE", String.Format("/metrics/events/{0}", Uri.EscapeDataString(timedMetricId)));
+             return r.WrapResult<CompleteMetricResult, TimeSpan?>((r1) => {
 
-                 var r = CallServiceMethod<CompleteMetricResult>("DELETE", String.Format("/metrics/events/{0}", Uri.EscapeDataString(timedMetricId)));
+                     var cmr = r1.Value;
 
+                    TimeSpan? elapsedTime = null;
 
-                    return r.Result.Convert(cmr =>  {
-                        TimeSpan? elapsedTime = null;
+                    if (cmr.elaspedTimeInMs != null) {
+                        elapsedTime = TimeSpan.FromMilliseconds(cmr.elaspedTimeInMs.Value);
+                    }
 
-                        if (cmr.elaspedTimeInMs != null) {
-                            elapsedTime = TimeSpan.FromMilliseconds(cmr.elaspedTimeInMs.Value);
-                        }
+                    return elapsedTime;
 
-                        return elapsedTime;
-
-                    });
+                });
                 
-            });
+           
         }
 
         public Task<BuddyResult<bool>> AddCrashReportAsync (Exception ex, string message = null)
         {
 
-            return Task.Run<BuddyResult<bool>> (() => {
-                if (ex == null) return new BuddyResult<bool>();
-
+           
                 try {
-                    var r = CallServiceMethod<string>(
+                    return CallServiceMethod<string>(
                         "POST", 
                         "/devices/current/crashreports", 
                             new {
                                 stackTrace = ex.ToString(),
                                 message = message
-                        }, allowThrow:false);
-                    return r.Result.Convert(s => true);
+                        }, allowThrow:false).WrapResult<string, bool>((r1) => r1.IsSuccess);
                 }
                 catch {
 
                 }
-                return new BuddyResult<bool> {
-                    Value = false
-                };
-            });
+                return Task.FromResult(new BuddyResult<bool>{Value=false});
+            
         }
 
 

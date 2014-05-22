@@ -125,6 +125,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuddyUtils.cs" />
     <Compile Include="Collections\AlbumCollection.cs" />
     <Compile Include="Collections\AlbumItemCollection.cs" />
     <Compile Include="BuddyMetadataBase.cs" />
@@ -135,7 +136,6 @@
     <Compile Include="BuddyServiceClient\BuddyLocationGeoConverter.cs" />
     <Compile Include="Collections\MessageCollection.cs" />
     <Compile Include="Collections\UserListCollection.cs" />
-    <Compile Include="Collections\UserListItemCollection.cs" />
     <Compile Include="DateRange.cs" />
     <Compile Include="Metadata.cs" />
     <Compile Include="ConnectivityLevelChangedEventArgs.cs" />
@@ -144,7 +144,6 @@
     <Compile Include="Objects\MessageType.cs" />
     <Compile Include="Objects\Notification.cs" />
     <Compile Include="Objects\UserList.cs" />
-    <Compile Include="Objects\UserListItem.cs" />
     <Compile Include="AuthenticatedUser.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -16,9 +16,7 @@ namespace BuddySDK
 
         internal static Task<BuddyResult<Picture>> AddAsync(BuddyClient client, string caption, Stream pictureData, string contentType, BuddyGeoLocation location = null, BuddyPermissions read = BuddyPermissions.User, BuddyPermissions write = BuddyPermissions.User)
         {
-            return Task.Run<BuddyResult<Picture>>(() =>
-            {
-                var c = new Picture(null, client)
+            var c = new Picture(null, client)
                 {
                     Caption = caption,
                     Location = location,
@@ -33,9 +31,8 @@ namespace BuddySDK
                 };
 
                 var t = c.SaveAsync();
-                
-                return t.Result.Convert(r => c);
-            });    
+
+                return t.WrapResult<bool, Picture>(r => r.IsSuccess ? c : null); 
         }
 
         public Task<BuddyResult<Picture>> AddAsync(string caption, Stream pictureData, string contentType, BuddyGeoLocation location = null, BuddyPermissions read = BuddyPermissions.User, BuddyPermissions write = BuddyPermissions.User)

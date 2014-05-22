@@ -15,7 +15,7 @@ namespace BuddySDK
 
         public Task<BuddyResult<Checkin>> AddAsync(string comment, string description, BuddyGeoLocation location, string tag = null, BuddyPermissions read = BuddyPermissions.User, BuddyPermissions write = BuddyPermissions.User)
         {
-            return Task.Run<BuddyResult<Checkin>>(() =>{
+            
                 var c = new Checkin(null, this.Client)
                     {
                         Comment = comment,
@@ -28,9 +28,7 @@ namespace BuddySDK
 
                 var t = c.SaveAsync();
 
-                return t.Result.Convert(f => c);
-            });
-           
+                return t.WrapResult<bool, Checkin>(r => r.IsSuccess ? c : null);
         }
 
         public Task<SearchResult<Checkin>> FindAsync(string comment = null, string ownerUserId = null, BuddyGeoLocationRange locationRange = null, DateRange created = null, DateRange lastModified = null, int pageSize = 100, string pagingToken = null)
