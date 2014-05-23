@@ -18,8 +18,8 @@ namespace CreateLoginUserSample
 	{
 		public CreateLoginUserApplication(IntPtr intPtr, JniHandleOwnership jho) : base(intPtr, jho)
 		{
-			// TODO: Go to http://dev.buddyplatform.com to get an app ID and app password.
-			Buddy.Init ("", "");
+			// TODO: Go to http://dev.buddyplatform.com to get an app ID and app key.
+			Buddy.Init ("\Your App ID", "\Your App Key");
 
 			CreateLoginUserLibrary.ActivtyBase.HomeActivityType = typeof(CreateLoginUserSample.ViewUserActivity);
 		}
