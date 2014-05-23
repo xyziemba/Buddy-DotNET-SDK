@@ -56,8 +56,7 @@ namespace BuddySDK
             string pagingToken = null, 
             Action<IDictionary<string, object>> parameterCallback = null)
         {
-            return Task.Run<SearchResult<T>>(() =>
-            {
+           
                     IDictionary<string,object> obj = new Dictionary<string, object>(DotNetDeltas.InvariantComparer(true)){
                         {"ownerID", userId},
                         {"created", created},
@@ -80,37 +79,41 @@ namespace BuddySDK
                         obj["pagingToken"] = pagingToken;
                     }
 
-                    var r = Client.CallServiceMethod<SearchResult<IDictionary<string, object>>>("GET",
-                                Path, obj).Result;
+                    return Client.CallServiceMethod<SearchResult<IDictionary<string, object>>>("GET",
+                            Path, obj
+                            ).WrapTask<BuddyResult<SearchResult<IDictionary<string,object>>>, SearchResult<T>>(r1 =>
+                            {
+                                var r = r1.Result;
+                                var sr = new SearchResult<T>();
 
-                    var sr = new SearchResult<T>();
+                                sr.Error = r.Error;
+                                sr.RequestID = r.RequestID;
 
-                    sr.Error = r.Error;
-                    sr.RequestID = r.RequestID;
+                                if (r.IsSuccess)
+                                {
 
-                    if (r.IsSuccess) {
+                                    sr.NextToken = r.Value.NextToken;
+                                    sr.PreviousToken = r.Value.PreviousToken;
+                                    sr.CurrentToken = r.Value.CurrentToken;
 
-                        sr.NextToken = r.Value.NextToken;
-                        sr.PreviousToken = r.Value.PreviousToken;
-                        sr.CurrentToken = r.Value.CurrentToken;
-
-                        var items = new ObservableCollection<T>();
-                        foreach (var d in r.Value.PageResults)
-                        {
-							var parameters = new List<object>();
-							if (typeof(T).GetConstructor(new Type[] { typeof(string), typeof(BuddyClient) }) != null)
-							{
-								parameters.Add(Path);
-							}
-							parameters.Add(Client);
-							T item = (T)Activator.CreateInstance(typeof(T), parameters.ToArray());
-                            item.Update(d);
-                            items.Add(item);
-                        }
-                        sr.PageResults = items;
-                    }
-                    return sr;
-            });
+                                    var items = new ObservableCollection<T>();
+                                    foreach (var d in r.Value.PageResults)
+                                    {
+                                        var parameters = new List<object>();
+                                        if (typeof(T).GetConstructor(new Type[] { typeof(string), typeof(BuddyClient) }) != null)
+                                        {
+                                            parameters.Add(Path);
+                                        }
+                                        parameters.Add(Client);
+                                        T item = (T)Activator.CreateInstance(typeof(T), parameters.ToArray());
+                                        item.Update(d);
+                                        items.Add(item);
+                                    }
+                                    sr.PageResults = items;
+                                }
+                                return sr;
+                            });
+            
            
         }
     }

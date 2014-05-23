@@ -118,8 +118,7 @@ namespace BuddySDK
             }
         }
 
-             
-
+      
         private class DotNetIsoStore : IsolatedStorageSettings
         {
 

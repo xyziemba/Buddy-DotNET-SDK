@@ -14,21 +14,19 @@ namespace BuddySDK
         public Task<BuddyResult<Message>> SendMessageAsync(IEnumerable<string> recipients, string subject, string body, string thread = null)
         {
 
-            return Task.Run<BuddyResult<Message>>(() =>
+            var c = new Message(null, this.Client)
             {
-                var c = new Message(null, this.Client)
-                {
-                    Recipients = recipients,
-                    Subject = subject,
-                    FromUserId = this.Client.User != null ? this.Client.User.ID : null,
-                    Body = body,
-                    ThreadId = thread
-                };
+                Recipients = recipients,
+                Subject = subject,
+                FromUserId = this.Client.User != null ? this.Client.User.ID : null,
+                Body = body,
+                ThreadId = thread
+            };
 
-                var t = c.SaveAsync();
+            var t = c.SaveAsync();
                 
-                return t.Result.Convert(f => c);
-            });
+            return t.WrapResult<bool, Message>(r => r.IsSuccess ? c : null);
+           
            
         }
 
