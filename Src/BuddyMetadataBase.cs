@@ -62,7 +62,7 @@ namespace BuddySDK
       
         private Task<BuddyResult<bool>> SetMetadataCore(string key, object value, BuddyPermissions? visibility = null)
         {
-            var callParams = new Dictionary<string, object>()
+            var callParams = new Dictionary<string, object>();
             callParams["value"] = value;
              
 

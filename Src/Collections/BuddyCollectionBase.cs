@@ -80,8 +80,7 @@ namespace BuddySDK
                     }
 
                     return Client.CallServiceMethod<SearchResult<IDictionary<string, object>>>("GET",
-                                Path, obj).Result;
-                            ).WrapTask<BuddyResult<SearchResult<IDictionary<string,object>>>, SearchResult<T>>(r1 =>
+                                Path, obj).WrapTask<BuddyResult<SearchResult<IDictionary<string,object>>>, SearchResult<T>>(r1 =>
                             {
                                 var r = r1.Result;
                                 var sr = new SearchResult<T>();

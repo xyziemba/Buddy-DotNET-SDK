@@ -16,6 +16,8 @@ using Windows.ApplicationModel.Store;
 using System.Runtime.InteropServices;
 
 using Windows.Devices.Enumeration.Pnp;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Core;
 
 namespace BuddySDK
 {
@@ -180,6 +182,11 @@ namespace BuddySDK
 
             return localSettings.Values[key] as string;
         }
+
+        protected override void InvokeOnUiThreadCore(Action a)
+        {
+            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, ()=>a());
+        }
     }
 
     internal static class DotNetDeltas
@@ -190,7 +197,8 @@ namespace BuddySDK
         }
         public static ConstructorInfo GetConstructor(this System.Type t, params Type[] paramTypes)
         {
-            return t.GetConstructor(paramTypes);
+            return t.GetTypeInfo().DeclaredConstructors.Where(c => c.GetParameters().Count().Equals(paramTypes.Count()))
+                .FirstOrDefault(c => c.GetParameters().All(p => p.ParameterType.IsAssignableFrom(paramTypes.ElementAt(p.Position))));
         }
         public static T GetCustomAttribute<T>(this System.Reflection.PropertyInfo pi) where T : System.Attribute
         {
