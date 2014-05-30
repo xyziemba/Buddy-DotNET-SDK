@@ -55,11 +55,9 @@ namespace BuddySDK
 
         private Task<BuddyResult<bool>> AddRemoveIdentityCoreAsync(string verb, string path, object parameters)
         {
-            return Task.Run<BuddyResult<bool>>(() =>
-            {
-                var r = Client.CallServiceMethod<string>(verb, path, parameters);
-                return r.Result.Convert(s => r.Result.IsSuccess);
-            });
+            var t = Client.CallServiceMethod<string>(verb, path, parameters);
+            return t.WrapResult<string, bool>((r1) => r1.IsSuccess);
+           
 
         }
 

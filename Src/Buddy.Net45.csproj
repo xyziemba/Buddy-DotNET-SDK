@@ -111,9 +111,9 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\Libs\Json50r8\Bin\Net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -125,6 +125,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuddyUtils.cs" />
     <Compile Include="Collections\AlbumCollection.cs" />
     <Compile Include="Collections\AlbumItemCollection.cs" />
     <Compile Include="BuddyMetadataBase.cs" />
@@ -135,7 +136,6 @@
     <Compile Include="BuddyServiceClient\BuddyLocationGeoConverter.cs" />
     <Compile Include="Collections\MessageCollection.cs" />
     <Compile Include="Collections\UserListCollection.cs" />
-    <Compile Include="Collections\UserListItemCollection.cs" />
     <Compile Include="DateRange.cs" />
     <Compile Include="Metadata.cs" />
     <Compile Include="ConnectivityLevelChangedEventArgs.cs" />
@@ -144,7 +144,6 @@
     <Compile Include="Objects\MessageType.cs" />
     <Compile Include="Objects\Notification.cs" />
     <Compile Include="Objects\UserList.cs" />
-    <Compile Include="Objects\UserListItem.cs" />
     <Compile Include="AuthenticatedUser.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -30,7 +30,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\Android0\</OutputPath>
+    <OutputPath>bin\Release\Android\</OutputPath>
     <DefineConstants>TRACE;NET40;AWAIT_SUPPORTED</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -89,7 +89,6 @@
     <Compile Include="Objects\Picture.cs" />
     <Compile Include="Objects\User.cs" />
     <Compile Include="Objects\UserList.cs" />
-    <Compile Include="Objects\UserListItem.cs" />
     <Compile Include="Collections\AlbumCollection.cs" />
     <Compile Include="Collections\AlbumItemCollection.cs" />
     <Compile Include="Collections\BuddyCollectionBase.cs" />
@@ -99,12 +98,12 @@
     <Compile Include="Collections\PictureCollection.cs" />
     <Compile Include="Collections\UserCollection.cs" />
     <Compile Include="Collections\UserListCollection.cs" />
-    <Compile Include="Collections\UserListItemCollection.cs" />
     <Compile Include="PlatformAccess\AndroidPlatformAccess.cs" />
     <Compile Include="PlatformAccess\PlatformAccess.cs" />
     <Compile Include="PlatformAccess\WindowsPlatformAccess.cs" />
     <Compile Include="PushNotificationType.cs" />
     <Compile Include="Objects\Notification.cs" />
+    <Compile Include="BuddyUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

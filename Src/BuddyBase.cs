@@ -210,13 +210,13 @@ namespace BuddySDK
        
 
         private Task<BuddyResult<bool>> _pendingRefresh;
-        public virtual async Task<BuddyResult<bool>> FetchAsync(Action updateComplete = null)
+        public virtual Task<BuddyResult<bool>> FetchAsync(Action updateComplete = null)
         {
             EnsureValid();
 
             if (_pendingRefresh != null)
             {
-                return await _pendingRefresh;
+                return _pendingRefresh;
             }
             else
             {
@@ -235,7 +235,7 @@ namespace BuddySDK
 
 
 
-                return await _pendingRefresh;
+                return _pendingRefresh;
             }
           
         }
@@ -418,54 +418,33 @@ namespace BuddySDK
                 }
                 BuddyServiceException error = null;
                 string requestId;
-                return Task.Run<BuddyResult<bool>>(() =>
+                
+                IDictionary<string, object> updateDict = null;
+
+                var task = isNew ?  Client.CallServiceMethod<IDictionary<string, object>>("POST", Path, d) : Client.CallServiceMethod<IDictionary<string, object>>("PATCH", GetObjectPath(), d);
+
+                task.ContinueWith((t1) =>
                 {
-                    IDictionary<string, object> updateDict = null;
-                    if (isNew)
+                    var r = t1.Result;
+                    if (r.IsSuccess)
                     {
-                        var r = Client.CallServiceMethod<IDictionary<string, object>>("POST", Path, d).Result;
-
-                        if (r.IsSuccess)
-                        {
-                            updateDict = r.Value;
-                        }
-
-                        error = r.Error;
-                        requestId = r.RequestID;
-                    }
-                    else
-                    {
-                        var r = Client.CallServiceMethod<IDictionary<string, object>>("PATCH", GetObjectPath(), d).Result;
-
-                        if (r.IsSuccess)
-                        {
-                            updateDict = r.Value;
-                        }
-                        error = r.Error;
-                        requestId = r.RequestID;
-                    }
-
-                    if (updateDict != null)
-                    {
-
+                        updateDict = r.Value;
                         PlatformAccess.Current.InvokeOnUiThread(() =>
                         {
                             Update(updateDict);
                         });
-                       
                     }
 
-                    return new BuddyResult<bool>
-                    {
-                        Error = error,
-                        RequestID = requestId,
-                        Value = error == null
-                    };
+                    error = r.Error;
+                    requestId = r.RequestID;
+
                 });
+
+                return task.WrapResult<IDictionary<string, object>, bool>((t1) => t1.IsSuccess);
             }
             else
             {
-                return Task.Run<BuddyResult<bool>>(() => { return new BuddyResult<bool> { Value = true }; });
+                return Task.FromResult(new BuddyResult<bool> { Value = true });
             }
         }
 

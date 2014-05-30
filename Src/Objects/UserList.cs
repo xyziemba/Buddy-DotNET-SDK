@@ -1,5 +1,8 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace BuddySDK
 {
@@ -30,32 +33,67 @@ namespace BuddySDK
             }
         }
 
-        private UserListItemCollection _users;
-        public UserListItemCollection Users
+        public enum UserListItemType
         {
-            get
-            {
-                if (_users == null)
-                {
-                    _users = new UserListItemCollection(this.GetObjectPath(), this.Client);
-                }
+            User = 0,
+            UserList = 1
+        }
 
-                return _users;
+        public class UserListItem
+        {
+            public string ID { get; set; }
+            public UserListItemType  ItemType {get;set;}
+
+            internal UserListItem(IDictionary<string, object> d)
+            {
+                ID = d["id"] as string;
+
+                UserListItemType itemType;
+
+                if (Enum.TryParse<UserListItemType>(d["itemType"] as string, out itemType))
+                {
+                    ItemType = itemType;
+                }
             }
         }
 
-        public async Task<BuddyResult<UserListItem>> AddUserAsync(User user, BuddyGeoLocation location, string tag = null)
+       
+        public Task<BuddyResult<bool>> AddUserAsync(User user)
         {
-            var c = new UserListItem(this.GetObjectPath() + PlatformAccess.GetCustomAttribute<BuddyObjectPathAttribute>(typeof(UserListItem)).Path, this.Client)
+            return Client.CallServiceMethod<bool>("PUT", GetObjectPath() + "/items/" + user.ID);
+        }
+
+        public Task<BuddyResult<bool>> RemoveUserAsync(User user)
+        {
+            return Client.CallServiceMethod<bool>("DELETE", GetObjectPath() + "/items/" + user.ID);
+        }
+
+        public Task<SearchResult<UserListItem>> GetUsersAsync(string pagingToken = null) {
+		
+            var path = GetObjectPath() + "/items";
+            return Client.CallServiceMethod<SearchResult<IDictionary<string, object>>>("GET", path, new
             {
-                UserID = user.ID,
-                Location = location,
-                Tag = tag
-            };
+                token = pagingToken
+            }).WrapTask<BuddyResult<SearchResult<IDictionary<string,object>>>,SearchResult<UserListItem>>(t2 => {
 
-            var r = await c.SaveAsync();
 
-            return r.Convert<UserListItem>(b => c);
+                var r = t2.Result;
+
+                var sr = new SearchResult<UserListItem>();
+
+                if (r.IsSuccess) {
+                    sr.NextToken = r.Value.NextToken;
+                    sr.PreviousToken = r.Value.PreviousToken;
+                    sr.CurrentToken = r.Value.CurrentToken;
+                        
+                    sr.PageResults = r.Value.PageResults.Select(i => new UserListItem(i));
+                }
+                else {
+                    sr.Error = r.Error;
+                    
+                }
+                return sr;
+            });
         }
     }
 }

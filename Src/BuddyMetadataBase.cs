@@ -63,10 +63,8 @@ namespace BuddySDK
         private Task<BuddyResult<bool>> SetMetadataCore(string key, object value, BuddyPermissions? visibility = null)
         {
             var callParams = new Dictionary<string, object>()
-                {
-                    {"key", key},
-                    {"value", value}
-                };
+            callParams["value"] = value;
+             
 
             if (visibility != null)
             {
@@ -156,8 +154,7 @@ namespace BuddySDK
             )
         {
            
-            return Task.Run<SearchResult<MetadataItem>>(() =>
-            {
+            
                 IDictionary<string, object> obj = new Dictionary<string, object>(DotNetDeltas.InvariantComparer(true)){
                         {"visibility", visibility},
                         {"created", created},
@@ -166,22 +163,14 @@ namespace BuddySDK
                         {"key", key},
                         {"keyPrefix", keyPrefix}
                     };
-               
-                var r = Client.CallServiceMethod<SearchResult<MetadataItem>>("GET",
-                        GetMetadataPath(), obj
-                        ).Result;
 
-                if (r.IsSuccess)
-                {
-                    return r.Value;
-                }
-                else
-                {
-                    return new SearchResult<MetadataItem>(r.RequestID, r.Error);
-                }
-            });
+                return Client.CallServiceMethod<SearchResult<MetadataItem>>("GET",
+                        GetMetadataPath(), obj
+                        ).WrapTask<BuddyResult<SearchResult<MetadataItem>>, SearchResult<MetadataItem>>((r1) => r1.Result.Value);
            
         }
+
+      
     }
 
 }
