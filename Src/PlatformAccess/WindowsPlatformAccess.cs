@@ -190,7 +190,7 @@ namespace BuddySDK
         }
         public static ConstructorInfo GetConstructor(this System.Type t, params Type[] paramTypes)
         {
-            return t.GetConstructor(paramTypes);
+            return t.GetTypeInfo().DeclaredConstructors.Where(ci => Enumerable.SequenceEqual(ci.GetParameters().Select(pi => pi.ParameterType), paramTypes)).FirstOrDefault();
         }
         public static T GetCustomAttribute<T>(this System.Reflection.PropertyInfo pi) where T : System.Attribute
         {
