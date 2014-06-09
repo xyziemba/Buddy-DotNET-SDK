@@ -36,7 +36,6 @@ namespace BuddySDK
             this._metadataId = id;
             
             this._client = client;
-            
         }
 
         private void EnsureID()
@@ -133,7 +132,7 @@ namespace BuddySDK
 
         public Task<BuddyResult<bool>> DeleteMetadataAsync(string key, BuddyPermissions? visibility = null)
         {
-            IDictionary<string, object> callParams = null;
+            var callParams = new Dictionary<string, object>();
             if (visibility != null)
             {
                 callParams["visibility"] = visibility;
@@ -150,27 +149,25 @@ namespace BuddySDK
             BuddyGeoLocationRange locationRange = null,
             DateRange created = null,
             DateRange lastModified = null,
-            BuddyPermissions visibility = BuddyPermissions.Default
+            BuddyPermissions? visibility = null
             )
         {
-           
-            
-                IDictionary<string, object> obj = new Dictionary<string, object>(DotNetDeltas.InvariantComparer(true)){
-                        {"visibility", visibility},
-                        {"created", created},
-                        {"lastModified", lastModified},
-                        {"locationRange", locationRange},
-                        {"key", key},
-                        {"keyPrefix", keyPrefix}
-                    };
+            IDictionary<string, object> obj = new Dictionary<string, object>(DotNetDeltas.InvariantComparer(true)){
+                    {"created", created},
+                    {"lastModified", lastModified},
+                    {"locationRange", locationRange},
+                    {"key", key},
+                    {"keyPrefix", keyPrefix}
+                };
 
-                return Client.CallServiceMethod<SearchResult<MetadataItem>>("GET",
-                        GetMetadataPath(), obj
-                        ).WrapTask<BuddyResult<SearchResult<MetadataItem>>, SearchResult<MetadataItem>>((r1) => r1.Result.Value);
-           
+            if (visibility != null)
+            {
+                obj["visibility"] = visibility;
+            }
+
+            return Client.CallServiceMethod<SearchResult<MetadataItem>>("GET",
+                GetMetadataPath(), obj
+            ).WrapTask<BuddyResult<SearchResult<MetadataItem>>, SearchResult<MetadataItem>>((r1) => r1.Result.Value);
         }
-
-      
     }
-
 }

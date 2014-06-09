@@ -14,8 +14,6 @@ namespace BuddySDK
     [BuddyObjectPath("/metadata")]
     public class Metadata : BuddyMetadataBase
     {
-        public const string App = "app";
-
         public Metadata(string id, BuddyClient client = null)
             : base(id, client)
         {
