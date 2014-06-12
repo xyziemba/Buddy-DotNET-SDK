@@ -13,9 +13,10 @@ namespace BuddySDK
         {
         }
 
-        public Task<SearchResult<User>> FindAsync(string userName = null, string email = null, string firstName = null, string lastName = null, BuddyGeoLocationRange locationRange = null, DateRange created = null, DateRange lastModified = null, int pageSize = 100, string pagingToken = null)
+        public Task<SearchResult<User>> FindAsync(string userName = null, string email = null, string firstName = null, string lastName = null,
+            BuddyGeoLocationRange locationRange = null, DateRange created = null, DateRange lastModified = null, UserGender? gender = null,
+            DateRange dateOfBirthRange = null, string userListId = null, int pageSize = 100, string pagingToken = null)
         {
-
             return base.FindAsync(userId: null,
                 created: created,
                 lastModified: lastModified,
@@ -28,9 +29,10 @@ namespace BuddySDK
                     p["email"] = email;
                     p["firstName"] = firstName;
                     p["lastName"] = lastName;
-
+                    p["gender"] = gender;
+                    p["dobRange"] = dateOfBirthRange;
+                    p["userListId"] = userListId;
                 });
-
         }
 
         public Task<BuddyResult<User>> FindByIdentityAsync(string identityProviderName, string identityId)
