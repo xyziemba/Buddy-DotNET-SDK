@@ -149,13 +149,13 @@ namespace BuddySDK
             BuddyGeoLocationRange locationRange = null,
             DateRange created = null,
             DateRange lastModified = null,
-            BuddyPermissions? visibility = null
-            )
+            BuddyPermissions? visibility = null, string ownerUserId = null, int pageSize = 100, string pagingToken = null)
         {
-            IDictionary<string, object> obj = new Dictionary<string, object>(DotNetDeltas.InvariantComparer(true)){
+            var obj = new Dictionary<string, object>(DotNetDeltas.InvariantComparer(true)){
                     {"created", created},
                     {"lastModified", lastModified},
                     {"locationRange", locationRange},
+                    {"ownerID", ownerUserId},
                     {"key", key},
                     {"keyPrefix", keyPrefix}
                 };
@@ -164,6 +164,8 @@ namespace BuddySDK
             {
                 obj["visibility"] = visibility;
             }
+
+            BuddyCollectionBase<BuddyBase>.InitializePaging(obj, pagingToken, pageSize);
 
             return Client.CallServiceMethod<SearchResult<MetadataItem>>("GET",
                 GetMetadataPath(), obj
