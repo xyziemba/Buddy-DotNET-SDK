@@ -405,6 +405,9 @@ namespace BuddySDK.BuddyServiceClient
             {
                 wr.Headers ["Authorization"] = String.Format ("Buddy {0}", token);
             }
+
+            wr.Headers[HttpRequestHeader.CacheControl] = "no-cache";
+
             wr.Method = verb;
 
             Action getResponse = () =>
