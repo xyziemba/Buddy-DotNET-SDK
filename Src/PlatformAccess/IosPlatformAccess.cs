@@ -157,60 +157,10 @@ namespace BuddySDK
             }
         }
 
-        CLLocationManager _locMgr;
-
-
-
-        CLLocationManager LocationManager
-        {
-            get
-            {
-                if (_locMgr == null)
-                {
-                    _locMgr = new CLLocationManager();
-                    _locMgr.LocationsUpdated += (s, e) =>
-                    {
-
-                        if (e.Locations == null)
-                        {
-                            return;
-                        }
-
-                        var lastLoc = e.Locations.FirstOrDefault();
-
-                        if (lastLoc != null)
-                        {
-                            var loc = new BuddyGeoLocation(lastLoc.Coordinate.Latitude, lastLoc.Coordinate.Longitude);
-                            SetLastLocation(loc);
-                        }
-                    };
-                }
-                return _locMgr;
-            }
+        public override bool SupportsFlags(BuddyClientFlags flags) {
+            return (flags & (BuddyClientFlags.AutoCrashReport)) == flags;
         }
 
-
-        protected override void TrackLocationCore(bool track)
-        {
-
-            if (!CLLocationManager.LocationServicesEnabled)
-            {
-                return;
-            }
-
-            LocationManager.DesiredAccuracy = 1;
-            LocationManager.DistanceFilter = 50;
-
-            if (track)
-            {
-                LocationManager.StartUpdatingLocation();
-            }
-            else
-            {
-                LocationManager.StopUpdatingLocation();
-            }
-
-        }
 
         protected override void OnShowActivity(bool show)
         {

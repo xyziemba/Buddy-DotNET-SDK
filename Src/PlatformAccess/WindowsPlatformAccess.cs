@@ -135,7 +135,7 @@ namespace BuddySDK
 
         public override bool SupportsFlags(BuddyClientFlags flags)
         {
-            return true;
+            return (flags & (BuddyClientFlags.AutoCrashReport)) == flags;
         }
 
         private void EnsureSettings(string key)
@@ -460,9 +460,9 @@ namespace BuddySDK
         }
     }
 }
-#else 
+#else
 
-    using System.Reflection;
+using System.Reflection;
 
 internal static class DotNetDeltas
 {

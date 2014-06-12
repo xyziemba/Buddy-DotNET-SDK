@@ -195,7 +195,7 @@ namespace BuddySDK
 
         public override bool SupportsFlags(BuddyClientFlags flags)
         {
-            return true;
+            return (flags & (BuddyClientFlags.AutoCrashReport)) == flags;
         }
     }
 }
