@@ -16,10 +16,11 @@ using Windows.ApplicationModel.Store;
 using System.Runtime.InteropServices;
 
 using Windows.Devices.Enumeration.Pnp;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Core; 
 
 namespace BuddySDK
 {
-
     public partial class BuddyClient
     {
 
@@ -179,6 +180,11 @@ namespace BuddySDK
             // Create a simple setting
 
             return localSettings.Values[key] as string;
+        }
+
+        protected override void InvokeOnUiThreadCore(Action a)
+        {
+            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => a());
         }
     }
 
