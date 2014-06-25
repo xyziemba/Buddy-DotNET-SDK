@@ -88,14 +88,6 @@ namespace BuddySDK
         }
 
 
-     
-
-        protected override void TrackLocationCore(bool track)
-        {
-            // TBD
-        }
-
-
         public override ConnectivityLevel ConnectionType
         {
             get
@@ -104,16 +96,12 @@ namespace BuddySDK
             }
         }
 
+
         public override string GetConfigSetting(string key)
         {
             throw new NotImplementedException();
         }
 
-
-    
-       
-
-      
 
         protected override void InvokeOnUiThreadCore(Action a)
         {

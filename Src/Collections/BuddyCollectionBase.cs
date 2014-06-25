@@ -69,15 +69,7 @@ namespace BuddySDK
                         parameterCallback(obj);
                     }
 
-                    if (pagingToken == null)
-                    {
-                        obj["pagingToken"] = string.Format("{0};0", pageSize);
-                    }
-                    else
-                    {
-                        obj.Clear();
-                        obj["pagingToken"] = pagingToken;
-                    }
+                    InitializePaging(obj, pagingToken, pageSize);
 
                     return Client.CallServiceMethod<SearchResult<IDictionary<string, object>>>("GET",
                                 Path, obj).WrapTask<BuddyResult<SearchResult<IDictionary<string,object>>>, SearchResult<T>>(r1 =>
@@ -114,6 +106,19 @@ namespace BuddySDK
                             });
             
            
+        }
+
+        public static void InitializePaging(IDictionary<string, object> obj, string pagingToken, int pageSize)
+        {
+            if (pagingToken == null)
+            {
+                obj["pagingToken"] = string.Format("{0};0", pageSize);
+            }
+            else
+            {
+                obj.Clear();
+                obj["pagingToken"] = pagingToken;
+            }
         }
     }
 }
