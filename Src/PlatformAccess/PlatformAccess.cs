@@ -51,11 +51,7 @@ namespace BuddySDK
             });
         }
 
-        public virtual bool SupportsFlags(BuddyClientFlags flags)
-        {
-            var unsupported = BuddyClientFlags.AutoTrackLocation;
-            return (unsupported & flags) == BuddyClientFlags.None;
-        }
+        public abstract bool SupportsFlags(BuddyClientFlags flags);
 
         protected virtual void OnShowActivity(bool show) {
 
@@ -179,64 +175,6 @@ namespace BuddySDK
             if (NotificationReceived != null && !String.IsNullOrEmpty(id))
             {
                 NotificationReceived(this, new NotificationReceivedEventArgs { ID = id });
-            }
-        }
-        // 
-        // Location
-        //
-        public event EventHandler<LocationUpdatedEventArgs> LocationUpdated;
-
-        public class LocationUpdatedEventArgs : EventArgs {
-            public BuddyGeoLocation Location {
-                get;
-                private set;
-            }
-
-            public BuddyGeoLocation LastLocation {
-                get;
-                private set;
-            }
-
-            public LocationUpdatedEventArgs(BuddyGeoLocation now, BuddyGeoLocation old) {
-                Location = now;
-                LastLocation = old;
-            }
-        }
-
-        Tuple<BuddyGeoLocation, DateTime> _lastLoc;
-        protected void SetLastLocation (BuddyGeoLocation location) {
-
-            InvokeOnUiThread (() => {
-                if (LocationUpdated != null) {
-                    BuddyGeoLocation last = null;
-                    if (_lastLoc != null) {
-                        last = _lastLoc.Item1;
-                    }
-                    LocationUpdated (this, new LocationUpdatedEventArgs (location, last));
-                }
-            });
-
-            _lastLoc = new Tuple<BuddyGeoLocation, DateTime> (location, DateTime.Now);
-        }
-
-       
-        public BuddyGeoLocation LastLocation {
-            get {
-                if (_lastLoc != null) {
-
-                    return _lastLoc.Item1;
-                }
-                return null;
-            }
-        }
-
-        protected abstract void TrackLocationCore (bool track);
-
-        public void TrackLocation(bool track) {
-
-            TrackLocationCore (track);
-            if (!track) {
-                _lastLoc = null;
             }
         }
 

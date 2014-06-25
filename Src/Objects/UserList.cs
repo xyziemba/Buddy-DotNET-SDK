@@ -71,7 +71,6 @@ namespace BuddySDK
         public Task<SearchResult<UserListItem>> GetUsersAsync(string pagingToken = null) {
 		
             var path = GetObjectPath() + "/items";
-
             return Client.CallServiceMethod<SearchResult<IDictionary<string, object>>>("GET", path, new
             {
                 token = pagingToken

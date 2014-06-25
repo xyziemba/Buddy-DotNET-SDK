@@ -16,10 +16,11 @@ using Windows.ApplicationModel.Store;
 using System.Runtime.InteropServices;
 
 using Windows.Devices.Enumeration.Pnp;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Core; 
 
 namespace BuddySDK
 {
-
     public partial class BuddyClient
     {
 
@@ -135,7 +136,7 @@ namespace BuddySDK
 
         public override bool SupportsFlags(BuddyClientFlags flags)
         {
-            return true;
+            return (flags & (BuddyClientFlags.AutoCrashReport)) == flags;
         }
 
         private void EnsureSettings(string key)
@@ -180,6 +181,11 @@ namespace BuddySDK
 
             return localSettings.Values[key] as string;
         }
+
+        protected override void InvokeOnUiThreadCore(Action a)
+        {
+            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => a());
+        }
     }
 
     internal static class DotNetDeltas
@@ -190,7 +196,7 @@ namespace BuddySDK
         }
         public static ConstructorInfo GetConstructor(this System.Type t, params Type[] paramTypes)
         {
-            return t.GetConstructor(paramTypes);
+            return t.GetTypeInfo().DeclaredConstructors.Where(ci => Enumerable.SequenceEqual(ci.GetParameters().Select(pi => pi.ParameterType), paramTypes)).FirstOrDefault();
         }
         public static T GetCustomAttribute<T>(this System.Reflection.PropertyInfo pi) where T : System.Attribute
         {
@@ -460,9 +466,9 @@ namespace BuddySDK
         }
     }
 }
-#else 
+#else
 
-    using System.Reflection;
+using System.Reflection;
 
 internal static class DotNetDeltas
 {
