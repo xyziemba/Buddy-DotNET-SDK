@@ -167,7 +167,7 @@ namespace BuddySDK
             public string ID { get; set; }
         }
 
-        public event EventHandler<NotificationReceivedEventArgs> NotificationReceived;
+        internal event EventHandler<NotificationReceivedEventArgs> NotificationReceived;
 
 
         internal void OnNotificationReceived(string id)
