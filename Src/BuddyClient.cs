@@ -843,8 +843,13 @@ namespace BuddySDK
                 var r = rt.Result;
 
                 return r.Convert(d => {
-
-                        var user = new AuthenticatedUser( (string)r.Value["ID"], (string)r.Value["accessToken"], this);
+                    string _id;
+                    try {
+                        _id = (string)r.Value["ID"];
+                    } catch(Exception ex) {
+                        _id = (string)r.Value["id"];
+                    }
+                    var user = new AuthenticatedUser( _id, (string)r.Value["accessToken"], this);
                     this.User = user;
                     return user;
                 });
@@ -867,7 +872,7 @@ namespace BuddySDK
             {
                 Username = username,
                 Password = password
-                }, (result) => new AuthenticatedUser((string)result["ID"], (string)result["accessToken"], this));
+                }, (result) => new AuthenticatedUser((string)result["id"], (string)result["accessToken"], this)); // Don't forget to change id back to ID
         }
 
         public System.Threading.Tasks.Task<BuddyResult<SocialAuthenticatedUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
