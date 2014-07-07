@@ -1027,6 +1027,20 @@ namespace BuddySDK
             }
         }
 
+        private BlobCollection _blobs;
+
+        public BlobCollection Blobs
+        {
+            get
+            {
+                if (_blobs == null)
+                {
+                    _blobs = new BlobCollection(this);
+                }
+                return _blobs;
+            }
+        }
+
         private  PictureCollection _pictures;
 
         public  PictureCollection Pictures
