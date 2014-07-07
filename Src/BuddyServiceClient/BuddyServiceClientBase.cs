@@ -23,7 +23,7 @@ namespace BuddySDK.BuddyServiceClient
         public T Result { get; set; }
     }
 
-    public class BuddyFile // Was internal
+    public class BuddyFile
     {
         public Stream Data;
 
@@ -202,7 +202,6 @@ namespace BuddySDK.BuddyServiceClient
     {
         public static BuddyCallResult<T> Create<T>(T result, object err)
         {
-            // return new BuddyCallResult<T>(){Result = result, Error = err};
             return null;
         }
     }
