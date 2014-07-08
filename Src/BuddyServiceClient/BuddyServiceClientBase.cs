@@ -23,7 +23,7 @@ namespace BuddySDK.BuddyServiceClient
         public T Result { get; set; }
     }
 
-    public class BuddyFile
+    internal class BuddyFile
     {
         public Stream Data;
 
@@ -127,7 +127,7 @@ namespace BuddySDK.BuddyServiceClient
         {
         }
 
-        public static IDictionary<string, object> ParametersToDictionary(object parameters)
+        internal static IDictionary<string, object> ParametersToDictionary(object parameters)
         {
             IDictionary<string, object> d = parameters as IDictionary<string, object>;
             if (d != null)
