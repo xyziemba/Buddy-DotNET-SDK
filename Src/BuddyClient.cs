@@ -813,11 +813,11 @@ namespace BuddySDK
         //
         public Task<BuddyResult<string>> PingAsync()
         {
-            return CallServiceMethod<string>("GET", "/service/ping");
+            return Get <string>("/service/ping",null);
         }
 
         // User auth.
-        public System.Threading.Tasks.Task<BuddyResult<AuthenticatedUser>> CreateUserAsync(
+        public async System.Threading.Tasks.Task<BuddyResult<AuthenticatedUser>> CreateUserAsync(
             string username, 
             string password, 
             string firstName = null, 
@@ -836,10 +836,7 @@ namespace BuddySDK
                 throw new ArgumentException("dateOfBirth must be in the past.", "dateOfBirth");
 
            
-            var task = new Task<BuddyResult<AuthenticatedUser>>(() =>
-            {
-
-                var rt = CallServiceMethod<IDictionary<string, object>>("POST", "/users", new
+            Task<BuddyResult<AuthenticatedUser>> userTask = Post<IDictionary<string, object>>( "/users", new
                 {
                     firstName = firstName,
                     lastName = lastName,
@@ -849,19 +846,13 @@ namespace BuddySDK
                     gender = gender,
 					dateOfBirth = dateOfBirth,
                     tag = tag
-                });
-
-                var r = rt.Result;
-
-                return r.Convert(d => {
-
-                        var user = new AuthenticatedUser( (string)r.Value["ID"], (string)r.Value["accessToken"], this);
+                }).ContinueWith( r =>  r.Result.Convert<AuthenticatedUser>( d => {
+                    var user = new AuthenticatedUser( (string)d["ID"], (string)d["accessToken"], this);
                     this.User = user;
                     return user;
-                });
-            });
-            task.Start ();
-            return task;
+                }));
+
+            return await userTask;
          
         }
 

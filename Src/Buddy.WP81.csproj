@@ -101,6 +101,7 @@
     <Compile Include="BuddyServiceClient\BuddyServiceClientBase.cs" />
     <Compile Include="BuddyServiceClient\BuddyServiceClientHttp.cs" />
     <Compile Include="BuddyServiceClient\DateRangeJsonConverter.cs" />
+    <Compile Include="BuddyServiceClient\IRemoteMethodProvider.cs" />
     <Compile Include="BuddyServiceException.cs" />
     <Compile Include="BuddyUtils.cs" />
     <Compile Include="Collections\AlbumCollection.cs" />
@@ -115,6 +116,7 @@
     <Compile Include="ConnectivityLevelChangedEventArgs.cs" />
     <Compile Include="CurrentUserChangedEventArgs.cs" />
     <Compile Include="DateRange.cs" />
+    <Compile Include="IRestProvider.cs" />
     <Compile Include="Metadata.cs" />
     <Compile Include="Objects\Album.cs" />
     <Compile Include="Objects\AlbumItem.cs" />
