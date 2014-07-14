@@ -220,9 +220,10 @@ namespace BuddySDK
             }
             else
             {
-                _pendingRefresh = Client.CallServiceMethodHelper<IDictionary<string,object>, bool> (
-                    "GET", 
-                    GetObjectPath (), 
+                _pendingRefresh = Client.ResultConversionHelper<IDictionary<string,object>, bool> (
+                    Client.Get<IDictionary<string,object>>(
+                        GetObjectPath (),
+                        null),
                     map: (d => true),
                     completed: (r1, r2) => {
 

@@ -173,7 +173,7 @@ namespace BuddySDK.BuddyServiceClient
             };
 
             var d = ParametersToDictionary (parameters);
-            MakeRequest(verb, path, d, (ex, response) =>
+            MakeRequest(verb, path, d, async (ex, response) =>
             {
                 var bcr = new BuddyCallResult<T>();
                 
@@ -207,9 +207,9 @@ namespace BuddySDK.BuddyServiceClient
                         string body = null;
                         try
                         {
-                            using (var responseStream = response.GetResponseStream())
+                            using (var responseStream =  response.GetResponseStream())
                             {
-                                body = new StreamReader(responseStream).ReadToEnd();
+                                body = await new StreamReader(responseStream).ReadToEndAsync();
                             }
 
                         }

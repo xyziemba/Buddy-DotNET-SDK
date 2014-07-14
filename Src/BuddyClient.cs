@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace BuddySDK
 {
 
-    public partial class BuddyClient
+    public partial class BuddyClient : IRestProvider
     {
 
         public event EventHandler<ServiceExceptionEventArgs> ServiceException;
@@ -27,6 +27,11 @@ namespace BuddySDK
         public event EventHandler AuthorizationLevelChanged;
         public event EventHandler AuthorizationNeedsUserLogin; 
 
+        private const string GetVerb = "GET";
+        private const string PostVerb = "POST";
+        private const string PutVerb = "PUT";
+        private const string PatchVerb = "PATCH";
+        private const string DeleteVerb = "DELETE";
 
         private bool _gettingToken = false;
         private AuthenticatedUser _user;
@@ -129,7 +134,7 @@ namespace BuddySDK
         private static string _WebServiceUrl;
         protected static string WebServiceUrl {
             get {
-                return _WebServiceUrl  = "https://api.buddyplatform.com/";
+                return _WebServiceUrl ?? "https://api.buddyplatform.com/";
             }
             set {
                 _WebServiceUrl = value;
@@ -303,14 +308,12 @@ namespace BuddySDK
 
             };
 
-            PlatformAccess.Current.NotificationReceived += (s, na) => {
-
+            PlatformAccess.Current.NotificationReceived += async (s, na) => {
                 string id = na.ID;
-
                 if (_appSettings.DeviceToken != null) {
-                    CallServiceMethod<bool>(
-                        "POST",
-                        "/notifications/received/" + id);
+                    await Post<bool>(
+                        "/notifications/received/" + id,
+                        null);
                 }
             };
             
@@ -359,12 +362,8 @@ namespace BuddySDK
         private async Task<string> GetDeviceToken()
         {
 
-           
-
-            var dr = await CallServiceMethodHelper<DeviceRegistration, DeviceRegistration> (
-                "POST",
-                "/devices",
-                new
+            var reg = Post<DeviceRegistration> ("/devices",
+                          new
                 {
                     AppId = AppId,
                     AppKey = AppKey,
@@ -373,9 +372,12 @@ namespace BuddySDK
                     UniqueID = PlatformAccess.Current.DeviceUniqueId,
                     Model = PlatformAccess.Current.Model,
                     OSVersion = PlatformAccess.Current.OSVersion,
-                    PushToken = await PlatformAccess.Current.GetPushTokenAsync(),
+                    PushToken = await PlatformAccess.Current.GetPushTokenAsync (),
                     AppVersion = _appSettings.AppVersion ?? PlatformAccess.Current.AppVersion
-                },
+                });
+
+            var dr = await ResultConversionHelper  <DeviceRegistration, DeviceRegistration> (
+                reg,
                 completed: (r1, r2) => { 
                     if (r2.IsSuccess && r2.Value.ServiceRoot != null)
                     {
@@ -418,10 +420,10 @@ namespace BuddySDK
                 return false;
             }
 
-            BuddyResult<IDictionary<string, object>> result = await CallServiceMethodHelper<IDictionary<string, object>, IDictionary<string, object>>(
-                "PATCH",
-                "/devices/current",
-                parameters);
+            BuddyResult<IDictionary<string, object>> result = await ResultConversionHelper<IDictionary<string, object>, IDictionary<string, object>> (
+                                                                  Patch<IDictionary<string,object>> (
+                                                                      "/devices/current",
+                                                                      parameters));
             return result.IsSuccess;
         }
 
@@ -496,73 +498,57 @@ namespace BuddySDK
         }
 
     
-        internal Task<BuddyResult<T>> CallServiceMethod<T>(string verb, string path, object parameters = null, bool allowThrow = false) {
-
-
-            return Task.Run<BuddyResult<T>> (async () => {
-
-                var dictionary = BuddyServiceClientBase.ParametersToDictionary(parameters);
-                var loc = PlatformAccess.Current.LastLocation;
-                if (!dictionary.ContainsKey("location") && loc != null) {
-                    dictionary["location"] = loc.ToString();
+        internal async Task<BuddyResult<T>> HandleServiceResult<T>( BuddyCallResult<T> serviceResult, bool allowThrow = false){
+            var result = new BuddyResult<T> ();
+            result.RequestID = serviceResult.RequestID;
+            if (serviceResult.Error != null) {
+                BuddyServiceException buddyException = null;
+                switch (serviceResult.StatusCode) {
+                case 0: 
+                    buddyException = new BuddyNoInternetException (serviceResult.Error);
+                    break;
+                case 401:
+                case 403:
+                    buddyException = new BuddyUnauthorizedException (serviceResult.Error, serviceResult.Message, serviceResult.ErrorNumber);
+                    break;
+                default:
+                    buddyException = new BuddySDK.BuddyServiceException (serviceResult.Error, serviceResult.Message, serviceResult.ErrorNumber);
+                    break;
                 }
+                TaskCompletionSource<bool> uiPromise = new TaskCompletionSource<bool> ();
+                PlatformAccess.Current.InvokeOnUiThread (() => {
 
-                var service = await Service();
-                var bcrTask = service.CallMethodAsync<T>(verb, path, dictionary);
-
-                var bcr = bcrTask.Result;
-
-                var result = new BuddyResult<T> ();
-                result.RequestID = bcr.RequestID;
-
-                if (bcr.Error != null) {
-                    BuddyServiceException buddyException = null;
-
-                    switch (bcr.StatusCode) {
-                        case 0: 
-                            buddyException = new BuddyNoInternetException (bcr.Error);
-                            break;
-                        case 401:
-                        case 403:
-                            buddyException = new BuddyUnauthorizedException (bcr.Error, bcr.Message, bcr.ErrorNumber);
-                            break;
-                        default:
-                            buddyException = new BuddySDK.BuddyServiceException (bcr.Error, bcr.Message, bcr.ErrorNumber);
-                            break;
+                    var r = false;
+                    if (OnServiceException (this, buddyException)) {
+                        r = true;
                     }
-
-                    var tsc = new TaskCompletionSource<bool>();
-
-                   
-                    PlatformAccess.Current.InvokeOnUiThread(() => {
-
-                        var r = false;
-                        if (OnServiceException(this, buddyException)) {
-                            r = true;
-                        }
-                        tsc.TrySetResult(r);
-                    });
-
-                    if (tsc.Task.Result && allowThrow) {
-                        throw buddyException;
-                    }
-
-                    buddyException.StatusCode = bcr.StatusCode;
-                    result.Error = buddyException;
-
-                } else {
-                    result.Value = bcr.Result;
+                    uiPromise.TrySetResult (r);
+                });
+                if (await uiPromise.Task && allowThrow) {
+                    throw buddyException;
                 }
-                return result;
-            });
-
+                buddyException.StatusCode = serviceResult.StatusCode;
+                result.Error = buddyException;
+            } else {
+                result.Value = serviceResult.Result;
+            }
+            return result;
         }
 
+        internal IDictionary<string,object> AddLocationToParameters (object parameters){
 
-        internal Task<BuddyResult<T2>> CallServiceMethodHelper<T1, T2>(
-            string verb, 
-            string path, 
-            object parameters = null, 
+            var dictionary = BuddyServiceClientBase.ParametersToDictionary(parameters);
+            var loc = PlatformAccess.Current.LastLocation;
+            if (!dictionary.ContainsKey("location") && loc != null) {
+                dictionary["location"] = loc.ToString();
+            }
+            return dictionary;
+        }
+   
+
+
+        internal Task<BuddyResult<T2>> ResultConversionHelper<T1, T2>(
+            Task<BuddyResult<T1>> result,
             Func<T1, T2> map = null, 
             Action<BuddyResult<T1>, BuddyResult<T2>> completed = null) {
 
@@ -570,9 +556,9 @@ namespace BuddySDK
             Task<BuddyResult<T2>> task;
 
             if (typeof(T1) == typeof(T2)) {
-                task = CallServiceMethod<T2>(verb, path, parameters);
+                task = result as Task<BuddyResult<T2>>;
             } else {
-                task = CallServiceMethod<T1>(verb, path, parameters).ContinueWith<BuddyResult<T2>>(r1 =>
+                task = result.ContinueWith<BuddyResult<T2>>(r1 =>
                 {
                     r1Result = r1.Result;
 
@@ -589,7 +575,6 @@ namespace BuddySDK
             }
 
             var tcs = new TaskCompletionSource<BuddyResult<T2>>();
-
             task.ContinueWith(r2 =>
                 {
                     if (completed == null)
@@ -601,7 +586,6 @@ namespace BuddySDK
                         PlatformAccess.Current.InvokeOnUiThread(() => { completed(r1Result, r2.Result); tcs.SetResult(r2.Result); });
                     }
                 });
-
             return tcs.Task;
         }
      
@@ -635,7 +619,7 @@ namespace BuddySDK
             }
         }
 
-        internal async Task<BuddyServiceClientBase> Service()
+        protected virtual async Task<IRemoteMethodProvider> Service()
         {
             using (await new AsyncLock().LockAsync())
             {
@@ -684,7 +668,7 @@ namespace BuddySDK
 
 
         private async Task CheckConnectivity(TimeSpan waitTime) {
-            var r = await CallServiceMethod<string>("GET", "/service/ping");
+            var r = await Get<string>( "/service/ping",null);
 
             if (r != null && r.IsSuccess)
             {
@@ -909,10 +893,10 @@ namespace BuddySDK
 
         private async System.Threading.Tasks.Task<BuddyResult<T>> LoginUserCoreAsync<T>(string path, object parameters, Func<IDictionary<string, object>, T> createUser) where T : AuthenticatedUser
         {
-            return await CallServiceMethodHelper<IDictionary<string, object>, T>(
-                "POST",
-                path,
-                parameters,
+            return await  ResultConversionHelper <IDictionary<string, object>, T>(
+                Post<IDictionary<string,object>>(
+                    path,
+                    parameters),
                 map: d => createUser (d),
                 completed: (r1, r2) => {
 
@@ -930,13 +914,13 @@ namespace BuddySDK
 
             IDictionary<string,object> dresult = null;
 
-            var r = await CallServiceMethodHelper<IDictionary<string,object>, bool>(
-                "POST",
-                "/users/me/logout",
+            var r = await ResultConversionHelper<IDictionary<string,object>, bool>(
+                Post<IDictionary<string,object>>(
+                    "/users/me/logout",
+                    null),
                 map: (d) => {
                     dresult = d;
                     return d != null;
-
                 });
 
             if (r.IsSuccess) {
@@ -965,8 +949,7 @@ namespace BuddySDK
         }
 
         public Task<BuddyResult<bool>> RequestPasswordResetAsync(string userName, string subject, string body) {
-            return this.CallServiceMethod<bool> (
-                "POST",
+            return Post<bool> (
                 "/users/password",
                 new {
                     userName = userName,
@@ -977,8 +960,7 @@ namespace BuddySDK
 
 
         public Task<BuddyResult<bool>> ResetPasswordAsync(string userName, string resetCode, string newPassword) {
-            return this.CallServiceMethod<bool> (
-                "PATCH",
+            return Patch<bool> (
                 "/users/password",
                 new {
                     userName = userName,
@@ -1129,12 +1111,12 @@ namespace BuddySDK
                 timeoutInSeconds = (int)timeout.Value.TotalSeconds;
             }
 
-            return CallServiceMethod<MetricsResult>("POST", String.Format("/metrics/events/{0}", Uri.EscapeDataString(key)), new
-            {
-                value = value,
-                timeoutInSeconds = timeoutInSeconds,
-                    timeStamp = timeStamp
-            }).WrapResult<MetricsResult, string>((r1) => r1.Value != null ? r1.Value.id : null);
+            return Post<MetricsResult>(String.Format("/metrics/events/{0}", Uri.EscapeDataString(key)), new
+                {
+                    value = value,
+                    timeoutInSeconds = timeoutInSeconds,
+                        timeStamp = timeStamp
+                }).WrapResult<MetricsResult, string>((r1) => r1.Value != null ? r1.Value.id : null);
         }
 
         private class CompleteMetricResult
@@ -1144,21 +1126,21 @@ namespace BuddySDK
 
         public Task<BuddyResult<TimeSpan?>> RecordTimedMetricEndAsync(string timedMetricId)
         {
-            
-             var r = CallServiceMethod<CompleteMetricResult>("DELETE", String.Format("/metrics/events/{0}", Uri.EscapeDataString(timedMetricId)));
-             return r.WrapResult<CompleteMetricResult, TimeSpan?>((r1) => {
 
-                     var cmr = r1.Value;
+            var r = Delete<CompleteMetricResult>(String.Format("/metrics/events/{0}", Uri.EscapeDataString(timedMetricId)),null);
+            return r.WrapResult<CompleteMetricResult, TimeSpan?>((r1) => {
 
-                    TimeSpan? elapsedTime = null;
+                var cmr = r1.Value;
 
-                    if (cmr.elaspedTimeInMs != null) {
-                        elapsedTime = TimeSpan.FromMilliseconds(cmr.elaspedTimeInMs.Value);
-                    }
+                TimeSpan? elapsedTime = null;
 
-                    return elapsedTime;
+                if (cmr.elaspedTimeInMs != null) {
+                    elapsedTime = TimeSpan.FromMilliseconds(cmr.elaspedTimeInMs.Value);
+                }
 
-                });
+                return elapsedTime;
+
+            });
                 
            
         }
@@ -1167,19 +1149,18 @@ namespace BuddySDK
         {
 
            
-                try {
-                    return CallServiceMethod<string>(
-                        "POST", 
-                        "/devices/current/crashreports", 
-                            new {
-                                stackTrace = ex.ToString(),
-                                message = message
-                        }, allowThrow:false).WrapResult<string, bool>((r1) => r1.IsSuccess);
-                }
-                catch {
+            try {
+                return Post<string>(
+                    "/devices/current/crashreports", 
+                        new {
+                            stackTrace = ex.ToString(),
+                            message = message
+                    }, allowThrow:false).WrapResult<string, bool>((r1) => r1.IsSuccess);
+            }
+            catch {
 
-                }
-                return Task.FromResult(new BuddyResult<bool>{Value=false});
+            }
+            return Task.FromResult(new BuddyResult<bool>{Value=false});
             
         }
 
@@ -1192,8 +1173,7 @@ namespace BuddySDK
             string payload = null,
             IDictionary<string, object> osCustomData = null)
         {
-            var result = this.CallServiceMethod<Notification>(
-                          "POST",
+            var result = Post<Notification>(
                 "/notifications",
                           new
                           {
@@ -1236,7 +1216,53 @@ namespace BuddySDK
 
             PlatformAccess.Current.SetPushToken (token);
         }
+
+        #region REST
+
+        //TODO Much awesome refactoring and testing
+        public async Task<BuddyResult<T>> Get<T>(string path, object parameters, bool allowThrow = false){
+            return await HandleServiceResult(  await await Service ()
+                .ContinueWith (async s => 
+                    await s.Result.CallMethodAsync<T> (GetVerb, path, AddLocationToParameters(parameters))),allowThrow).ConfigureAwait(false);
+        }
+
+        public async Task<BuddyResult<T>> Post<T>(string path, object parameters, bool allowThrow = false){
+            return await HandleServiceResult ( await await Service ()
+                .ContinueWith ( async s =>  
+                    await s.Result.CallMethodAsync<T> (PostVerb, path, AddLocationToParameters(parameters))),allowThrow).ConfigureAwait(false);
+        }
+
+        public async Task<BuddyResult<T>> Patch<T>(string path, object parameters, bool allowThrow = false){
+            return await HandleServiceResult( await await Service ()
+                .ContinueWith (async s => 
+                    await s.Result.CallMethodAsync<T> (PatchVerb, path, AddLocationToParameters(parameters))),allowThrow).ConfigureAwait (false);
+        }
+
+        public async Task<BuddyResult<T>> Put<T>(string path, object parameters, bool allowThrow = false){
+            return await HandleServiceResult( await await Service ()
+                .ContinueWith (async s => 
+                    await s.Result.CallMethodAsync<T> (PutVerb, path, AddLocationToParameters(parameters))),allowThrow).ConfigureAwait (false);
+        }
+
+        public async Task<BuddyResult<T>> Delete<T>(string path, object parameters, bool allowThrow = false){
+            return await HandleServiceResult( await await Service ()
+                .ContinueWith(async s => 
+                    await s.Result.CallMethodAsync<T>(DeleteVerb, path, AddLocationToParameters(parameters))),allowThrow).ConfigureAwait(false);
+        }
+
+        [Obsolete("Consumers should use REST methods where available")]
+        public async Task<BuddyResult<T>> CallServiceMethod<T>(string verb, string path, object parameters = null, bool allowThrow = false) {
+            return await HandleServiceResult (await await Service () 
+                .ContinueWith (async s =>
+                    await s.Result.CallMethodAsync<T> (verb, path, AddLocationToParameters (parameters))), allowThrow).ConfigureAwait (false);
+        }
+
+        #endregion
     }
+
+   
+
+
 
     public enum AuthenticationLevel {
         None = 0,

@@ -1,4 +1,4 @@
-﻿﻿using BuddySDK;
+﻿using BuddySDK;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -59,7 +59,7 @@ namespace BuddySDK.BuddyServiceClient
     }
   
 
-    public abstract partial class BuddyServiceClientBase
+    public abstract partial class BuddyServiceClientBase : IRemoteMethodProvider
     {
         public BuddySDK.BuddyClient Client
         {
@@ -140,12 +140,12 @@ namespace BuddySDK.BuddyServiceClient
             PlatformAccess.Current.InvokeOnUiThread (callback);
         }     
 
-        public System.Threading.Tasks.Task<BuddyCallResult<T1>> CallMethodAsync<T1>(string verb, string path, object parameters = null)
+        public System.Threading.Tasks.Task<BuddyCallResult<T>> CallMethodAsync<T>(string verb, string path, object parameters = null)
         {   
-            var tcs = new TaskCompletionSource<BuddyCallResult<T1>>();
+            var tcs = new TaskCompletionSource<BuddyCallResult<T>>();
 
 
-            CallMethodAsync<T1>(verb, path, parameters, (bcr) =>
+            CallMethodAsync<T>(verb, path, parameters, (bcr) =>
             {
 
                     tcs.TrySetResult(bcr);
