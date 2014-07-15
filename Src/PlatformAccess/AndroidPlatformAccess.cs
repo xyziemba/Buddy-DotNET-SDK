@@ -77,6 +77,10 @@ namespace BuddySDK
 			get { return ((int) Build.VERSION.SdkInt).ToString(); }
 		}
 
+        public override bool SupportsFlags(BuddyClientFlags flags) {
+            return (flags & (BuddyClientFlags.AutoCrashReport)) == flags;
+        }
+
         public override bool IsEmulator {
 			get {
 				// The other recommended method is "goldfish".Equals (Android.OS.Build.Hardware.ToLowerInvariant());
@@ -192,21 +196,7 @@ namespace BuddySDK
 			{
 				a ();
 			}
-        }
-
-        protected override void TrackLocationCore (bool track)
-        {
-            // currently not implemneted because of how Android location works.
-            // The location service is attached to the Activity Context, it doesn't look
-            // like we can access it -- need to work out a plan here.
-        }
-
-       
+        }       
     }
-
 }
-
-
-  
-
 #endif

@@ -17,11 +17,10 @@ using System.Runtime.InteropServices;
 
 using Windows.Devices.Enumeration.Pnp;
 using Windows.ApplicationModel.Core;
-using Windows.UI.Core;
+using Windows.UI.Core; 
 
 namespace BuddySDK
 {
-
     public partial class BuddyClient
     {
 
@@ -137,7 +136,7 @@ namespace BuddySDK
 
         public override bool SupportsFlags(BuddyClientFlags flags)
         {
-            return true;
+            return (flags & (BuddyClientFlags.AutoCrashReport)) == flags;
         }
 
         private void EnsureSettings(string key)
@@ -185,7 +184,7 @@ namespace BuddySDK
 
         protected override void InvokeOnUiThreadCore(Action a)
         {
-            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, ()=>a());
+            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => a());
         }
     }
 
@@ -468,9 +467,9 @@ namespace BuddySDK
         }
     }
 }
-#else 
+#else
 
-    using System.Reflection;
+using System.Reflection;
 
 internal static class DotNetDeltas
 {

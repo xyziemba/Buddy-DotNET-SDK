@@ -405,6 +405,7 @@ namespace BuddySDK.BuddyServiceClient
             {
                 wr.Headers ["Authorization"] = String.Format ("Buddy {0}", token);
             }
+
             wr.Method = verb;
 
             Action getResponse = () =>
