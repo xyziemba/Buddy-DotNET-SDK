@@ -132,7 +132,7 @@ namespace BuddySDK
 
         public Task<BuddyResult<bool>> DeleteMetadataAsync(string key, BuddyPermissions? visibility = null)
         {
-            var callParams = new Dictionary<string, object>();
+            IDictionary<string, object> callParams = new Dictionary<string, object>();
             if (visibility != null)
             {
                 callParams["visibility"] = visibility;
@@ -144,7 +144,8 @@ namespace BuddySDK
         }
 
         public Task<SearchResult<MetadataItem>> FindMetadataAsync(
-            string key = null, 
+            string key = null,
+            string value = null,
             string keyPrefix = null,
             BuddyGeoLocationRange locationRange = null,
             DateRange created = null,
@@ -157,6 +158,7 @@ namespace BuddySDK
                     {"locationRange", locationRange},
                     {"ownerID", ownerUserId},
                     {"key", key},
+                        {"value", value},
                     {"keyPrefix", keyPrefix}
                 };
 

@@ -843,8 +843,7 @@ namespace BuddySDK
                 var r = rt.Result;
 
                 return r.Convert(d => {
-
-                        var user = new AuthenticatedUser( (string)r.Value["ID"], (string)r.Value["accessToken"], this);
+                    var user = new AuthenticatedUser( (string)r.Value["id"], (string)r.Value["accessToken"], this);
                     this.User = user;
                     return user;
                 });
@@ -867,7 +866,7 @@ namespace BuddySDK
             {
                 Username = username,
                 Password = password
-                }, (result) => new AuthenticatedUser((string)result["ID"], (string)result["accessToken"], this));
+                }, (result) => new AuthenticatedUser((string)result["id"], (string)result["accessToken"], this));
         }
 
         public System.Threading.Tasks.Task<BuddyResult<SocialAuthenticatedUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
@@ -1019,6 +1018,20 @@ namespace BuddySDK
                     _messages = new MessageCollection(this);
                 }
                 return _messages;
+            }
+        }
+
+        private BlobCollection _blobs;
+
+        public BlobCollection Blobs
+        {
+            get
+            {
+                if (_blobs == null)
+                {
+                    _blobs = new BlobCollection(this);
+                }
+                return _blobs;
             }
         }
 
