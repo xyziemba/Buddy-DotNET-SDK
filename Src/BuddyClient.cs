@@ -1215,7 +1215,7 @@ namespace BuddySDK
                     await s.Result.CallMethodAsync<T>(DeleteVerb, path, AddLocationToParameters(parameters))),allowThrow).ConfigureAwait(false);
         }
 
-        [Obsolete("Consumers should use REST methods where available")]
+        [Obsolete("Consumers should use Get/Post/Put/Patch/Delete methods instead of direct access")]
         public async Task<BuddyResult<T>> CallServiceMethod<T>(string verb, string path, object parameters = null, bool allowThrow = false) {
             return await HandleServiceResult (await await Service () 
                 .ContinueWith (async s =>
