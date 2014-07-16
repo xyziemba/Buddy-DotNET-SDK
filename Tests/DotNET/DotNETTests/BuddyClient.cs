@@ -20,7 +20,7 @@ namespace DotNetTests
             }
 
 
-            protected override Task<IRemoteMethodProvider> Service ()
+            protected override Task<IRemoteMethodProvider> GetService ()
             {
                 return Task.FromResult(_remoteMethodProvider);
             }

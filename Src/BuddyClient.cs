@@ -593,7 +593,7 @@ namespace BuddySDK
             }
         }
 
-        protected virtual async Task<IRemoteMethodProvider> Service()
+        protected virtual async Task<IRemoteMethodProvider> GetService()
         {
             using (await new AsyncLock().LockAsync())
             {
@@ -1201,7 +1201,7 @@ namespace BuddySDK
         //TODO Much awesome refactoring and testing
         private Task<BuddyResult<T>> GenericRestCall<T>(string verb, string path, object parameters, bool allowThrow, TaskCompletionSource<BuddyResult<T>> promise)
         {
-            Service()
+            GetService()
                 .ContinueWith(service =>
                      service.Result.CallMethodAsync<T>(PostVerb, path, AddLocationToParameters(parameters))
                         .ContinueWith(callResult => {
