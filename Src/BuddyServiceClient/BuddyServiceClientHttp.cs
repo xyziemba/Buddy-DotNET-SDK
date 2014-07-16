@@ -125,7 +125,7 @@ namespace BuddySDK.BuddyServiceClient
        
        
 
-        public override void CallMethodAsync<T>(string verb, string path, object parameters, Action<BuddyCallResult<T>> callback)
+        protected override void CallMethodAsync<T>(string verb, string path, object parameters, Action<BuddyCallResult<T>> callback)
         {
             DateTime start = DateTime.Now;
 
@@ -599,47 +599,4 @@ namespace BuddySDK.BuddyServiceClient
         }
        
      }
-
-
-  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-#if PUBLIC_SERIALIZATION
-        public
-#else
-     internal
-#endif
-   class JsonEnvelope<T> {
-
-            public int status
-            {
-                get;
-                set;
-            }
-            public string error {
-                get;
-                set;
-            }
-
-            public int? errorNumber {
-                get;
-                set;
-            }
-
-            public string message
-            {
-                get;
-                set;
-            }
-
-            public T result {
-                get;
-                set;
-            }
-
-            public string request_id {
-                get;
-                set;
-            }
-        }
-
-
 }

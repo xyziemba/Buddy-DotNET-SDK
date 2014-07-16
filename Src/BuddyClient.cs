@@ -791,7 +791,7 @@ namespace BuddySDK
         }
 
         // User auth.
-        public async System.Threading.Tasks.Task<BuddyResult<AuthenticatedUser>> CreateUserAsync(
+        public System.Threading.Tasks.Task<BuddyResult<AuthenticatedUser>> CreateUserAsync(
             string username, 
             string password, 
             string firstName = null, 
@@ -826,7 +826,7 @@ namespace BuddySDK
                     return user;
                 }));
 
-            return await userTask;
+            return userTask;
          
         }
 
@@ -843,7 +843,7 @@ namespace BuddySDK
             {
                 Username = username,
                 Password = password
-                }, (result) => new AuthenticatedUser((string)result["ID"], (string)result["accessToken"], this));
+                }, (result) => new AuthenticatedUser((string)result["id"], (string)result["accessToken"], this));
         }
 
         public System.Threading.Tasks.Task<BuddyResult<SocialAuthenticatedUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
@@ -993,6 +993,20 @@ namespace BuddySDK
                     _messages = new MessageCollection(this);
                 }
                 return _messages;
+            }
+        }
+
+        private BlobCollection _blobs;
+
+        public BlobCollection Blobs
+        {
+            get
+            {
+                if (_blobs == null)
+                {
+                    _blobs = new BlobCollection(this);
+                }
+                return _blobs;
             }
         }
 

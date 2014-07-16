@@ -184,7 +184,8 @@ namespace BuddySDK
 
         protected override void InvokeOnUiThreadCore(Action a)
         {
-            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => a());
+
+           CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => a());
         }
     }
 
