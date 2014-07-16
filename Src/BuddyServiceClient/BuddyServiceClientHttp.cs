@@ -405,6 +405,7 @@ namespace BuddySDK.BuddyServiceClient
             {
                 wr.Headers ["Authorization"] = String.Format ("Buddy {0}", token);
             }
+
             wr.Method = verb;
 
             Action getResponse = () =>
@@ -598,47 +599,4 @@ namespace BuddySDK.BuddyServiceClient
         }
        
      }
-
-
-  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-#if PUBLIC_SERIALIZATION
-        public
-#else
-     internal
-#endif
-   class JsonEnvelope<T> {
-
-            public int status
-            {
-                get;
-                set;
-            }
-            public string error {
-                get;
-                set;
-            }
-
-            public int? errorNumber {
-                get;
-                set;
-            }
-
-            public string message
-            {
-                get;
-                set;
-            }
-
-            public T result {
-                get;
-                set;
-            }
-
-            public string request_id {
-                get;
-                set;
-            }
-        }
-
-
 }

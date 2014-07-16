@@ -23,7 +23,6 @@ namespace BuddySDK
         public event EventHandler<ServiceExceptionEventArgs> ServiceException;
         public event EventHandler<ConnectivityLevelChangedArgs> ConnectivityLevelChanged;
         public event EventHandler<CurrentUserChangedEventArgs> CurrentUserChanged;
-        public event EventHandler LastLocationChanged;
         public event EventHandler AuthorizationLevelChanged;
         public event EventHandler AuthorizationNeedsUserLogin; 
 
@@ -204,41 +203,25 @@ namespace BuddySDK
             }
         }
 
+        private BuddyGeoLocation _lastLocation;
 
         /// <summary>
-        /// The last location value for this device.  Location tracking
-        /// must be enabled to use this property.
+        /// The last location value set for this device.
         /// </summary>
         /// <value>The last location.</value>
-        public BuddyGeoLocation LastLocation {
-            get {
-                if (!ShouldTrackLocation) {
-                    throw new InvalidOperationException ("Location tracking must be enabled.");
-                }
-                return PlatformAccess.Current.LastLocation;
+        public BuddyGeoLocation LastLocation
+        {
+            get
+            {
+                return _lastLocation;
+            }
+            
+            set
+            {
+                _lastLocation = value;
             }
         }
 
-
-        /// <summary>
-        /// Enables or disables tracking of device location.
-        /// </summary>
-        /// <value><c>true</c> if should track location; otherwise, <c>false</c>.</value>
-        public bool ShouldTrackLocation {
-            get {
-                return _flags.HasFlag(BuddyClientFlags.AutoTrackLocation);
-            }
-            set {
-                if (value != ShouldTrackLocation) {
-                    if (value) {
-                        _flags |= BuddyClientFlags.AutoTrackLocation;
-                    } else {
-                        _flags &= ~BuddyClientFlags.AutoTrackLocation;
-                    }
-                    PlatformAccess.Current.TrackLocation (value);
-                }
-            }
-        }
 
         private AppSettings _appSettings;
         private bool _userInitialized = false;
@@ -268,16 +251,6 @@ namespace BuddySDK
                 InitCrashReporting ();
             }
             _flags = flags;
-            if (ShouldTrackLocation) {
-                PlatformAccess.Current.TrackLocation (true);
-            }
-
-            PlatformAccess.Current.LocationUpdated += (sender, e) => {
-
-                if (LastLocationChanged != null) {
-                    LastLocationChanged(this,e);
-                }
-            };
 
 
             PlatformAccess.Current.SetPushToken(_appSettings.DevicePushToken);
@@ -502,7 +475,7 @@ namespace BuddySDK
             return Task.Run<BuddyResult<T>> (async () => {
 
                 var dictionary = BuddyServiceClientBase.ParametersToDictionary(parameters);
-                var loc = PlatformAccess.Current.LastLocation;
+                var loc = LastLocation;
                 if (!dictionary.ContainsKey("location") && loc != null) {
                     dictionary["location"] = loc.ToString();
                 }
@@ -870,8 +843,7 @@ namespace BuddySDK
                 var r = rt.Result;
 
                 return r.Convert(d => {
-
-                        var user = new AuthenticatedUser( (string)r.Value["ID"], (string)r.Value["accessToken"], this);
+                    var user = new AuthenticatedUser( (string)r.Value["id"], (string)r.Value["accessToken"], this);
                     this.User = user;
                     return user;
                 });
@@ -894,7 +866,7 @@ namespace BuddySDK
             {
                 Username = username,
                 Password = password
-                }, (result) => new AuthenticatedUser((string)result["ID"], (string)result["accessToken"], this));
+                }, (result) => new AuthenticatedUser((string)result["id"], (string)result["accessToken"], this));
         }
 
         public System.Threading.Tasks.Task<BuddyResult<SocialAuthenticatedUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
@@ -1046,6 +1018,20 @@ namespace BuddySDK
                     _messages = new MessageCollection(this);
                 }
                 return _messages;
+            }
+        }
+
+        private BlobCollection _blobs;
+
+        public BlobCollection Blobs
+        {
+            get
+            {
+                if (_blobs == null)
+                {
+                    _blobs = new BlobCollection(this);
+                }
+                return _blobs;
             }
         }
 

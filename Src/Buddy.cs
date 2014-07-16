@@ -11,10 +11,9 @@ namespace BuddySDK
     public enum BuddyClientFlags
     {
         None              =  0,
-        AutoTrackLocation =  0x00000001,
         AutoCrashReport =    0x00000002,
         AllowReinitialize =  0x00000004,
-        Default = AutoCrashReport | AutoTrackLocation,
+        Default = AutoCrashReport,
     }
 
     public static partial class Buddy
@@ -95,16 +94,6 @@ namespace BuddySDK
                 Instance.CurrentUserChanged -= value;
             }
         }
-
-        public static event EventHandler LastLocationChanged {
-            add {
-                Instance.LastLocationChanged += value;
-            }
-            remove {
-                Instance.LastLocationChanged -= value;
-            }
-        }
-
 
         public static event EventHandler<ServiceExceptionEventArgs> ServiceException {
             add {
@@ -267,12 +256,18 @@ namespace BuddySDK
                 return Instance.UserLists;
             }
         }
-      
 
-
+        public static BuddyGeoLocation LastLocation
+        {
+            get
+            {
+                return Instance.LastLocation;
+            }
+            
+            set
+            {
+                Instance.LastLocation = value;
+            }
+        }
     }
-
-   
-
-   
 }

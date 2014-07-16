@@ -61,11 +61,13 @@ namespace BuddySDK
 
         }
 
-        public Task<BuddyResult<IEnumerable<string>>> GetIdentitiesAsync(string identityProviderName)
+        public Task<BuddyResult<IEnumerable<string>>> GetIdentitiesAsync(string identityProviderName = null)
         {
             return Task.Run<BuddyResult<IEnumerable<string>>>(() =>
             {
-                var r = Client.CallServiceMethod<IEnumerable<Newtonsoft.Json.Linq.JObject>>("GET", "/users/me/identities/" + Uri.EscapeDataString(identityProviderName));
+                var encodedIdentityProviderName = string.IsNullOrEmpty(identityProviderName) ? "" : Uri.EscapeDataString(identityProviderName);
+
+                var r = Client.CallServiceMethod<IEnumerable<Newtonsoft.Json.Linq.JObject>>("GET", "/users/me/identities/" + encodedIdentityProviderName);
 
                 return r.Result.Convert<IEnumerable<string>>(jObjects => jObjects.Select(jObject => jObject.Value<string>("identityProviderID")));
             });
