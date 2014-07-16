@@ -16,10 +16,10 @@ namespace BuddySDK
 {
 	public interface IRestProvider
 	{
-        Task<BuddyResult<T>> Get<T>(string path, object parameters, bool allowThrow = false);
-        Task<BuddyResult<T>> Post<T>(string path, object parameters, bool allowThrow = false);
-        Task<BuddyResult<T>> Put<T>(string path, object parameters, bool allowThrow = false);
-        Task<BuddyResult<T>> Patch<T>(string path, object parameters, bool allowThrow = false);
-        Task<BuddyResult<T>> Delete<T>(string path, object parameters, bool allowThrow = false);
+        Task<BuddyResult<T>> Get<T>(string path, object parameters = null , bool allowThrow = false);
+        Task<BuddyResult<T>> Post<T>(string path, object parameters = null, bool allowThrow = false);
+        Task<BuddyResult<T>> Put<T>(string path, object parameters = null, bool allowThrow = false);
+        Task<BuddyResult<T>> Patch<T>(string path, object parameters = null, bool allowThrow = false);
+        Task<BuddyResult<T>> Delete<T>(string path, object parameters = null, bool allowThrow = false);
  	}
 }

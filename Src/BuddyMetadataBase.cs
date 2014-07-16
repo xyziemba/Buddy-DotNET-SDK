@@ -70,7 +70,7 @@ namespace BuddySDK
                 callParams["visibility"] = visibility;
             }
 
-            return Client.CallServiceMethod<bool>("PUT", GetMetadataPath(key), callParams);
+            return Client.Put<bool>(GetMetadataPath(key), callParams);
         }
 
         private Task<BuddyResult<bool>> SetMetadataCore(IDictionary<string, object> values, BuddyPermissions? visibility = null)
@@ -83,7 +83,7 @@ namespace BuddySDK
                 callParams["visibility"] = visibility;
             }
 
-            return Client.CallServiceMethod<bool>("PUT", GetMetadataPath(), callParams);
+            return Client.Put<bool>(GetMetadataPath(), callParams);
         }
 
         public Task<BuddyResult<bool>> SetMetadataAsync(string key, object value, BuddyPermissions? visibilty = null)
@@ -113,7 +113,7 @@ namespace BuddySDK
             {
                 callParams["visibility"] = visibility;
             }
-            return Client.CallServiceMethod<MetadataItem>("GET", GetMetadataPath(key), callParams);
+            return Client.Get<MetadataItem>(GetMetadataPath(key), callParams);
         }
 
         public Task<BuddyResult<MetadataItem>> IncrementMetadataAsync(string key, double? delta = null, BuddyPermissions? visibility = null)
@@ -126,7 +126,7 @@ namespace BuddySDK
                 callParams["visibility"] = visibility;
             }
 
-            var r = Client.CallServiceMethod<MetadataItem>("POST", path,callParams);
+            var r = Client.Post<MetadataItem>(path,callParams);
             return r;
         }
 
@@ -138,7 +138,7 @@ namespace BuddySDK
                 callParams["visibility"] = visibility;
             }
 
-            var t = Client.CallServiceMethod<bool>("DELETE", GetMetadataPath(key), callParams);
+            var t = Client.Delete<bool>(GetMetadataPath(key), callParams);
 
             return t;
         }
@@ -167,7 +167,7 @@ namespace BuddySDK
 
             BuddyCollectionBase<BuddyBase>.InitializePaging(obj, pagingToken, pageSize);
 
-            return Client.CallServiceMethod<SearchResult<MetadataItem>>("GET",
+            return Client.Get<SearchResult<MetadataItem>>(
                 GetMetadataPath(), obj
             ).WrapTask<BuddyResult<SearchResult<MetadataItem>>, SearchResult<MetadataItem>>((r1) => r1.Result.Value);
         }

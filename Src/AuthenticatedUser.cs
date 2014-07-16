@@ -42,34 +42,31 @@ namespace BuddySDK
 
         public Task<BuddyResult<bool>> AddIdentityAsync(string identityProviderName, string identityID)
         {
-            return AddRemoveIdentityCoreAsync("POST", "/users/me/identities/" + Uri.EscapeDataString(identityProviderName), new
+            return AddRemoveIdentityCoreAsync(() => Client.Post<string>("/users/me/identities/" + Uri.EscapeDataString(identityProviderName), new
             {
                 IdentityID = identityID
-            });
+            }));
         }
 
         public Task<BuddyResult<bool>> RemoveIdentityAsync(string identityProviderName, string identityID)
         {
-            return AddRemoveIdentityCoreAsync("DELETE", "/users/me/identities/" + Uri.EscapeDataString(identityProviderName), new { IdentityID = identityID });
+            return AddRemoveIdentityCoreAsync(() => Client.Delete<string>("/users/me/identities/" + Uri.EscapeDataString(identityProviderName), new { IdentityID = identityID }));
         }
 
-        private Task<BuddyResult<bool>> AddRemoveIdentityCoreAsync(string verb, string path, object parameters)
+        private Task<BuddyResult<bool>> AddRemoveIdentityCoreAsync(Func<Task<BuddyResult<string>>> serviceMethod)
         {
-            var t = Client.CallServiceMethod<string>(verb, path, parameters);
-            return t.WrapResult<string, bool>((r1) => r1.IsSuccess);
-           
-
+            return serviceMethod().WrapResult<string, bool>((r1) => r1.IsSuccess);
         }
 
         public Task<BuddyResult<IEnumerable<string>>> GetIdentitiesAsync(string identityProviderName = null)
         {
-            return Task.Run<BuddyResult<IEnumerable<string>>>(() =>
+            return Task.Run<BuddyResult<IEnumerable<string>>>(async () =>
             {
                 var encodedIdentityProviderName = string.IsNullOrEmpty(identityProviderName) ? "" : Uri.EscapeDataString(identityProviderName);
 
-                var r = Client.CallServiceMethod<IEnumerable<Newtonsoft.Json.Linq.JObject>>("GET", "/users/me/identities/" + encodedIdentityProviderName);
+                var r = await Client.Get<IEnumerable<Newtonsoft.Json.Linq.JObject>>("/users/me/identities/" + encodedIdentityProviderName);
 
-                return r.Result.Convert<IEnumerable<string>>(jObjects => jObjects.Select(jObject => jObject.Value<string>("identityProviderID")));
+                return r.Convert<IEnumerable<string>>(jObjects => jObjects.Select(jObject => jObject.Value<string>("identityProviderID")));
             });
         }
     }

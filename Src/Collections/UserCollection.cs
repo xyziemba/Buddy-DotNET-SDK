@@ -37,10 +37,8 @@ namespace BuddySDK
 
         public Task<BuddyResult<User>> FindByIdentityAsync(string identityProviderName, string identityId)
         {
-            
-                var url = string.Format("{0}/identities/{1}/{2}", Path, Uri.EscapeDataString(identityProviderName), Uri.EscapeDataString(identityId));
-                return Client.CallServiceMethod<string>("GET", url).WrapResult<string, User>(r => new User(r.Value, Client));
-           
+            var url = string.Format("{0}/identities/{1}/{2}", Path, Uri.EscapeDataString(identityProviderName), Uri.EscapeDataString(identityId));
+            return Client.Get<string>(url).WrapResult<string, User>(r => new User(r.Value, Client));
         }
     }
 }

@@ -71,8 +71,8 @@ namespace BuddySDK
 
                     InitializePaging(obj, pagingToken, pageSize);
 
-                    return Client.CallServiceMethod<SearchResult<IDictionary<string, object>>>("GET",
-                                Path, obj).WrapTask<BuddyResult<SearchResult<IDictionary<string,object>>>, SearchResult<T>>(r1 =>
+                    return Client.Get<SearchResult<IDictionary<string, object>>>(Path, obj)
+                        .WrapTask<BuddyResult<SearchResult<IDictionary<string,object>>>, SearchResult<T>>(r1 =>
                             {
                                 var r = r1.Result;
                                 var sr = new SearchResult<T>();

@@ -188,7 +188,7 @@ namespace BuddySDK
             EnsureValid();
 
            
-            var r = Client.CallServiceMethod<bool>("DELETE", GetObjectPath());
+            var r = Client.Delete<bool>(GetObjectPath());
 
 
             r.ContinueWith((rt) => {
@@ -422,7 +422,7 @@ namespace BuddySDK
                 
                 IDictionary<string, object> updateDict = null;
 
-                var task = isNew ?  Client.CallServiceMethod<IDictionary<string, object>>("POST", Path, d) : Client.CallServiceMethod<IDictionary<string, object>>("PATCH", GetObjectPath(), d);
+                var task = isNew ?  Client.Post<IDictionary<string, object>>( Path, d) : Client.Patch<IDictionary<string, object>>(GetObjectPath(), d);
 
                 task.ContinueWith((t1) =>
                 {
@@ -485,8 +485,6 @@ namespace BuddySDK
 
         protected Task<BuddyResult<Stream>> GetFileCoreAsync(string url, object parameters) {
 
-
-
             return Task.Run<BuddyResult<Stream>>(async () =>
                     {
 
@@ -496,13 +494,7 @@ namespace BuddySDK
                         var parameterDictionary = BuddyServiceClient.BuddyServiceClientBase.ParametersToDictionary(parameters);
                         parameterDictionary["accessToken"] = await Client.GetAccessToken();
 
-                        var r = Client.CallServiceMethod<HttpWebResponse>(
-                                "GET", 
-                                url, 
-                            parameterDictionary
-                        );
-
-                        var result = r.Result;
+                        var result = await Client.Get<HttpWebResponse>(url, parameterDictionary);
 
                         if (result.IsSuccess && result.Value != null) {
                             var response = result.Convert(hwr => hwr.GetResponseStream());
@@ -515,8 +507,6 @@ namespace BuddySDK
                         
                     
                     });
-               
-
         }
 
         #region IPropertyNotifyChangedStuff

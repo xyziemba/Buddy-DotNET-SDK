@@ -37,6 +37,7 @@ namespace BuddySDK
             }
         }
 
+        [Obsolete("Call Buddy.Instance.[Get/Post/Put/Patch/Delete] instead")]
         public static Task<BuddyResult<IDictionary<string, object>>> CallServiceMethod(string verb, string path, object parameters = null)
         {
             return Instance.CallServiceMethod<IDictionary<string, object>>(verb, path, parameters);

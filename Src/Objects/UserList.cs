@@ -60,18 +60,18 @@ namespace BuddySDK
        
         public Task<BuddyResult<bool>> AddUserAsync(User user)
         {
-            return Client.CallServiceMethod<bool>("PUT", GetObjectPath() + "/items/" + user.ID);
+            return Client.Put<bool>(GetObjectPath() + "/items/" + user.ID);
         }
 
         public Task<BuddyResult<bool>> RemoveUserAsync(User user)
         {
-            return Client.CallServiceMethod<bool>("DELETE", GetObjectPath() + "/items/" + user.ID);
+            return Client.Delete<bool>(GetObjectPath() + "/items/" + user.ID);
         }
 
         public Task<SearchResult<UserListItem>> GetUsersAsync(string pagingToken = null) {
 		
             var path = GetObjectPath() + "/items";
-            return Client.CallServiceMethod<SearchResult<IDictionary<string, object>>>("GET", path, new
+            return Client.Get<SearchResult<IDictionary<string, object>>>(path, new
             {
                 token = pagingToken
             }).WrapTask<BuddyResult<SearchResult<IDictionary<string,object>>>,SearchResult<UserListItem>>(t2 => {

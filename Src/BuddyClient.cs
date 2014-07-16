@@ -281,10 +281,10 @@ namespace BuddySDK
 
             };
 
-            PlatformAccess.Current.NotificationReceived += async (s, na) => {
+            PlatformAccess.Current.NotificationReceived += (s, na) => {
                 string id = na.ID;
                 if (_appSettings.DeviceToken != null) {
-                    await Post<bool>(
+                    Post<bool>(
                         "/notifications/received/" + id,
                         null);
                 }
@@ -856,9 +856,9 @@ namespace BuddySDK
                 }, (result) => new SocialAuthenticatedUser((string)result["ID"], (string)result["accessToken"], (bool)result["isNew"], this));
         }
 
-        private async System.Threading.Tasks.Task<BuddyResult<T>> LoginUserCoreAsync<T>(string path, object parameters, Func<IDictionary<string, object>, T> createUser) where T : AuthenticatedUser
+        private System.Threading.Tasks.Task<BuddyResult<T>> LoginUserCoreAsync<T>(string path, object parameters, Func<IDictionary<string, object>, T> createUser) where T : AuthenticatedUser
         {
-            return await  ResultConversionHelper <IDictionary<string, object>, T>(
+            return  ResultConversionHelper <IDictionary<string, object>, T>(
                 Post<IDictionary<string,object>>(
                     path,
                     parameters),
@@ -1185,41 +1185,52 @@ namespace BuddySDK
         #region REST
 
         //TODO Much awesome refactoring and testing
-        public async Task<BuddyResult<T>> Get<T>(string path, object parameters, bool allowThrow = false){
-            return await HandleServiceResult(  await await Service ()
-                .ContinueWith (async s => 
-                    await s.Result.CallMethodAsync<T> (GetVerb, path, AddLocationToParameters(parameters))),allowThrow).ConfigureAwait(false);
+        private Task<BuddyResult<T>> GenericRestCall<T>(string verb, string path, object parameters, bool allowThrow, TaskCompletionSource<BuddyResult<T>> promise)
+        {
+            Service()
+                .ContinueWith(service =>
+                     service.Result.CallMethodAsync<T>(PostVerb, path, AddLocationToParameters(parameters))
+                        .ContinueWith(callResult => {
+                            HandleServiceResult(callResult.Result, allowThrow)
+                                 .ContinueWith(procResult =>
+                                 {
+                                     if (procResult.IsFaulted)
+                                     {
+                                         promise.SetException(procResult.Exception);
+                                     }
+                                     else
+                                     {
+                                         promise.SetResult(procResult.Result);
+                                     }
+                                 });
+                         })
+                ).ConfigureAwait(false);
+            return promise.Task;
         }
 
-        public async Task<BuddyResult<T>> Post<T>(string path, object parameters, bool allowThrow = false){
-            return await HandleServiceResult ( await await Service ()
-                .ContinueWith ( async s =>  
-                    await s.Result.CallMethodAsync<T> (PostVerb, path, AddLocationToParameters(parameters))),allowThrow).ConfigureAwait(false);
+        public  Task<BuddyResult<T>> Get<T>(string path, object parameters = null, bool allowThrow = false){
+            return GenericRestCall(GetVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
         }
 
-        public async Task<BuddyResult<T>> Patch<T>(string path, object parameters, bool allowThrow = false){
-            return await HandleServiceResult( await await Service ()
-                .ContinueWith (async s => 
-                    await s.Result.CallMethodAsync<T> (PatchVerb, path, AddLocationToParameters(parameters))),allowThrow).ConfigureAwait (false);
+        public Task<BuddyResult<T>> Post<T>(string path, object parameters = null, bool allowThrow = false){
+            return GenericRestCall(PostVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
         }
 
-        public async Task<BuddyResult<T>> Put<T>(string path, object parameters, bool allowThrow = false){
-            return await HandleServiceResult( await await Service ()
-                .ContinueWith (async s => 
-                    await s.Result.CallMethodAsync<T> (PutVerb, path, AddLocationToParameters(parameters))),allowThrow).ConfigureAwait (false);
+        public Task<BuddyResult<T>> Patch<T>(string path, object parameters = null, bool allowThrow = false){
+            return GenericRestCall(PatchVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
         }
 
-        public async Task<BuddyResult<T>> Delete<T>(string path, object parameters, bool allowThrow = false){
-            return await HandleServiceResult( await await Service ()
-                .ContinueWith(async s => 
-                    await s.Result.CallMethodAsync<T>(DeleteVerb, path, AddLocationToParameters(parameters))),allowThrow).ConfigureAwait(false);
+        public Task<BuddyResult<T>> Put<T>(string path, object parameters = null, bool allowThrow = false){
+            return GenericRestCall(PutVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
+        }
+
+        public Task<BuddyResult<T>> Delete<T>(string path, object parameters = null, bool allowThrow = false){
+            return GenericRestCall(DeleteVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
         }
 
         [Obsolete("Consumers should use Get/Post/Put/Patch/Delete methods instead of direct access")]
-        public async Task<BuddyResult<T>> CallServiceMethod<T>(string verb, string path, object parameters = null, bool allowThrow = false) {
-            return await HandleServiceResult (await await Service () 
-                .ContinueWith (async s =>
-                    await s.Result.CallMethodAsync<T> (verb, path, AddLocationToParameters (parameters))), allowThrow).ConfigureAwait (false);
+        public Task<BuddyResult<T>> CallServiceMethod<T>(string verb, string path, object parameters = null, bool allowThrow = false) {
+            return GenericRestCall(verb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
         }
 
         #endregion

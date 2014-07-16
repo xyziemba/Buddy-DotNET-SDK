@@ -9,6 +9,5 @@ namespace BuddySDK.BuddyServiceClient
 	public interface IRemoteMethodProvider
 	{
         Task<BuddyCallResult<T>> CallMethodAsync<T> (string verb, string path, object parameters);
-        void CallMethodAsync<T> (string verb, string path, object parameters, Action<BuddyCallResult<T>> callback);
 	}
 }
