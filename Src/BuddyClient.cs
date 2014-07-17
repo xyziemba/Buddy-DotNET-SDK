@@ -843,12 +843,7 @@ namespace BuddySDK
                 var r = rt.Result;
 
                 return r.Convert(d => {
-                    string _id;
-                    try {
-                        _id = (string)r.Value["ID"];
-                    } catch(Exception ex) {
-                        _id = (string)r.Value["id"];
-                    }
+                    string _id = (string)r.Value["id"];
                     var user = new AuthenticatedUser( _id, (string)r.Value["accessToken"], this);
                     this.User = user;
                     return user;
@@ -872,7 +867,7 @@ namespace BuddySDK
             {
                 Username = username,
                 Password = password
-                }, (result) => new AuthenticatedUser((string)result["id"], (string)result["accessToken"], this)); // Don't forget to change id back to ID
+                }, (result) => new AuthenticatedUser((string)result["id"], (string)result["accessToken"], this));
         }
 
         public System.Threading.Tasks.Task<BuddyResult<SocialAuthenticatedUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
@@ -882,7 +877,7 @@ namespace BuddySDK
                         IdentityProviderName = identityProviderName,
                         IdentityID = identityID,
                         IdentityAccessToken = identityAccessToken
-                }, (result) => new SocialAuthenticatedUser((string)result["ID"], (string)result["accessToken"], (bool)result["isNew"], this));
+                }, (result) => new SocialAuthenticatedUser((string)result["id"], (string)result["accessToken"], (bool)result["isNew"], this));
         }
 
         private async System.Threading.Tasks.Task<BuddyResult<T>> LoginUserCoreAsync<T>(string path, object parameters, Func<IDictionary<string, object>, T> createUser) where T : AuthenticatedUser
