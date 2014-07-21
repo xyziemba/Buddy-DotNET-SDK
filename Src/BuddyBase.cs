@@ -69,7 +69,7 @@ namespace BuddySDK
         public string ID {
             get
             {
-                return GetValueOrDefault<string>("ID", autoPopulate: false);
+                return GetValueOrDefault<string>("id", autoPopulate: false);
             }
         }
 
