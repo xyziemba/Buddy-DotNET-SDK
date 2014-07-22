@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace BuddySDK
 {
@@ -10,12 +11,12 @@ namespace BuddySDK
 
         public override string ToString()
         {
-            return string.Format("{0}-{1}", Convert(StartDate), Convert(EndDate));
+            return string.Format(CultureInfo.InvariantCulture, "{0}-{1}", Convert(StartDate), Convert(EndDate));
         }
 
         private string Convert(DateTime? dateTime)
         {
-            return dateTime.HasValue ? dateTime.Value.ToUniversalTime().ToString() : "";
+            return dateTime.HasValue ? dateTime.Value.ToUniversalTime().ToString(CultureInfo.InvariantCulture.DateTimeFormat) : "";
         }
     } 
 }

@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
-using System.Linq;
-using System;
 
 namespace BuddySDK
 {
@@ -37,7 +35,7 @@ namespace BuddySDK
 
         public Task<BuddyResult<User>> FindByIdentityAsync(string identityProviderName, string identityId)
         {
-            var url = string.Format("{0}/identities/{1}/{2}", Path, Uri.EscapeDataString(identityProviderName), Uri.EscapeDataString(identityId));
+            var url = string.Format(CultureInfo.InvariantCulture, "{0}/identities/{1}/{2}", Path, Uri.EscapeDataString(identityProviderName), Uri.EscapeDataString(identityId));
             return Client.Get<string>(url).WrapResult<string, User>(r => new User(r.Value, Client));
         }
     }

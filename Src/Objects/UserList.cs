@@ -79,7 +79,7 @@ namespace BuddySDK
 
                 var r = t2.Result;
 
-                var sr = new SearchResult<UserListItem>();
+                var sr = new SearchResult<UserListItem>(r.RequestID);
 
                 if (r.IsSuccess) {
                     sr.NextToken = r.Value.NextToken;

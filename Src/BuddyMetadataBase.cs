@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace BuddySDK
@@ -48,11 +46,11 @@ namespace BuddySDK
             EnsureID();
             var id = MetadataID;
 
-            var path = string.Format("/metadata/{0}", id);
+            var path = string.Format(CultureInfo.InvariantCulture, "/metadata/{0}", id);
 
             if (!string.IsNullOrEmpty(key))
             {
-                path += string.Format("/{0}", key);
+                path += string.Format(CultureInfo.InvariantCulture, "/{0}", key);
             }
 
             return path;
@@ -171,7 +169,10 @@ namespace BuddySDK
 
             return Client.Get<SearchResult<MetadataItem>>(
                 GetMetadataPath(), obj
-            ).WrapTask<BuddyResult<SearchResult<MetadataItem>>, SearchResult<MetadataItem>>((r1) => r1.Result.Value);
+            ).WrapTask<BuddyResult<SearchResult<MetadataItem>>, SearchResult<MetadataItem>>((r1) => 
+                {
+                    return r1.Result.IsSuccess ? r1.Result.Value : new SearchResult<MetadataItem>(r1.Result.RequestID, r1.Result.Error);
+                });
         }
     }
 }
