@@ -821,7 +821,8 @@ namespace BuddySDK
 					dateOfBirth = dateOfBirth,
                     tag = tag
                 }).ContinueWith( r =>  r.Result.Convert<AuthenticatedUser>( d => {
-                    var user = new AuthenticatedUser( (string)d["ID"], (string)d["accessToken"], this);
+                    var user = new AuthenticatedUser( (string)d["id"], (string)d["accessToken"], this);
+
                     this.User = user;
                     return user;
                 }));
@@ -853,7 +854,7 @@ namespace BuddySDK
                         IdentityProviderName = identityProviderName,
                         IdentityID = identityID,
                         IdentityAccessToken = identityAccessToken
-                }, (result) => new SocialAuthenticatedUser((string)result["ID"], (string)result["accessToken"], (bool)result["isNew"], this));
+                }, (result) => new SocialAuthenticatedUser((string)result["id"], (string)result["accessToken"], (bool)result["isNew"], this));
         }
 
         private System.Threading.Tasks.Task<BuddyResult<T>> LoginUserCoreAsync<T>(string path, object parameters, Func<IDictionary<string, object>, T> createUser) where T : AuthenticatedUser
