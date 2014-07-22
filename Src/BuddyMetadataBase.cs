@@ -14,7 +14,7 @@ namespace BuddySDK
         {
             get
             {
-                return _client ?? Buddy.Instance;
+                return _client ?? Buddy.CurrentInstance;
             }
         }
 

@@ -155,7 +155,7 @@ namespace BuddySDK.BuddyServiceClient
             PlatformAccess.Current.InvokeOnUiThread(callback);
         }
 
-        public System.Threading.Tasks.Task<BuddyCallResult<T>> CallMethodAsync<T>(string verb, string path, object parameters = null)
+        public Task<BuddyCallResult<T>> CallMethodAsync<T>(string verb, string path, object parameters = null)
         {   
             var tcs = new TaskCompletionSource<BuddyCallResult<T>>();
 

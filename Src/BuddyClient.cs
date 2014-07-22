@@ -151,7 +151,7 @@ namespace BuddySDK
         /// </summary>
         public string AppKey { get; protected set; }
 
-
+        public string InstanceName { get; protected set; }
 
         protected string AccessToken
         {
@@ -166,9 +166,7 @@ namespace BuddySDK
             get;
             private set;
         }
-
-       
-
+        
         public AuthenticatedUser User
         {
             get
@@ -226,15 +224,14 @@ namespace BuddySDK
                 _lastLocation = value;
             }
         }
-
-
+        
         private AppSettings _appSettings;
         private bool _userInitialized = false;
 
-        public BuddyClient(string appid, string appkey, BuddyClientFlags flags = PlatformAccess.DefaultFlags, string appVersion = null)
+        public BuddyClient(string appid, string appkey, BuddyClientFlags flags = PlatformAccess.DefaultFlags, string appVersion = null, string instanceName = null)
         {
             if (String.IsNullOrEmpty(appid))
-                throw new ArgumentException("Can't be null or empty.", "appName");
+                throw new ArgumentException("Can't be null or empty.", "appId");
             if (String.IsNullOrEmpty(appkey))
                 throw new ArgumentException("Can't be null or empty.", "AppKey");
 
@@ -246,6 +243,7 @@ namespace BuddySDK
 
             this.AppId = appid.Trim();
             this.AppKey = appkey.Trim();
+            this.InstanceName = instanceName;
             
             _appSettings = new AppSettings (appid, appkey);
             _appSettings.AppVersion = appVersion;
@@ -292,15 +290,12 @@ namespace BuddySDK
             
         }
 
-      
-
         internal class DeviceRegistration
         {
             public string AccessToken { get; set; }
             public string ServiceRoot { get; set; }
         }
-
-
+        
         internal async Task<string> GetAccessToken() {
 
             if (!_gettingToken)
@@ -330,8 +325,7 @@ namespace BuddySDK
                 return _appSettings.UserToken ?? _appSettings.DeviceToken;
             }
         }
-
-
+        
         private async Task<string> GetDeviceToken()
         {
 
@@ -371,9 +365,7 @@ namespace BuddySDK
 
             return dr.Value.AccessToken;
         }
-
- 
-       
+               
         public async Task<bool> UpdateDeviceAsync(string devicePushToken = null, bool? isProduction = true)
         {
             var parameters = new Dictionary<string, object>();
@@ -401,8 +393,6 @@ namespace BuddySDK
         }
 
         private AuthenticatedUser GetUser() {
-
-
             if (!_userInitialized) {
                 _userInitialized = true;
                 if (_user == null && _appSettings.UserID != null && _appSettings.UserToken != null)
@@ -518,8 +508,6 @@ namespace BuddySDK
             }
             return dictionary;
         }
-   
-
 
         internal Task<BuddyResult<T2>> ResultConversionHelper<T1, T2>(
             Task<BuddyResult<T1>> result,
@@ -782,7 +770,6 @@ namespace BuddySDK
 
         }
 
-
         // service
         //
         public Task<BuddyResult<string>> PingAsync()
@@ -792,14 +779,10 @@ namespace BuddySDK
 
         // User auth.
         public System.Threading.Tasks.Task<BuddyResult<AuthenticatedUser>> CreateUserAsync(
-            string username, 
-            string password, 
-            string firstName = null, 
-            string lastName = null,
-            string email = null,
-            BuddySDK.UserGender? gender = null, 
-            DateTime? dateOfBirth = null, 
-            string tag = null)
+            string username, string password, 
+            string firstName = null, string lastName = null,
+            string email = null, BuddySDK.UserGender? gender = null, 
+            DateTime? dateOfBirth = null, string tag = null)
         {
 
             if (String.IsNullOrEmpty(username))
@@ -838,7 +821,7 @@ namespace BuddySDK
         /// <param name="username">The username of the user. Can't be null or empty.</param>
         /// <param name="password">The password of the user. Can't be null.</param>
         /// <returns>A Task&lt;AuthenticatedUser&gt;that can be used to monitor progress on this call.</returns>
-        public System.Threading.Tasks.Task<BuddyResult<AuthenticatedUser>> LoginUserAsync(string username, string password)
+        public Task<BuddyResult<AuthenticatedUser>> LoginUserAsync(string username, string password)
         {
             return LoginUserCoreAsync<AuthenticatedUser>("/users/login", new
             {
@@ -847,7 +830,7 @@ namespace BuddySDK
                 }, (result) => new AuthenticatedUser((string)result["id"], (string)result["accessToken"], this));
         }
 
-        public System.Threading.Tasks.Task<BuddyResult<SocialAuthenticatedUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
+        public Task<BuddyResult<SocialAuthenticatedUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
         {
             return LoginUserCoreAsync<SocialAuthenticatedUser>("/users/login/social", new
                     {
@@ -857,7 +840,7 @@ namespace BuddySDK
                 }, (result) => new SocialAuthenticatedUser((string)result["id"], (string)result["accessToken"], (bool)result["isNew"], this));
         }
 
-        private System.Threading.Tasks.Task<BuddyResult<T>> LoginUserCoreAsync<T>(string path, object parameters, Func<IDictionary<string, object>, T> createUser) where T : AuthenticatedUser
+        private Task<BuddyResult<T>> LoginUserCoreAsync<T>(string path, object parameters, Func<IDictionary<string, object>, T> createUser) where T : AuthenticatedUser
         {
             return  ResultConversionHelper <IDictionary<string, object>, T>(
                 Post<IDictionary<string,object>>(
@@ -923,8 +906,7 @@ namespace BuddySDK
                     body = body
                 });
         }
-
-
+        
         public Task<BuddyResult<bool>> ResetPasswordAsync(string userName, string resetCode, string newPassword) {
             return Patch<bool> (
                 "/users/password",
@@ -934,9 +916,7 @@ namespace BuddySDK
                     newPassword = newPassword
                 });
         }
-
-      
-
+             
         private Metadata _appMetadata;
 
         public Metadata AppMetadata
@@ -1038,11 +1018,9 @@ namespace BuddySDK
                 return this._albums;
             }
         }
-
-
+        
         private UserCollection _users;
-
-     
+             
         public  UserCollection Users
         {
             get
@@ -1054,8 +1032,7 @@ namespace BuddySDK
                 return this._users;
             }
         }
-
-
+        
         private UserListCollection _userLists;
 
         public UserListCollection UserLists
@@ -1070,17 +1047,14 @@ namespace BuddySDK
             }
         }
       
-
         //
         // Metrics
         //
-
         private class MetricsResult
         {
             public string id { get; set; }
             public bool success { get; set; }
         }
-
 
         public Task<BuddyResult<string>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
         {
@@ -1126,9 +1100,7 @@ namespace BuddySDK
         }
 
         public Task<BuddyResult<bool>> AddCrashReportAsync (Exception ex, string message = null)
-        {
-
-           
+        {           
             try {
                 return Post<string>(
                     "/devices/current/crashreports", 
@@ -1143,7 +1115,6 @@ namespace BuddySDK
             return Task.FromResult(new BuddyResult<bool>{Value=false});
             
         }
-
 
         protected Task<BuddyResult<Notification>> SendPushNotificationAsyncCore(
             IEnumerable<string> recipientUserIds,
@@ -1193,7 +1164,6 @@ namespace BuddySDK
         }
 
         public void SetPushToken(string token) {
-
             PlatformAccess.Current.SetPushToken (token);
         }
 
@@ -1204,7 +1174,7 @@ namespace BuddySDK
         {
             GetService()
                 .ContinueWith(service =>
-                     service.Result.CallMethodAsync<T>(PostVerb, path, AddLocationToParameters(parameters))
+                     service.Result.CallMethodAsync<T>(verb, path, AddLocationToParameters(parameters))
                         .ContinueWith(callResult => {
                             HandleServiceResult(callResult.Result, allowThrow)
                                  .ContinueWith(procResult =>
@@ -1250,10 +1220,6 @@ namespace BuddySDK
 
         #endregion
     }
-
-   
-
-
 
     public enum AuthenticationLevel {
         None = 0,

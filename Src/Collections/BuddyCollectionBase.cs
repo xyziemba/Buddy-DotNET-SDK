@@ -12,7 +12,7 @@ namespace BuddySDK
 
         protected BuddyClient Client {
             get {
-                return _client ?? Buddy.Instance;
+                return _client;
             }
         }
 
