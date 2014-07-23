@@ -16,12 +16,6 @@ namespace BuddySDK
 {
     public interface IBuddyClient
     {
-
-        Task<BuddyResult<T2>> ResultConversionHelper<T1, T2>(
-            Task<BuddyResult<T1>> result,
-            Func<T1, T2> map = null,
-            Action<BuddyResult<T1>, BuddyResult<T2>> completed = null);
-
         Task<BuddyResult<T>> CallServiceMethod<T>(string verb, string path, object parameters = null, bool allowThrow = false);
 
         Task<BuddyResult<T>> Get<T>(string path, object parameters = null);
@@ -65,8 +59,6 @@ namespace BuddySDK
         Task<BuddyResult<bool>> AddCrashReportAsync(Exception ex, string message);
 
         Task<BuddyResult<string>> RecordMetricAsync(string key, IDictionary<string, object> value, TimeSpan? timeout, DateTime? timeStamp);
-
-        Task<string> GetAccessToken();
     }
 
 	public interface IRestProvider
