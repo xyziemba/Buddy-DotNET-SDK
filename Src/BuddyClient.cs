@@ -22,9 +22,12 @@ namespace BuddySDK
         public string AppVersion {get; set;}
         public string InstanceName {get; set;}
         
-        public BuddyClientOptions(){}
+        public BuddyClientOptions(){
+            Flags = PlatformAccess.DefaultFlags;
+        }
 
-        public BuddyClientOptions(BuddyClientFlags flags = PlatformAccess.DefaultFlags, string appVersion = null, string instanceName = null)
+        public BuddyClientOptions(BuddyClientFlags flags = PlatformAccess.DefaultFlags, string appVersion = null, 
+            string instanceName = null)
         {
             Flags = flags;
             AppVersion = appVersion;
@@ -249,7 +252,10 @@ namespace BuddySDK
                 throw new ArgumentException("Can't be null or empty.", "appId");
             if (String.IsNullOrEmpty(appkey))
                 throw new ArgumentException("Can't be null or empty.", "AppKey");
-
+            if (options == null)
+            {
+                options = new BuddyClientOptions();
+            }
 
             if (!PlatformAccess.Current.SupportsFlags(options.Flags))
             {
