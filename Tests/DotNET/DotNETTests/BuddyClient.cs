@@ -13,7 +13,7 @@ namespace DotNetTests
     {
         private class  NetworkIsolatedBuddyClient : BuddySDK.BuddyClient {
             private readonly BuddySDK.BuddyServiceClient.IRemoteMethodProvider _remoteMethodProvider;
-            public NetworkIsolatedBuddyClient(string appid, string appkey, IRemoteMethodProvider remoteMethodProvider, BuddyClientOptions options)
+            public NetworkIsolatedBuddyClient(string appid, string appkey, IRemoteMethodProvider remoteMethodProvider, BuddyOptions options)
                 :base(appid, appkey, options)
             {
                 _remoteMethodProvider = remoteMethodProvider;

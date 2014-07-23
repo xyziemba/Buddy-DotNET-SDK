@@ -15,30 +15,29 @@ namespace BuddySDK
         Default = AutoCrashReport,
     }
 
+    public class BuddyCreds
+    {
+        public string AppID { get; set; }
+        public string AppKey { get; set; }
+        public BuddyOptions Options { get; set; }
+
+        public BuddyCreds(string appId, string appKey, BuddyOptions options)
+        {
+            AppID = appId;
+            AppKey = appKey;
+            Options = options;
+        }
+    }
+
     public static partial class Buddy
     {
-        private class BuddySettings {
-            public string AppID { get; set; }
-            public string AppKey { get; set; }
-            public BuddyClientFlags Flags { get; set; }
-            public string InstanceName { get; set;}
-
-            public BuddySettings(string appID, string appKey, BuddyClientFlags flags, string instanceName)
-            {
-                AppID = appID;
-                AppKey = appKey;
-                Flags = flags;
-                InstanceName = instanceName;
-            }
-        }
-
         static IDictionary<string, BuddyClient> _clients = new Dictionary<string, BuddyClient>();
-        static BuddySettings _creds;
+        static BuddyCreds _creds;
         static string _currentClientKey;
 
-        private static string GetClientKey(string appId, string appKey, BuddyClientFlags flags, string name)
+        private static string GetClientKey(BuddyCreds creds)
         {
-            return string.Format("{0};{1};{2};{3}", appId, appKey, flags, name);
+            return string.Format("{0};{1};{2};{3}", creds.AppID, creds.AppKey, creds.Options.Flags, creds.Options.InstanceName);
         }
 
         internal static BuddyClient CurrentInstance
@@ -51,11 +50,10 @@ namespace BuddySDK
                 }
                 if (_currentClientKey == null)
                 {
-                    _currentClientKey = GetClientKey(_creds.AppID, _creds.AppKey, _creds.Flags, _creds.InstanceName);
+                    _currentClientKey = GetClientKey(_creds);
                     if (!_clients.ContainsKey(_currentClientKey) || _clients[_currentClientKey] == null)
                     {
-                        _clients[_currentClientKey] = new BuddyClient(_creds.AppID, _creds.AppKey, 
-                            new BuddyClientOptions(_creds.Flags, instanceName: _creds.InstanceName));
+                        _clients[_currentClientKey] = new BuddyClient(_creds.AppID, _creds.AppKey, _creds.Options);
                     }
                 }
                 return _clients[_currentClientKey];
@@ -154,14 +152,25 @@ namespace BuddySDK
         }
 
         #endregion
-        
-        public static IBuddyClient Init(string appId, string appKey, BuddyClientFlags flags = PlatformAccess.DefaultFlags, string instanceName = null)
+
+        public static IBuddyClient Init(string appId, string appKey, BuddyClientFlags flags = PlatformAccess.DefaultFlags, 
+            string instanceName = null, string appVersion = null)
         {
-            if (_creds != null && !flags.HasFlag(BuddyClientFlags.AllowReinitialize))
+            var options = new BuddyOptions(flags,instanceName, appVersion);
+            return Init(appId, appKey, options);
+        }
+
+        public static IBuddyClient Init(string appId, string appKey, BuddyOptions options = null)
+        {
+            if (options == null)
+            {
+                options = new BuddyOptions();
+            }
+            if (_creds != null && !options.Flags.HasFlag(BuddyClientFlags.AllowReinitialize))
             {
                 throw new InvalidOperationException("Already initialized.");
             }
-            _creds = new BuddySettings(appId, appKey, flags, instanceName);
+            _creds = new BuddyCreds(appId, appKey, options);
 
             _currentClientKey = null;
 

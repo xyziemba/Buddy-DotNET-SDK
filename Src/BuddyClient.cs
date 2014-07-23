@@ -16,22 +16,22 @@ using System.Threading.Tasks;
 
 namespace BuddySDK
 {
-    public class BuddyClientOptions
-    { 
-        public BuddyClientFlags Flags {get; set;}
-        public string AppVersion {get; set;}
-        public string InstanceName {get; set;}
-        
-        public BuddyClientOptions(){
+    public class BuddyOptions
+    {
+        public BuddyClientFlags Flags { get; set; }
+        public string InstanceName { get; set; }
+        public string AppVersion { get; set; }
+
+        public BuddyOptions()
+        {
             Flags = PlatformAccess.DefaultFlags;
         }
 
-        public BuddyClientOptions(BuddyClientFlags flags = PlatformAccess.DefaultFlags, string appVersion = null, 
-            string instanceName = null)
+        public BuddyOptions(BuddyClientFlags flags = PlatformAccess.DefaultFlags, string instanceName = null, string appVersion = null)
         {
             Flags = flags;
-            AppVersion = appVersion;
             InstanceName = instanceName;
+            AppVersion = appVersion;
         }
     }
 
@@ -55,7 +55,6 @@ namespace BuddySDK
         private static bool _crashReportingSet = false;
         private BuddyClientFlags _flags;
 
-
         private class AppSettings
         {
             public string AppID {get;set;}
@@ -71,16 +70,17 @@ namespace BuddySDK
             public string LastUserID {get;set;}
 
             public string DevicePushToken { get; set; }
-            public string AppVersion { get; set; }
+
+            public BuddyOptions Options { get; set; }
 
             public AppSettings() {
 
             }
 
-            public AppSettings(string appId, string appKey) {
-
+            public AppSettings(string appId, string appKey, BuddyOptions options) {
                 AppID = appId;
                 AppKey = appKey;
+                Options = options;
 
                 if (appId != null) {
                     Load();
@@ -89,7 +89,7 @@ namespace BuddySDK
 
             public void Clear() {
                 if (AppID != null) {
-                    PlatformAccess.Current.ClearUserSetting (AppID);
+                    PlatformAccess.Current.ClearUserSetting (GetSettingsKey());
                     ServiceUrl = null;
                     DeviceToken = null;
                     DeviceTokenExpires = null;
@@ -108,20 +108,24 @@ namespace BuddySDK
             }
 
             public void Save() {
-
                 if (AppID == null) {
                     return;
                 }
 
                 var json = JsonConvert.SerializeObject (this);
-                PlatformAccess.Current.SetUserSetting (AppID, json);
+                PlatformAccess.Current.SetUserSetting (GetSettingsKey(), json);
+            }
+
+            private string GetSettingsKey()
+            {
+                return AppID + Options.InstanceName;
             }
 
             public void Load() {
                 if (AppID == null)
                     return;
 
-                var json = PlatformAccess.Current.GetUserSetting (AppID);
+                var json = PlatformAccess.Current.GetUserSetting (GetSettingsKey());
 
                 if (json == null)
                     return;
@@ -168,8 +172,6 @@ namespace BuddySDK
         /// Gets the application secret key for this client.
         /// </summary>
         public string AppKey { get; protected set; }
-
-        public string InstanceName { get; protected set; }
 
         protected string AccessToken
         {
@@ -246,7 +248,7 @@ namespace BuddySDK
         private AppSettings _appSettings;
         private bool _userInitialized = false;
 
-        public BuddyClient(string appid, string appkey, BuddyClientOptions options = null)
+        public BuddyClient(string appid, string appkey, BuddyOptions options = null)
         {
             if (String.IsNullOrEmpty(appid))
                 throw new ArgumentException("Can't be null or empty.", "appId");
@@ -254,7 +256,7 @@ namespace BuddySDK
                 throw new ArgumentException("Can't be null or empty.", "AppKey");
             if (options == null)
             {
-                options = new BuddyClientOptions();
+                options = new BuddyOptions();
             }
 
             if (!PlatformAccess.Current.SupportsFlags(options.Flags))
@@ -264,10 +266,8 @@ namespace BuddySDK
 
             this.AppId = appid.Trim();
             this.AppKey = appkey.Trim();
-            this.InstanceName = options.InstanceName;
             
-            _appSettings = new AppSettings (appid, appkey);
-            _appSettings.AppVersion = options.AppVersion;
+            _appSettings = new AppSettings (appid, appkey, options);
 
             UpdateAccessLevel();
 
@@ -361,7 +361,7 @@ namespace BuddySDK
                     Model = PlatformAccess.Current.Model,
                     OSVersion = PlatformAccess.Current.OSVersion,
                     PushToken = await PlatformAccess.Current.GetPushTokenAsync (),
-                    AppVersion = _appSettings.AppVersion ?? PlatformAccess.Current.AppVersion
+                    AppVersion = _appSettings.Options.AppVersion ?? PlatformAccess.Current.AppVersion
                 });
 
             var dr = await ResultConversionHelper  <DeviceRegistration, DeviceRegistration> (
