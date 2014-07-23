@@ -16,15 +16,30 @@ using System.Threading.Tasks;
 
 namespace BuddySDK
 {
+    public class BuddyClientOptions
+    { 
+        public BuddyClientFlags Flags {get; set;}
+        public string AppVersion {get; set;}
+        public string InstanceName {get; set;}
+        
+        public BuddyClientOptions(){}
 
-    public partial class BuddyClient : IRestProvider
+        public BuddyClientOptions(BuddyClientFlags flags = PlatformAccess.DefaultFlags, string appVersion = null, string instanceName = null)
+        {
+            Flags = flags;
+            AppVersion = appVersion;
+            InstanceName = instanceName;
+        }
+    }
+
+    public partial class BuddyClient : IRestProvider, IBuddyClient
     {
 
         public event EventHandler<ServiceExceptionEventArgs> ServiceException;
         public event EventHandler<ConnectivityLevelChangedArgs> ConnectivityLevelChanged;
         public event EventHandler<CurrentUserChangedEventArgs> CurrentUserChanged;
         public event EventHandler AuthorizationLevelChanged;
-        public event EventHandler AuthorizationNeedsUserLogin; 
+        public event EventHandler AuthorizationNeedsUserLogin;
 
         private const string GetVerb = "GET";
         private const string PostVerb = "POST";
@@ -228,7 +243,7 @@ namespace BuddySDK
         private AppSettings _appSettings;
         private bool _userInitialized = false;
 
-        public BuddyClient(string appid, string appkey, BuddyClientFlags flags = PlatformAccess.DefaultFlags, string appVersion = null, string instanceName = null)
+        public BuddyClient(string appid, string appkey, BuddyClientOptions options = null)
         {
             if (String.IsNullOrEmpty(appid))
                 throw new ArgumentException("Can't be null or empty.", "appId");
@@ -236,24 +251,24 @@ namespace BuddySDK
                 throw new ArgumentException("Can't be null or empty.", "AppKey");
 
 
-            if (!PlatformAccess.Current.SupportsFlags(flags))
+            if (!PlatformAccess.Current.SupportsFlags(options.Flags))
             {
                 throw new ArgumentException("Invalid flags for this client type.");
             }
 
             this.AppId = appid.Trim();
             this.AppKey = appkey.Trim();
-            this.InstanceName = instanceName;
+            this.InstanceName = options.InstanceName;
             
             _appSettings = new AppSettings (appid, appkey);
-            _appSettings.AppVersion = appVersion;
+            _appSettings.AppVersion = options.AppVersion;
 
             UpdateAccessLevel();
 
-            if (flags.HasFlag (BuddyClientFlags.AutoCrashReport)) {
+            if (options.Flags.HasFlag (BuddyClientFlags.AutoCrashReport)) {
                 InitCrashReporting ();
             }
-            _flags = flags;
+            _flags = options.Flags;
 
 
             PlatformAccess.Current.SetPushToken(_appSettings.DevicePushToken);
@@ -770,13 +785,6 @@ namespace BuddySDK
 
         }
 
-        // service
-        //
-        public Task<BuddyResult<string>> PingAsync()
-        {
-            return Get <string>("/service/ping",null);
-        }
-
         // User auth.
         public System.Threading.Tasks.Task<BuddyResult<AuthenticatedUser>> CreateUserAsync(
             string username, string password, 
@@ -1107,7 +1115,7 @@ namespace BuddySDK
                         new {
                             stackTrace = ex.ToString(),
                             message = message
-                    }, allowThrow:false).WrapResult<string, bool>((r1) => r1.IsSuccess);
+                    }).WrapResult<string, bool>((r1) => r1.IsSuccess);
             }
             catch {
 
@@ -1193,24 +1201,24 @@ namespace BuddySDK
             return promise.Task;
         }
 
-        public  Task<BuddyResult<T>> Get<T>(string path, object parameters = null, bool allowThrow = false){
-            return GenericRestCall(GetVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
+        public  Task<BuddyResult<T>> Get<T>(string path, object parameters = null){
+            return GenericRestCall(GetVerb, path, parameters, false, new TaskCompletionSource<BuddyResult<T>>());
         }
 
-        public Task<BuddyResult<T>> Post<T>(string path, object parameters = null, bool allowThrow = false){
-            return GenericRestCall(PostVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
+        public Task<BuddyResult<T>> Post<T>(string path, object parameters = null){
+            return GenericRestCall(PostVerb, path, parameters, false, new TaskCompletionSource<BuddyResult<T>>());
         }
 
-        public Task<BuddyResult<T>> Patch<T>(string path, object parameters = null, bool allowThrow = false){
-            return GenericRestCall(PatchVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
+        public Task<BuddyResult<T>> Patch<T>(string path, object parameters = null){
+            return GenericRestCall(PatchVerb, path, parameters, false, new TaskCompletionSource<BuddyResult<T>>());
         }
 
-        public Task<BuddyResult<T>> Put<T>(string path, object parameters = null, bool allowThrow = false){
-            return GenericRestCall(PutVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
+        public Task<BuddyResult<T>> Put<T>(string path, object parameters = null){
+            return GenericRestCall(PutVerb, path, parameters, false, new TaskCompletionSource<BuddyResult<T>>());
         }
 
-        public Task<BuddyResult<T>> Delete<T>(string path, object parameters = null, bool allowThrow = false){
-            return GenericRestCall(DeleteVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
+        public Task<BuddyResult<T>> Delete<T>(string path, object parameters = null){
+            return GenericRestCall(DeleteVerb, path, parameters, false, new TaskCompletionSource<BuddyResult<T>>());
         }
 
         [Obsolete("Consumers should use Get/Post/Put/Patch/Delete methods instead of direct access")]

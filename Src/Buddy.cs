@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace BuddySDK
 {
-
     [Flags]
     public enum BuddyClientFlags
     {
@@ -18,8 +17,23 @@ namespace BuddySDK
 
     public static partial class Buddy
     {
+        private class BuddySettings {
+            public string AppID { get; set; }
+            public string AppKey { get; set; }
+            public BuddyClientFlags Flags { get; set; }
+            public string InstanceName { get; set;}
+
+            public BuddySettings(string appID, string appKey, BuddyClientFlags flags, string instanceName)
+            {
+                AppID = appID;
+                AppKey = appKey;
+                Flags = flags;
+                InstanceName = instanceName;
+            }
+        }
+
         static IDictionary<string, BuddyClient> _clients = new Dictionary<string, BuddyClient>();
-        static Tuple<string, string, BuddyClientFlags, string> _creds;
+        static BuddySettings _creds;
         static string _currentClientKey;
 
         private static string GetClientKey(string appId, string appKey, BuddyClientFlags flags, string name)
@@ -37,35 +51,36 @@ namespace BuddySDK
                 }
                 if (_currentClientKey == null)
                 {
-                    _currentClientKey = GetClientKey(_creds.Item1, _creds.Item2, _creds.Item3, _creds.Item4);
+                    _currentClientKey = GetClientKey(_creds.AppID, _creds.AppKey, _creds.Flags, _creds.InstanceName);
                     if (!_clients.ContainsKey(_currentClientKey) || _clients[_currentClientKey] == null)
                     {
-                        _clients[_currentClientKey] = new BuddyClient(_creds.Item1, _creds.Item2, _creds.Item3, instanceName: _creds.Item4);
+                        _clients[_currentClientKey] = new BuddyClient(_creds.AppID, _creds.AppKey, 
+                            new BuddyClientOptions(_creds.Flags, instanceName: _creds.InstanceName));
                     }
                 }
                 return _clients[_currentClientKey];
             }
         }
 
-        public static Task<BuddyResult<T>> Get<T>(string path, object parameters = null, bool allowThrow = false)
+        public static Task<BuddyResult<T>> Get<T>(string path, object parameters = null)
         {
-            return CurrentInstance.Get<T>(path, parameters, allowThrow);
+            return CurrentInstance.Get<T>(path, parameters);
         }
-        public static Task<BuddyResult<T>> Post<T>(string path, object parameters = null, bool allowThrow = false)
+        public static Task<BuddyResult<T>> Post<T>(string path, object parameters = null)
         {
-            return CurrentInstance.Post<T>(path, parameters, allowThrow);
+            return CurrentInstance.Post<T>(path, parameters);
         }
-        public static Task<BuddyResult<T>> Put<T>(string path, object parameters = null, bool allowThrow = false)
+        public static Task<BuddyResult<T>> Put<T>(string path, object parameters = null)
         {
-            return CurrentInstance.Put<T>(path, parameters, allowThrow);
+            return CurrentInstance.Put<T>(path, parameters);
         }
-        public static Task<BuddyResult<T>> Patch<T>(string path, object parameters = null, bool allowThrow = false)
+        public static Task<BuddyResult<T>> Patch<T>(string path, object parameters = null)
         {
-            return CurrentInstance.Patch<T>(path, parameters, allowThrow);
+            return CurrentInstance.Patch<T>(path, parameters);
         }
-        public static Task<BuddyResult<T>> Delete<T>(string path, object parameters = null, bool allowThrow = false)
+        public static Task<BuddyResult<T>> Delete<T>(string path, object parameters = null)
         {
-            return CurrentInstance.Delete<T>(path, parameters, allowThrow);
+            return CurrentInstance.Delete<T>(path, parameters);
         }
 
         [Obsolete("Call Buddy.Instance.[Get/Post/Put/Patch/Delete] instead")]
@@ -140,13 +155,13 @@ namespace BuddySDK
 
         #endregion
         
-        public static BuddyClient Init(string appId, string appKey, BuddyClientFlags flags = PlatformAccess.DefaultFlags, string instanceName = null)
+        public static IBuddyClient Init(string appId, string appKey, BuddyClientFlags flags = PlatformAccess.DefaultFlags, string instanceName = null)
         {
             if (_creds != null && !flags.HasFlag(BuddyClientFlags.AllowReinitialize))
             {
                 throw new InvalidOperationException("Already initialized.");
             }
-            _creds = new Tuple<string, string, BuddyClientFlags, string>(appId, appKey, flags, instanceName);
+            _creds = new BuddySettings(appId, appKey, flags, instanceName);
 
             _currentClientKey = null;
 
@@ -174,30 +189,6 @@ namespace BuddySDK
             var t = CurrentInstance.SocialLoginUserAsync(identityProviderName, identityID, identityAccessToken);
 
             return t;
-        }
-
-        public static Task<bool> UpdateDeviceAsync(string devicePushToken = null, bool? isProduction = true)
-        {
-            return CurrentInstance.UpdateDeviceAsync(devicePushToken, isProduction);
-        }
-
-        public static ConnectivityLevel ConnectivityLevel { get {
-            return CurrentInstance.ConnectivityLevel;
-        } }
-
-        public static Task<BuddyResult<string>> PingAsync()
-        {
-            return CurrentInstance.PingAsync();
-        }
-
-        public static Task<BuddyResult<bool>> RequestPasswordResetAsync(string userName, string subject, string body)
-        {
-            return CurrentInstance.RequestPasswordResetAsync(userName, subject, body);
-        }
-
-        public static Task<BuddyResult<bool>> ResetPasswordAsync(string userName, string resetCode, string newPassword)
-        {
-            return CurrentInstance.ResetPasswordAsync(userName, resetCode, newPassword);
         }
 
         // 
@@ -239,72 +230,6 @@ namespace BuddySDK
             return CurrentInstance.AddCrashReportAsync (ex, message);
         }
 
-        #region Collections
-        public static Metadata AppMetadata
-        {
-            get
-            {
-                return CurrentInstance.AppMetadata;
-            }
-        }
-
-        public static CheckinCollection Checkins
-        {
-            get
-            {
-                return CurrentInstance.Checkins;
-            }
-        }
-
-        public static LocationCollection Locations
-        {
-            get
-            {
-                return CurrentInstance.Locations;
-            }
-        }
-
-        public static MessageCollection Messages
-        {
-            get
-            {
-                return CurrentInstance.Messages;
-            }
-        }
-
-        public static PictureCollection Pictures
-        {
-            get
-            {
-                return CurrentInstance.Pictures;
-            }
-        }
-
-        public static AlbumCollection Albums
-        {
-            get
-            {
-                return CurrentInstance.Albums;
-            }
-        }
-
-        public static UserCollection Users
-        {
-            get
-            {
-                return CurrentInstance.Users;
-            }
-        }
-
-        public static UserListCollection UserLists
-        {
-            get
-            {
-                return CurrentInstance.UserLists;
-            }
-        }
-
-        #endregion
         public static BuddyGeoLocation LastLocation
         {
             get
