@@ -1,24 +1,18 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading;
-using System.Diagnostics;
-using System.Globalization;
-using System.Threading.Tasks;
 using System.Reflection;
+using System.Text;
 
 namespace BuddySDK.BuddyServiceClient
 {
-  
      internal class BuddyServiceClientHttp :BuddyServiceClientBase
      {
-         
-      
          public bool LoggingEnabled { get; set; }
 
          protected override string ClientName
@@ -35,7 +29,7 @@ namespace BuddySDK.BuddyServiceClient
          }
         private string SdkVersion {
             get {
-                return String.Format("{0};{1}", ClientName, ClientVersion); 
+                return String.Format(CultureInfo.InvariantCulture, "{0};{1}", ClientName, ClientVersion); 
             }
         }
 
@@ -312,14 +306,14 @@ namespace BuddySDK.BuddyServiceClient
                 if (kvp.Value is BuddyFile)
                 {
                     val = Convert.ToBase64String(((BuddyFile)kvp.Value).Bytes);
-                    val = EscapeDataString(val);
                 }
                 else
                 {
-                    val = EscapeDataString(kvp.Value.ToString());
-
+                    val = GetGlobalizedString(kvp.Value);
                 }
-                sb.AppendFormat("{2}{0}={1}", kvp.Key, val, isFirst ? "" : "&");
+                val = EscapeDataString(val);
+
+                sb.AppendFormat(CultureInfo.InvariantCulture, "{2}{0}={1}", kvp.Key, val, isFirst ? "" : "&");
                 isFirst = false;
             }
             return sb.ToString();
@@ -340,7 +334,7 @@ namespace BuddySDK.BuddyServiceClient
             // get the token before generating the request url, as there may be a new ServiceRoot
             var token = await Client.GetAccessToken();
 
-            var url = String.Format("{0}{1}", ServiceRoot, path);
+            var url = String.Format(CultureInfo.InvariantCulture, "{0}{1}", ServiceRoot, path);
             var requestType = HttpRequestType.HttpPostJson;
             IEnumerable<KeyValuePair<string, object>> files = null;
          
@@ -551,6 +545,11 @@ namespace BuddySDK.BuddyServiceClient
             return parameters;
         }
 
+        private static string GetGlobalizedString(object value)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0}", value);
+        }
+
         private static void HttpPostMultipart(HttpWebRequest wr, Stream requestStream, IDictionary<string, object> nvc)
         {
             var files = new List<BuddyFile>();
@@ -574,7 +573,10 @@ namespace BuddySDK.BuddyServiceClient
                 }
 
                 requestStream.Write(boundarybytes, 0, boundarybytes.Length);
-                string formitem = string.Format(formdataTemplate, kvp.Key, kvp.Value.ToString());
+
+                var globalizedString = GetGlobalizedString(kvp.Value);
+
+                string formitem = string.Format(CultureInfo.InvariantCulture, formdataTemplate, kvp.Key, globalizedString);
                 byte[] formitembytes = System.Text.Encoding.UTF8.GetBytes(formitem);
                 requestStream.Write(formitembytes, 0, formitembytes.Length);
             }
@@ -585,7 +587,7 @@ namespace BuddySDK.BuddyServiceClient
             {
                 var file = files[i];
                 string headerTemplate = "Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\r\nContent-Type: {2}\r\n\r\n";
-                string header = string.Format(headerTemplate, file.Name, file.Name, file.ContentType);
+                string header = string.Format(CultureInfo.InvariantCulture, headerTemplate, file.Name, file.Name, file.ContentType);
                 byte[] headerbytes = System.Text.Encoding.UTF8.GetBytes(header);
                 requestStream.Write(headerbytes, 0, headerbytes.Length);
                 requestStream.Write(file.Bytes, 0, (int)file.Data.Length);

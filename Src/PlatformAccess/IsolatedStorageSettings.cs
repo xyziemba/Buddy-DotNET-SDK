@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.IsolatedStorage;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace BuddySDK
 {
@@ -51,7 +50,7 @@ namespace BuddySDK
 
             foreach (var kvp in values)
             {
-                sb.AppendFormat("{0}={1};", kvp.Key, kvp.Value ?? "");
+                sb.AppendFormat(CultureInfo.InvariantCulture, "{0}={1};", kvp.Key, kvp.Value ?? "");
             }
 
             using (var fs = isoStore.OpenFile("_buddy", FileMode.Create))
@@ -81,7 +80,6 @@ namespace BuddySDK
 
         public string GetUserSetting(string key)
         {
-            
             var parsed = LoadSettings();
 
             if (parsed.ContainsKey(key))
@@ -101,7 +99,6 @@ namespace BuddySDK
 
         public void ClearUserSetting(string key)
         {
-           
             var parsed = LoadSettings();
 
             if (parsed.ContainsKey(key))

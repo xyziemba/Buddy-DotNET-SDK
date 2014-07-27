@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace BuddySDK
@@ -54,14 +55,17 @@ namespace BuddySDK
             DateRange lastModified = null, 
             int pageSize = 100, 
             string pagingToken = null, 
-            Action<IDictionary<string, object>> parameterCallback = null)
+            Action<IDictionary<string, object>> parameterCallback = null,
+            BuddyPermissions readPermissions = BuddyPermissions.Default, BuddyPermissions writePermissions = BuddyPermissions.Default)
         {
            
                     IDictionary<string,object> obj = new Dictionary<string, object>(DotNetDeltas.InvariantComparer(true)){
                         {"ownerID", userId},
                         {"created", created},
                         {"lastModified", lastModified},
-                        {"locationRange", locationRange}
+                        {"locationRange", locationRange},
+                        {"readPermissions", readPermissions},
+                        {"writePermissions", writePermissions}
                     };
 
                     if (parameterCallback != null)
@@ -112,7 +116,7 @@ namespace BuddySDK
         {
             if (pagingToken == null)
             {
-                obj["pagingToken"] = string.Format("{0};0", pageSize);
+                obj["pagingToken"] = string.Format(CultureInfo.InvariantCulture, "{0};0", pageSize);
             }
             else
             {

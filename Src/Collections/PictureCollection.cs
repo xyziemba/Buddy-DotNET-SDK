@@ -43,7 +43,8 @@ namespace BuddySDK
                 readPermissions, writePermissions);
         }
 
-        public Task<SearchResult<Picture>> FindAsync(string caption = null, string contentType = null, string ownerUserId = null, BuddyGeoLocationRange locationRange = null, DateRange created = null, DateRange lastModified = null, int pageSize = 100, string pagingToken = null)
+        public Task<SearchResult<Picture>> FindAsync(string caption = null, string contentType = null, string ownerUserId = null, BuddyGeoLocationRange locationRange = null, DateRange created = null, DateRange lastModified = null, int pageSize = 100, string pagingToken = null,
+            BuddyPermissions readPermissions = BuddyPermissions.Default, BuddyPermissions writePermissions = BuddyPermissions.Default)
         {
             return base.FindAsync(userId: ownerUserId,
                 created: created,
@@ -51,6 +52,8 @@ namespace BuddySDK
                 locationRange: locationRange,
                 pagingToken: pagingToken,
                 pageSize: pageSize,
+                readPermissions: readPermissions,
+                writePermissions: writePermissions,
                 parameterCallback: (p) =>
             {
                 p["caption"] = caption;
