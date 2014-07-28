@@ -153,6 +153,7 @@ namespace BuddySDK
 
         #endregion
 
+        [Obsolete("Please use the BuddyOptions version of Init")]
         public static IBuddyClient Init(string appId, string appKey, BuddyClientFlags flags = PlatformAccess.DefaultFlags, 
             string instanceName = null, string appVersion = null)
         {
