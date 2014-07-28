@@ -16,15 +16,33 @@ using System.Threading.Tasks;
 
 namespace BuddySDK
 {
+    public class BuddyOptions
+    {
+        public BuddyClientFlags Flags { get; set; }
+        public string InstanceName { get; set; }
+        public string AppVersion { get; set; }
 
-    public partial class BuddyClient : IRestProvider
+        public BuddyOptions()
+        {
+            Flags = PlatformAccess.DefaultFlags;
+        }
+
+        public BuddyOptions(BuddyClientFlags flags = PlatformAccess.DefaultFlags, string instanceName = null, string appVersion = null)
+        {
+            Flags = flags;
+            InstanceName = instanceName;
+            AppVersion = appVersion;
+        }
+    }
+
+    public partial class BuddyClient : IRestProvider, IBuddyClient
     {
 
         public event EventHandler<ServiceExceptionEventArgs> ServiceException;
         public event EventHandler<ConnectivityLevelChangedArgs> ConnectivityLevelChanged;
         public event EventHandler<CurrentUserChangedEventArgs> CurrentUserChanged;
         public event EventHandler AuthorizationLevelChanged;
-        public event EventHandler AuthorizationNeedsUserLogin; 
+        public event EventHandler AuthorizationNeedsUserLogin;
 
         private const string GetVerb = "GET";
         private const string PostVerb = "POST";
@@ -36,7 +54,6 @@ namespace BuddySDK
         private AuthenticatedUser _user;
         private static bool _crashReportingSet = false;
         private BuddyClientFlags _flags;
-
 
         private class AppSettings
         {
@@ -53,16 +70,17 @@ namespace BuddySDK
             public string LastUserID {get;set;}
 
             public string DevicePushToken { get; set; }
-            public string AppVersion { get; set; }
+
+            public BuddyOptions Options { get; set; }
 
             public AppSettings() {
 
             }
 
-            public AppSettings(string appId, string appKey) {
-
+            public AppSettings(string appId, string appKey, BuddyOptions options) {
                 AppID = appId;
                 AppKey = appKey;
+                Options = options;
 
                 if (appId != null) {
                     Load();
@@ -71,7 +89,7 @@ namespace BuddySDK
 
             public void Clear() {
                 if (AppID != null) {
-                    PlatformAccess.Current.ClearUserSetting (AppID);
+                    PlatformAccess.Current.ClearUserSetting (GetSettingsKey());
                     ServiceUrl = null;
                     DeviceToken = null;
                     DeviceTokenExpires = null;
@@ -90,20 +108,24 @@ namespace BuddySDK
             }
 
             public void Save() {
-
                 if (AppID == null) {
                     return;
                 }
 
                 var json = JsonConvert.SerializeObject (this);
-                PlatformAccess.Current.SetUserSetting (AppID, json);
+                PlatformAccess.Current.SetUserSetting (GetSettingsKey(), json);
+            }
+
+            private string GetSettingsKey()
+            {
+                return AppID + Options.InstanceName;
             }
 
             public void Load() {
                 if (AppID == null)
                     return;
 
-                var json = PlatformAccess.Current.GetUserSetting (AppID);
+                var json = PlatformAccess.Current.GetUserSetting (GetSettingsKey());
 
                 if (json == null)
                     return;
@@ -151,8 +173,6 @@ namespace BuddySDK
         /// </summary>
         public string AppKey { get; protected set; }
 
-
-
         protected string AccessToken
         {
             get
@@ -166,9 +186,7 @@ namespace BuddySDK
             get;
             private set;
         }
-
-       
-
+        
         public AuthenticatedUser User
         {
             get
@@ -226,20 +244,22 @@ namespace BuddySDK
                 _lastLocation = value;
             }
         }
-
-
+        
         private AppSettings _appSettings;
         private bool _userInitialized = false;
 
-        public BuddyClient(string appid, string appkey, BuddyClientFlags flags = PlatformAccess.DefaultFlags, string appVersion = null)
+        public BuddyClient(string appid, string appkey, BuddyOptions options = null)
         {
             if (String.IsNullOrEmpty(appid))
-                throw new ArgumentException("Can't be null or empty.", "appName");
+                throw new ArgumentException("Can't be null or empty.", "appId");
             if (String.IsNullOrEmpty(appkey))
                 throw new ArgumentException("Can't be null or empty.", "AppKey");
+            if (options == null)
+            {
+                options = new BuddyOptions();
+            }
 
-
-            if (!PlatformAccess.Current.SupportsFlags(flags))
+            if (!PlatformAccess.Current.SupportsFlags(options.Flags))
             {
                 throw new ArgumentException("Invalid flags for this client type.");
             }
@@ -247,15 +267,14 @@ namespace BuddySDK
             this.AppId = appid.Trim();
             this.AppKey = appkey.Trim();
             
-            _appSettings = new AppSettings (appid, appkey);
-            _appSettings.AppVersion = appVersion;
+            _appSettings = new AppSettings (appid, appkey, options);
 
             UpdateAccessLevel();
 
-            if (flags.HasFlag (BuddyClientFlags.AutoCrashReport)) {
+            if (options.Flags.HasFlag (BuddyClientFlags.AutoCrashReport)) {
                 InitCrashReporting ();
             }
-            _flags = flags;
+            _flags = options.Flags;
 
 
             PlatformAccess.Current.SetPushToken(_appSettings.DevicePushToken);
@@ -292,15 +311,12 @@ namespace BuddySDK
             
         }
 
-      
-
         internal class DeviceRegistration
         {
             public string AccessToken { get; set; }
             public string ServiceRoot { get; set; }
         }
-
-
+        
         internal async Task<string> GetAccessToken() {
 
             if (!_gettingToken)
@@ -330,8 +346,7 @@ namespace BuddySDK
                 return _appSettings.UserToken ?? _appSettings.DeviceToken;
             }
         }
-
-
+        
         private async Task<string> GetDeviceToken()
         {
 
@@ -346,7 +361,7 @@ namespace BuddySDK
                     Model = PlatformAccess.Current.Model,
                     OSVersion = PlatformAccess.Current.OSVersion,
                     PushToken = await PlatformAccess.Current.GetPushTokenAsync (),
-                    AppVersion = _appSettings.AppVersion ?? PlatformAccess.Current.AppVersion
+                    AppVersion = _appSettings.Options.AppVersion ?? PlatformAccess.Current.AppVersion
                 });
 
             var dr = await ResultConversionHelper  <DeviceRegistration, DeviceRegistration> (
@@ -371,9 +386,7 @@ namespace BuddySDK
 
             return dr.Value.AccessToken;
         }
-
- 
-       
+               
         public async Task<bool> UpdateDeviceAsync(string devicePushToken = null, bool? isProduction = true)
         {
             var parameters = new Dictionary<string, object>();
@@ -401,8 +414,6 @@ namespace BuddySDK
         }
 
         private AuthenticatedUser GetUser() {
-
-
             if (!_userInitialized) {
                 _userInitialized = true;
                 if (_user == null && _appSettings.UserID != null && _appSettings.UserToken != null)
@@ -518,8 +529,6 @@ namespace BuddySDK
             }
             return dictionary;
         }
-   
-
 
         internal Task<BuddyResult<T2>> ResultConversionHelper<T1, T2>(
             Task<BuddyResult<T1>> result,
@@ -782,24 +791,12 @@ namespace BuddySDK
 
         }
 
-
-        // service
-        //
-        public Task<BuddyResult<string>> PingAsync()
-        {
-            return Get <string>("/service/ping",null);
-        }
-
         // User auth.
         public System.Threading.Tasks.Task<BuddyResult<AuthenticatedUser>> CreateUserAsync(
-            string username, 
-            string password, 
-            string firstName = null, 
-            string lastName = null,
-            string email = null,
-            BuddySDK.UserGender? gender = null, 
-            DateTime? dateOfBirth = null, 
-            string tag = null)
+            string username, string password, 
+            string firstName = null, string lastName = null,
+            string email = null, BuddySDK.UserGender? gender = null, 
+            DateTime? dateOfBirth = null, string tag = null)
         {
 
             if (String.IsNullOrEmpty(username))
@@ -838,7 +835,7 @@ namespace BuddySDK
         /// <param name="username">The username of the user. Can't be null or empty.</param>
         /// <param name="password">The password of the user. Can't be null.</param>
         /// <returns>A Task&lt;AuthenticatedUser&gt;that can be used to monitor progress on this call.</returns>
-        public System.Threading.Tasks.Task<BuddyResult<AuthenticatedUser>> LoginUserAsync(string username, string password)
+        public Task<BuddyResult<AuthenticatedUser>> LoginUserAsync(string username, string password)
         {
             return LoginUserCoreAsync<AuthenticatedUser>("/users/login", new
             {
@@ -847,7 +844,7 @@ namespace BuddySDK
                 }, (result) => new AuthenticatedUser((string)result["id"], (string)result["accessToken"], this));
         }
 
-        public System.Threading.Tasks.Task<BuddyResult<SocialAuthenticatedUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
+        public Task<BuddyResult<SocialAuthenticatedUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
         {
             return LoginUserCoreAsync<SocialAuthenticatedUser>("/users/login/social", new
                     {
@@ -857,7 +854,7 @@ namespace BuddySDK
                 }, (result) => new SocialAuthenticatedUser((string)result["id"], (string)result["accessToken"], (bool)result["isNew"], this));
         }
 
-        private System.Threading.Tasks.Task<BuddyResult<T>> LoginUserCoreAsync<T>(string path, object parameters, Func<IDictionary<string, object>, T> createUser) where T : AuthenticatedUser
+        private Task<BuddyResult<T>> LoginUserCoreAsync<T>(string path, object parameters, Func<IDictionary<string, object>, T> createUser) where T : AuthenticatedUser
         {
             return  ResultConversionHelper <IDictionary<string, object>, T>(
                 Post<IDictionary<string,object>>(
@@ -923,8 +920,7 @@ namespace BuddySDK
                     body = body
                 });
         }
-
-
+        
         public Task<BuddyResult<bool>> ResetPasswordAsync(string userName, string resetCode, string newPassword) {
             return Patch<bool> (
                 "/users/password",
@@ -934,9 +930,7 @@ namespace BuddySDK
                     newPassword = newPassword
                 });
         }
-
-      
-
+             
         private Metadata _appMetadata;
 
         public Metadata AppMetadata
@@ -1038,11 +1032,9 @@ namespace BuddySDK
                 return this._albums;
             }
         }
-
-
+        
         private UserCollection _users;
-
-     
+             
         public  UserCollection Users
         {
             get
@@ -1054,8 +1046,7 @@ namespace BuddySDK
                 return this._users;
             }
         }
-
-
+        
         private UserListCollection _userLists;
 
         public UserListCollection UserLists
@@ -1070,17 +1061,14 @@ namespace BuddySDK
             }
         }
       
-
         //
         // Metrics
         //
-
         private class MetricsResult
         {
             public string id { get; set; }
             public bool success { get; set; }
         }
-
 
         public Task<BuddyResult<string>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
         {
@@ -1126,16 +1114,14 @@ namespace BuddySDK
         }
 
         public Task<BuddyResult<bool>> AddCrashReportAsync (Exception ex, string message = null)
-        {
-
-           
+        {           
             try {
                 return Post<string>(
                     "/devices/current/crashreports", 
                         new {
                             stackTrace = ex.ToString(),
                             message = message
-                    }, allowThrow:false).WrapResult<string, bool>((r1) => r1.IsSuccess);
+                    }).WrapResult<string, bool>((r1) => r1.IsSuccess);
             }
             catch {
 
@@ -1143,7 +1129,6 @@ namespace BuddySDK
             return Task.FromResult(new BuddyResult<bool>{Value=false});
             
         }
-
 
         protected Task<BuddyResult<Notification>> SendPushNotificationAsyncCore(
             IEnumerable<string> recipientUserIds,
@@ -1193,7 +1178,6 @@ namespace BuddySDK
         }
 
         public void SetPushToken(string token) {
-
             PlatformAccess.Current.SetPushToken (token);
         }
 
@@ -1223,24 +1207,24 @@ namespace BuddySDK
             return promise.Task;
         }
 
-        public  Task<BuddyResult<T>> Get<T>(string path, object parameters = null, bool allowThrow = false){
-            return GenericRestCall(GetVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
+        public  Task<BuddyResult<T>> Get<T>(string path, object parameters = null){
+            return GenericRestCall(GetVerb, path, parameters, false, new TaskCompletionSource<BuddyResult<T>>());
         }
 
-        public Task<BuddyResult<T>> Post<T>(string path, object parameters = null, bool allowThrow = false){
-            return GenericRestCall(PostVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
+        public Task<BuddyResult<T>> Post<T>(string path, object parameters = null){
+            return GenericRestCall(PostVerb, path, parameters, false, new TaskCompletionSource<BuddyResult<T>>());
         }
 
-        public Task<BuddyResult<T>> Patch<T>(string path, object parameters = null, bool allowThrow = false){
-            return GenericRestCall(PatchVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
+        public Task<BuddyResult<T>> Patch<T>(string path, object parameters = null){
+            return GenericRestCall(PatchVerb, path, parameters, false, new TaskCompletionSource<BuddyResult<T>>());
         }
 
-        public Task<BuddyResult<T>> Put<T>(string path, object parameters = null, bool allowThrow = false){
-            return GenericRestCall(PutVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
+        public Task<BuddyResult<T>> Put<T>(string path, object parameters = null){
+            return GenericRestCall(PutVerb, path, parameters, false, new TaskCompletionSource<BuddyResult<T>>());
         }
 
-        public Task<BuddyResult<T>> Delete<T>(string path, object parameters = null, bool allowThrow = false){
-            return GenericRestCall(DeleteVerb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
+        public Task<BuddyResult<T>> Delete<T>(string path, object parameters = null){
+            return GenericRestCall(DeleteVerb, path, parameters, false, new TaskCompletionSource<BuddyResult<T>>());
         }
 
         [Obsolete("Consumers should use Get/Post/Put/Patch/Delete methods instead of direct access")]
@@ -1250,10 +1234,6 @@ namespace BuddySDK
 
         #endregion
     }
-
-   
-
-
 
     public enum AuthenticationLevel {
         None = 0,
