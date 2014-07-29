@@ -32,7 +32,6 @@ namespace BuddySDK
     public static partial class Buddy
     {
         static IDictionary<string, BuddyClient> _clients = new Dictionary<string, BuddyClient>();
-        static BuddyCreds _creds;
         static string _currentClientKey;
 
         private static string GetClientKey(BuddyCreds creds)
@@ -44,19 +43,19 @@ namespace BuddySDK
         {
             get
             {
-                if (_creds == null)
+                if (_currentClientKey == null || _clients[_currentClientKey] == null)
                 {
                     throw new InvalidOperationException("Init must be called before accessing Instance.");
                 }
-                if (_currentClientKey == null)
-                {
-                    _currentClientKey = GetClientKey(_creds);
-                    if (!_clients.ContainsKey(_currentClientKey) || _clients[_currentClientKey] == null)
-                    {
-                        _clients[_currentClientKey] = new BuddyClient(_creds.AppID, _creds.AppKey, _creds.Options);
-                    }
-                }
+
                 return _clients[_currentClientKey];
+            }
+            set
+            {
+                var clientKey = GetClientKey(new BuddyCreds(value.AppId, value.AppKey, value.Options));
+                _currentClientKey = clientKey;
+
+                _clients[clientKey] = value;
             }
         }
 
@@ -167,13 +166,12 @@ namespace BuddySDK
             {
                 options = new BuddyOptions();
             }
-            if (_creds != null && !options.Flags.HasFlag(BuddyClientFlags.AllowReinitialize))
+            if (_currentClientKey != null && !options.Flags.HasFlag(BuddyClientFlags.AllowReinitialize))
             {
                 throw new InvalidOperationException("Already initialized.");
             }
-            _creds = new BuddyCreds(appId, appKey, options);
 
-            _currentClientKey = null;
+            CurrentInstance = new BuddyClient(appId, appKey, options);
 
             return CurrentInstance;
         }

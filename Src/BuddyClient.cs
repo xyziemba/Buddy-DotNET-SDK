@@ -248,6 +248,8 @@ namespace BuddySDK
         private AppSettings _appSettings;
         private bool _userInitialized = false;
 
+        public BuddyOptions Options { get; set; }
+
         public BuddyClient(string appid, string appkey, BuddyOptions options = null)
         {
             if (String.IsNullOrEmpty(appid))
@@ -266,7 +268,9 @@ namespace BuddySDK
 
             this.AppId = appid.Trim();
             this.AppKey = appkey.Trim();
-            
+
+            this.Options = options;
+
             _appSettings = new AppSettings (appid, appkey, options);
 
             UpdateAccessLevel();
