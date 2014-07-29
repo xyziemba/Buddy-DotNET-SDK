@@ -135,6 +135,7 @@
     <Compile Include="BuddyUtils.cs" />
     <Compile Include="Collections\AlbumCollection.cs" />
     <Compile Include="Collections\AlbumItemCollection.cs" />
+    <Compile Include="Collections\BlobCollection.cs" />
     <Compile Include="Collections\BuddyCollectionBase.cs" />
     <Compile Include="Collections\CheckinCollection.cs" />
     <Compile Include="Collections\LocationCollection.cs" />
@@ -149,6 +150,7 @@
     <Compile Include="Metadata.cs" />
     <Compile Include="Objects\Album.cs" />
     <Compile Include="Objects\AlbumItem.cs" />
+    <Compile Include="Objects\Blob.cs" />
     <Compile Include="Objects\Checkin.cs" />
     <Compile Include="Objects\Location.cs" />
     <Compile Include="Objects\Message.cs" />
@@ -172,6 +174,12 @@
     <Compile Include="SearchResult.cs" />
     <Compile Include="ServiceExceptionEventArgs.cs" />
     <Compile Include="SocialAuthenticatedUser.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>packages\Newtonsoft.Json.6.0.3\lib\portable-net45+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.Buddy.WP8.config" />

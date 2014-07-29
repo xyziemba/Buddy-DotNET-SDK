@@ -30,7 +30,7 @@ namespace BuddySDK
         public BuddyOptions(BuddyClientFlags flags = PlatformAccess.DefaultFlags, string instanceName = null, string appVersion = null)
         {
             Flags = flags;
-            InstanceName = instanceName;
+            InstanceName = instanceName ?? "";
             AppVersion = appVersion;
         }
     }
@@ -136,7 +136,9 @@ namespace BuddySDK
                     // copy over the properties
                     //
                     foreach (var prop in settings.GetType().GetProperties()) {
-                        prop.SetValue (this, prop.GetValue (settings));
+                        if (prop.Name != "Options") {
+                            prop.SetValue(this, prop.GetValue(settings));
+                        }
                     }
                 }
                 catch {
@@ -1083,7 +1085,7 @@ namespace BuddySDK
                 timeoutInSeconds = (int)timeout.Value.TotalSeconds;
             }
 
-            return Post<MetricsResult>(String.Format("/metrics/events/{0}", Uri.EscapeDataString(key)), new
+            return Post<MetricsResult>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(key)), new
                 {
                     value = value,
                     timeoutInSeconds = timeoutInSeconds,
@@ -1099,7 +1101,7 @@ namespace BuddySDK
         public Task<BuddyResult<TimeSpan?>> RecordTimedMetricEndAsync(string timedMetricId)
         {
 
-            var r = Delete<CompleteMetricResult>(String.Format("/metrics/events/{0}", Uri.EscapeDataString(timedMetricId)),null);
+            var r = Delete<CompleteMetricResult>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(timedMetricId)), null);
             return r.WrapResult<CompleteMetricResult, TimeSpan?>((r1) => {
 
                 var cmr = r1.Value;

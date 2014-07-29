@@ -1,23 +1,16 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace BuddySDK
 {
-   
-
-  
-   
-
     public abstract class BuddyBase : BuddyMetadataBase, System.ComponentModel.INotifyPropertyChanged
     {
         private static Dictionary<Type, List<Tuple<string, string>>> _propMappings = new Dictionary<Type, List<Tuple<string, string>>>();
@@ -203,8 +196,8 @@ namespace BuddySDK
         protected virtual string GetObjectPath()
         {
             if (ID == null) throw new InvalidOperationException("ID required.");
-           
-            return String.Format("{0}/{1}", Path, ID);
+
+            return String.Format(CultureInfo.InvariantCulture, "{0}/{1}", Path, ID);
         }
 
        

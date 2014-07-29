@@ -20,7 +20,8 @@ namespace BuddySDK
 
     public partial class BuddyClient {
 
-        public void RecordNotificationReceived(Intent message) {
+        public void RecordNotificationReceived<T>(T args) {
+            var message = args as Intent;
             var id = message.GetStringExtra(PlatformAccess.BuddyPushKey);
             if (!String.IsNullOrEmpty(id)) {
                 PlatformAccess.Current.OnNotificationReceived(id);

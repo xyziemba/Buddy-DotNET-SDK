@@ -2,31 +2,30 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using System.Reflection;
-using Windows.Storage;
-using Windows.UI.Xaml;
-using Windows.Networking.PushNotifications;
-using Windows.Foundation;
-using Windows.ApplicationModel.Activation;
-using System.Text.RegularExpressions;
-using Windows.ApplicationModel.Store;
 using System.Runtime.InteropServices;
-
-using Windows.Devices.Enumeration.Pnp;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
-using Windows.UI.Core; 
+using Windows.ApplicationModel.Store;
+using Windows.Devices.Enumeration.Pnp;
+using Windows.Networking.PushNotifications;
+using Windows.Storage;
+using Windows.Storage.Streams;
+using Windows.System.Profile;
+using Windows.UI.Xaml;
 
 namespace BuddySDK
 {
     public partial class BuddyClient
     {
-
-        public void RecordNotificationReceived(LaunchActivatedEventArgs args)
+        public void RecordNotificationReceived<T>(T args)
         {
-            var id = args.Arguments;
+            var launchArgs = args as LaunchActivatedEventArgs;
+
+            var id = launchArgs.Arguments;
+
             if (!String.IsNullOrEmpty(id))
             {
                 var match = Regex.Match(id, PlatformAccess.BuddyPushKey + "=(?<id>[^;]+)");
@@ -109,6 +108,23 @@ namespace BuddySDK
             }
         }
 
+        public override string DeviceUniqueId
+        {
+            get
+            {
+                var packageToken = HardwareIdentification.GetPackageSpecificToken(null);
+
+                var dataReader = DataReader.FromBuffer(packageToken.Id);
+
+                var bytes = new byte[packageToken.Id.Length];
+                dataReader.ReadBytes(bytes);
+
+                var id = BitConverter.ToString(bytes).Replace("-", "");
+
+                return id;
+            }
+        }
+
         public override string ApplicationID
         {
             get
@@ -184,8 +200,7 @@ namespace BuddySDK
 
         protected override void InvokeOnUiThreadCore(Action a)
         {
-
-           CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => a());
+            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => a());
         }
     }
 
