@@ -44,6 +44,8 @@ namespace BuddySDK
 
         Task<BuddyResult<Notification>> SendPushNotificationAsync(IEnumerable<string> recipientUserIds, string title, string message, int? counter, string payload, IDictionary<string, object> osCustomData);
 
+        void RecordNotificationReceived<T>(T args);
+
         Task<BuddyResult<TimeSpan?>> RecordTimedMetricEndAsync(string timedMetricId);
 
         Task<BuddyResult<bool>> LogoutUserAsync();

@@ -153,20 +153,22 @@ namespace BuddySDK
 
         #endregion
 
-        [Obsolete("Please use the BuddyOptions version of Init")]
+        [Obsolete("Please use Init(string appId, string appKey) or Init(string appId, string appKey, BuddyOptions options).")]
         public static IBuddyClient Init(string appId, string appKey, BuddyClientFlags flags = PlatformAccess.DefaultFlags, 
             string instanceName = null, string appVersion = null)
         {
-            var options = new BuddyOptions(flags,instanceName, appVersion);
+            var options = new BuddyOptions(flags, instanceName, appVersion);
+
             return Init(appId, appKey, options);
         }
 
-        public static IBuddyClient Init(string appId, string appKey, BuddyOptions options = null)
+        public static IBuddyClient Init(string appId, string appKey)
         {
-            if (options == null)
-            {
-                options = new BuddyOptions();
-            }
+            return Init(appId, appKey, new BuddyOptions());
+        }
+
+        public static IBuddyClient Init(string appId, string appKey, BuddyOptions options)
+        {
             if (_creds != null && !options.Flags.HasFlag(BuddyClientFlags.AllowReinitialize))
             {
                 throw new InvalidOperationException("Already initialized.");

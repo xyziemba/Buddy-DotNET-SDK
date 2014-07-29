@@ -30,7 +30,7 @@ namespace BuddySDK
         public BuddyOptions(BuddyClientFlags flags = PlatformAccess.DefaultFlags, string instanceName = null, string appVersion = null)
         {
             Flags = flags;
-            InstanceName = instanceName;
+            InstanceName = instanceName ?? "";
             AppVersion = appVersion;
         }
     }
@@ -136,7 +136,9 @@ namespace BuddySDK
                     // copy over the properties
                     //
                     foreach (var prop in settings.GetType().GetProperties()) {
-                        prop.SetValue (this, prop.GetValue (settings));
+                        if (prop.Name != "Options") {
+                            prop.SetValue(this, prop.GetValue(settings));
+                        }
                     }
                 }
                 catch {
