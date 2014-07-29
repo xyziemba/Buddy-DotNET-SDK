@@ -13,7 +13,12 @@ using System.Xml.Linq;
 
 namespace BuddySDK
 {
-
+    public partial class BuddyClient
+    {
+        public void RecordNotificationReceived<T>(T args)
+        {
+        }
+    }
 
     public abstract partial class PlatformAccess {
 
@@ -25,9 +30,8 @@ namespace BuddySDK
             return new DotNetPlatformAccess();
         }
     }
-    
 
-   internal class DotNetPlatformAccess: DotNetPlatformAccessBase
+    internal class DotNetPlatformAccess: DotNetPlatformAccessBase
     {
         public override string Platform
         {
@@ -158,11 +162,6 @@ namespace BuddySDK
                 a();
             }
         }
-
-
-
-      
-
     }
 
 
