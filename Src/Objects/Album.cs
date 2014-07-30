@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -43,16 +44,11 @@ namespace BuddySDK
 			}
 		}
 
-		private AlbumItemCollection _items;
-        public AlbumItemCollection Items
+		private IEnumerable<object> _items;
+        public IEnumerable<object> Items
         {
             get
             {
-                if (_items == null)
-                {
-					_items = new AlbumItemCollection(this.GetObjectPath(), this.Client);
-                }
-
                 return _items;
             }
         }

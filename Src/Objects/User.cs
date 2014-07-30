@@ -184,20 +184,6 @@ namespace BuddySDK
         {
         }
 
-        public async Task<BuddyResult<Picture>> AddProfilePictureAsync(string caption, Stream pictureData, string contentType, BuddyGeoLocation location = null,
-            BuddyPermissions readPermissions = BuddyPermissions.Default, BuddyPermissions writePermissions = BuddyPermissions.Default)
-        {
-           var result = await PictureCollection.AddAsync(this.Client, caption, pictureData, contentType, location,
-               readPermissions, writePermissions);
-
-           if (result.IsSuccess)
-           {
-               ProfilePicture = result.Value;
-           }
-
-           return result;
-        }
-
         public override async Task<BuddyResult<bool>> FetchAsync(Action updateComplete = null)
         {
 
@@ -236,7 +222,5 @@ namespace BuddySDK
                 return baseResult;
             });
         }
-
-       
     }
 }

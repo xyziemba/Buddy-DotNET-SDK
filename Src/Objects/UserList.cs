@@ -56,44 +56,5 @@ namespace BuddySDK
                 }
             }
         }
-
-       
-        public Task<BuddyResult<bool>> AddUserAsync(User user)
-        {
-            return Client.Put<bool>(GetObjectPath() + "/items/" + user.ID);
-        }
-
-        public Task<BuddyResult<bool>> RemoveUserAsync(User user)
-        {
-            return Client.Delete<bool>(GetObjectPath() + "/items/" + user.ID);
-        }
-
-        public Task<SearchResult<UserListItem>> GetUsersAsync(string pagingToken = null) {
-		
-            var path = GetObjectPath() + "/items";
-            return Client.Get<SearchResult<IDictionary<string, object>>>(path, new
-            {
-                token = pagingToken
-            }).WrapTask<BuddyResult<SearchResult<IDictionary<string,object>>>,SearchResult<UserListItem>>(t2 => {
-
-
-                var r = t2.Result;
-
-                var sr = new SearchResult<UserListItem>(r.RequestID);
-
-                if (r.IsSuccess) {
-                    sr.NextToken = r.Value.NextToken;
-                    sr.PreviousToken = r.Value.PreviousToken;
-                    sr.CurrentToken = r.Value.CurrentToken;
-                        
-                    sr.PageResults = r.Value.PageResults.Select(i => new UserListItem(i));
-                }
-                else {
-                    sr.Error = r.Error;
-                    
-                }
-                return sr;
-            });
-        }
     }
 }

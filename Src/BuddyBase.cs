@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace BuddySDK
 {
-    public abstract class BuddyBase : BuddyMetadataBase, System.ComponentModel.INotifyPropertyChanged
+    public abstract class BuddyBase: System.ComponentModel.INotifyPropertyChanged
     {
         private static Dictionary<Type, List<Tuple<string, string>>> _propMappings = new Dictionary<Type, List<Tuple<string, string>>>();
 
@@ -50,7 +50,7 @@ namespace BuddySDK
             private set;
         }
 
-        protected override string MetadataID
+        protected string MetadataID
         {
             get
             {
@@ -152,14 +152,17 @@ namespace BuddySDK
             }
         }
 
-        protected BuddyBase(BuddyClient client) : base(null, client)
+        public BuddyClient Client { get; set; }
+
+        protected BuddyBase(BuddyClient client)
         {
+            Client = client;   
             EnsureMappings(this);
         }
 
         protected BuddyBase(string id, BuddyClient client)
-            : base(id, client)
         {
+            Client = client;
             EnsureMappings(this);
 
             if (id != null)
