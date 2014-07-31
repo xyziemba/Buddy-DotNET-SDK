@@ -10,10 +10,10 @@ namespace BuddySDK
         [Newtonsoft.Json.JsonProperty("sentByPlatform")]
         public IDictionary<string,int> SentByPlatform { get; set; }
 
-        internal Notification(BuddyClient client) : base(client){
+        internal Notification() : base(){
         }
 
-        public Notification(string id, BuddyClient client = null) : base(id, client){
+        public Notification(string id) : base(id){
         }
     }
 }

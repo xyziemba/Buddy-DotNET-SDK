@@ -155,14 +155,14 @@ namespace BuddySDK
             }
         }
 
-        internal Message(BuddyClient client = null)
-            : base(client)
+        internal Message()
+            : base()
         {
 
         }
 
-        public Message(string id, BuddyClient client = null)
-            : base(id, client)
+        public Message(string id)
+            : base(id)
         {
 
         }

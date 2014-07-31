@@ -175,52 +175,13 @@ namespace BuddySDK
             }
         }
 
-        internal User(BuddyClient client = null): base(client)
+        internal User(): base()
         {
         }
 
-        public User(string id, BuddyClient client = null)
-            : base(id, client)
+        public User(string id)
+            : base(id)
         {
-        }
-
-        public override async Task<BuddyResult<bool>> FetchAsync(Action updateComplete = null)
-        {
-
-            var r = await base.FetchAsync(updateComplete);
-
-
-            if (r.IsSuccess) {
-
-                if (!string.IsNullOrEmpty(ProfilePictureID))
-                {
-                    await ProfilePicture.FetchAsync();
-                }
-            }
-                  
-            return r;
-        }
-
-        public override async Task<BuddyResult<bool>> SaveAsync()
-        {
-            Username = Username; // TODO: user name is required on PATCH, so do this to ensure it gets added to the PATCH dictionary.  Remove when user name is optional
-
-            return await Task.Run<BuddyResult<bool>> (async () => {
-
-                var baseResult = await base.SaveAsync();
-
-                if (ProfilePicture != null)
-                {
-                    var pictureResult = await ProfilePicture.SaveAsync();
-
-                    if (!pictureResult.IsSuccess)
-                    {
-                        return pictureResult;
-                    }
-                }
-
-                return baseResult;
-            });
         }
     }
 }

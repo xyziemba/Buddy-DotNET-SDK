@@ -16,8 +16,6 @@ namespace BuddySDK
 {
     public interface IBuddyClient
     {
-        Task<BuddyResult<T>> CallServiceMethod<T>(string verb, string path, object parameters = null, bool allowThrow = false);
-
         Task<BuddyResult<T>> Get<T>(string path, object parameters = null);
 
         Task<BuddyResult<T>> Post<T>(string path, object parameters = null);
@@ -40,13 +38,9 @@ namespace BuddySDK
 
         event EventHandler<CurrentUserChangedEventArgs> CurrentUserChanged;
 
-        event EventHandler<ConnectivityLevelChangedArgs> ConnectivityLevelChanged;
-
         Task<BuddyResult<Notification>> SendPushNotificationAsync(IEnumerable<string> recipientUserIds, string title, string message, int? counter, string payload, IDictionary<string, object> osCustomData);
 
         void RecordNotificationReceived<T>(T args);
-
-        Task<BuddyResult<TimeSpan?>> RecordTimedMetricEndAsync(string timedMetricId);
 
         Task<BuddyResult<bool>> LogoutUserAsync();
 
@@ -58,9 +52,7 @@ namespace BuddySDK
 
         event EventHandler AuthorizationLevelChanged;
 
-        Task<BuddyResult<bool>> AddCrashReportAsync(Exception ex, string message);
-
-        Task<BuddyResult<string>> RecordMetricAsync(string key, IDictionary<string, object> value, TimeSpan? timeout, DateTime? timeStamp);
+        Task<BuddyResult<BuddySDK.BuddyClient.Metric>> RecordMetricAsync(string key, IDictionary<string, object> value, TimeSpan? timeout, DateTime? timeStamp);
     }
 
 	public interface IRestProvider

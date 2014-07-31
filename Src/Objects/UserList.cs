@@ -9,13 +9,13 @@ namespace BuddySDK
     [BuddyObjectPath("/users/lists")]
     public class UserList : BuddyBase
     {
-        internal UserList(BuddyClient client = null)
-            : base(client)
+        internal UserList()
+            : base()
         {
         }
 
-        public UserList(string id, BuddyClient client = null)
-            : base(id, client)
+        public UserList(string id)
+            : base(id)
         {
 
         }

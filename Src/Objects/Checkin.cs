@@ -44,31 +44,15 @@ namespace BuddySDK
         }
 
 
-        internal Checkin(BuddyClient client = null) : base(client)
+        internal Checkin() : base()
         {
 
         }
        
-        public Checkin(string id, BuddyClient client = null)
-            : base(id, client)
+        public Checkin(string id)
+            : base(id)
         {
 
         }
-
-   
-
-        public override Task<BuddyResult<bool>> SaveAsync()
-        {
-            var location = GetValueOrDefault<BuddyGeoLocation>("Location", autoPopulate: false);
-
-            if (location == null)
-            {
-                throw new ArgumentException("Location is required.");
-            }
-
-            return base.SaveAsync();
-        }
-    }
-
-    
+    }    
 }

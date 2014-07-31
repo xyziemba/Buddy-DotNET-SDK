@@ -178,22 +178,13 @@ namespace BuddySDK
             }
         }
 
-        internal Location(BuddyClient client = null) : base(client)
+        internal Location() : base()
         {
         }
 
-        public Location(string id= null, BuddyClient client = null)
-            : base(id, client)
+        public Location(string id= null)
+            : base(id)
         {
-        }
-
-        public override Task<BuddyResult<bool>> SaveAsync()
-        {
-            if (Location == null)
-            {
-                throw new ArgumentException("Location is required.");
-            }
-            return base.SaveAsync();
         }
     }
 }

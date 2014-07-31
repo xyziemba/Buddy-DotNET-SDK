@@ -131,25 +131,25 @@
     <Compile Include="BuddyResult.cs" />
     <Compile Include="BuddyServiceClient\DateRangeJsonConverter.cs" />
     <Compile Include="BuddyServiceClient\BuddyLocationGeoConverter.cs" />
-    <Compile Include="DateRange.cs" />
-    <Compile Include="ConnectivityLevelChangedEventArgs.cs" />
+    <Compile Include="ConnectivityLevel.cs" />
+    <Compile Include="Objects\DateRange.cs" />
     <Compile Include="Objects\Blob.cs" />
     <Compile Include="Objects\Message.cs" />
     <Compile Include="Objects\MessageType.cs" />
     <Compile Include="Objects\MetadataItem.cs" />
     <Compile Include="Objects\Notification.cs" />
     <Compile Include="Objects\UserList.cs" />
-    <Compile Include="AuthenticatedUser.cs">
+    <Compile Include="Objects\AuthenticatedUser.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Buddy.cs" />
-    <Compile Include="BuddyBase.cs">
+    <Compile Include="Objects\BuddyBase.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="BuddyClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="BuddyGeoLocation.cs" />
+    <Compile Include="Objects\BuddyGeoLocation.cs" />
     <Compile Include="BuddyServiceClient\BuddyServiceClientBase.cs" />
     <Compile Include="BuddyServiceClient\BuddyServiceClientHttp.cs" />
     <Compile Include="BuddyServiceException.cs" />

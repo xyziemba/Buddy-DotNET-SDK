@@ -33,24 +33,19 @@ namespace BuddySDK
             }
         }
 
-        internal Blob(BuddyClient client = null) : base(client)
+        internal Blob() : base()
         {
         }
 
-        public Blob(string id, BuddyClient client = null)
-            : base(id, client)
+        public Blob(string id)
+            : base(id)
         {
         }
 
-        public Blob(string id, string friendlyName, BuddyClient client = null)
-            : this(id, client)
+        public Blob(string id, string friendlyName)
+            : this(id)
         {
             SetValue<string>("friendlyName", friendlyName, checkIsProp: false);
-        }
-
-        public Task<BuddyResult<Stream>> GetFileAsync(string friendlyName = null)
-        {
-            return base.GetFileCoreAsync (GetObjectPath() + "/file", new { friendlyName = friendlyName });
         }
     }
 }

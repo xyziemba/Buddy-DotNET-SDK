@@ -44,24 +44,19 @@ namespace BuddySDK
             }
         }
 
-        internal Picture(BuddyClient client = null) : base(client)
+        internal Picture() : base()
         {
         }
 
-        public Picture(string id, BuddyClient client = null)
-            : base(id, client)
+        public Picture(string id)
+            : base(id)
         {
         }
 
-        public Picture(string id, string signedUrl, BuddyClient client = null)
-            : this(id, client)
+        public Picture(string id, string signedUrl)
+            : this(id)
         {
             SetValue<string>("signedUrl", signedUrl, checkIsProp: false);
-        }
-
-        public Task<BuddyResult<Stream>> GetFileAsync(int? size = null)
-        {
-            return base.GetFileCoreAsync (GetObjectPath() + "/file", new { size = size });
         }
     }
 }

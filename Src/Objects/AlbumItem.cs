@@ -14,13 +14,13 @@ namespace BuddySDK
     [BuddyObjectPath("/items")]
 	public class AlbumItem : BuddyBase
 	{
-        internal AlbumItem(BuddyClient client = null)
-            : base(client)
+        internal AlbumItem()
+            : base()
         {
         }
 
-        public AlbumItem(string path, BuddyClient client = null)
-            : base(null, client)
+        public AlbumItem(string path)
+            : base(null)
         {
             this.path = path;
         }
@@ -69,12 +69,5 @@ namespace BuddySDK
                 return this.path;
             }
         }
-
-        public Task<BuddyResult<Stream>> GetFileAsync(int? size = null)
-		{
-            return base.GetFileCoreAsync(GetObjectPath() + "/file", new {size = size});
-		}
-	}
-
-   
+	}   
 }

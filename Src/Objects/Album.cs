@@ -8,13 +8,13 @@ namespace BuddySDK
     [BuddyObjectPath("/albums")]
 	public class Album : BuddyBase
 	{
-        internal Album(BuddyClient client = null)
-            : base(client)
+        internal Album()
+            : base()
         {
         }
 
-		public Album(string id, BuddyClient client= null)
-			: base(id, client)
+		public Album(string id)
+			: base(id)
 		{
 		}
 
@@ -52,23 +52,5 @@ namespace BuddySDK
                 return _items;
             }
         }
-
-        public async Task<BuddyResult<AlbumItem>> AddItemAsync(string itemId, string caption, BuddyGeoLocation location, string tag = null,
-            BuddyPermissions readPermissions = BuddyPermissions.Default, BuddyPermissions writePermissions = BuddyPermissions.Default)
-		{
-			var c = new AlbumItem(this.GetObjectPath() + PlatformAccess.GetCustomAttribute<BuddyObjectPathAttribute>(typeof(AlbumItem)).Path, this.Client)
-			{
-				ItemId = itemId,
-                Caption = caption,
-				Location = location,
-				Tag = tag,
-                ReadPermissions = readPermissions,
-                WritePermissions = writePermissions
-			};
-
-            var r = await c.SaveAsync();
-					
-            return r.Convert<AlbumItem>(b => c);
-		}
 	}
 }
