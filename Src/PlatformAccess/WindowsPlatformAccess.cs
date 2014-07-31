@@ -303,66 +303,7 @@ namespace BuddySDK
             private const string RootContainer = "{00000000-0000-0000-FFFF-FFFFFFFFFFFF}";
             private const string RootContainerQuery = "System.Devices.ContainerId:=\"" + RootContainer + "\"";
 
-            /// <summary>
-            /// Build a system user agent string that contains the Windows version number
-            /// and CPU architecture.
-            /// </summary>
-            /// <returns>String containing formatted system parts of the user agent.</returns>
-            public static async Task<string> GetSystemUserAgent()
-            {
-                try
-                {
-                    var parts = new[] {
-                        "Windows NT " + await GetWindowsVersionAsync(),
-                        FormatForUserAgent(GetProcessorArchitecture())
-                    };
-
-                    return "(" + String.Join("; ", parts.Where(e => !String.IsNullOrEmpty(e))) + ")";
-                }
-                catch
-                {
-                    return "";
-                }
-            }
-
-            /// <summary>
-            /// Format a ProcessorArchitecture as it would be expected in a user agent of a browser.
-            /// </summary>
-            /// <returns>String containing the format processor architecture.</returns>
-            static string FormatForUserAgent(ProcessorArchitecture architecture)
-            {
-                switch (architecture)
-                {
-                    case ProcessorArchitecture.AMD64:
-                        return "x64";
-                    case ProcessorArchitecture.ARM:
-                        return "ARM";
-                    default:
-                        return "";
-                }
-            }
-
-            /// <summary>
-            /// Get the processor architecture of this computer.
-            /// </summary>
-            /// <returns>The processor architecture of this computer.</returns>
-            public static ProcessorArchitecture GetProcessorArchitecture()
-            {
-                try
-                {
-                    var sysInfo = new _SYSTEM_INFO();
-                    GetNativeSystemInfo(ref sysInfo);
-
-                    return Enum.IsDefined(typeof(ProcessorArchitecture), sysInfo.wProcessorArchitecture)
-                        ? (ProcessorArchitecture)sysInfo.wProcessorArchitecture
-                        : ProcessorArchitecture.UNKNOWN;
-                }
-                catch
-                {
-                }
-
-                return ProcessorArchitecture.UNKNOWN;
-            }
+            
 
             /// <summary>
             /// Get the name of the manufacturer of this computer.
@@ -428,9 +369,6 @@ namespace BuddySDK
                 TValue value;
                 return dictionary.TryGetValue(key, out value) ? value : default(TValue);
             }
-
-            [DllImport("kernel32.dll")]
-            static extern void GetNativeSystemInfo(ref _SYSTEM_INFO lpSystemInfo);
 
             [StructLayout(LayoutKind.Sequential)]
             struct _SYSTEM_INFO
