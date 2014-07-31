@@ -29,61 +29,37 @@ namespace BuddySDK
     /// </summary>
     /// 
     [BuddyObjectPath("/users")]
+    [JsonObject(MemberSerialization.OptIn)]
     public class User : BuddyBase
     {
 
-		[JsonProperty("firstName")]
-		public string FirstName
+        [JsonProperty("firstName")]
+        public string FirstName
         {
-            get
-            {
-				return GetValueOrDefault<string>("FirstName");
-            }
-            set
-            {
-				SetValue("FirstName", value);
-            }
+            get;
+            set;
         }
 
-		[JsonProperty("lastName")]
-		public string LastName
-		{
-			get
-			{
-				return GetValueOrDefault<string>("LastName");
-			}
-			set
-			{
-				SetValue("LastName", value);
-			}
-		}    
-    
+        [JsonProperty("lastName")]
+        public string LastName
+        {
+            get;
+            set;
+        }
+
         [JsonProperty("userName")]
         public string Username
         {
-            get
-            {
-                return GetValueOrDefault<string>("Username");
-            }
-            set
-            {
-                SetValue<string>("Username", value, checkIsProp: false);
-            }
-            
+            get;
+            set;
+
         }
 
         [JsonProperty("email")]
         public string Email
         {
-            get
-            {
-                return GetValueOrDefault<string>("Email");
-            }
-            set
-            {
-                SetValue<string>("Email", value, checkIsProp: false);
-            }
-
+            get;
+            set;
         }
         /// <summary>
         /// Gets the gender of the user.
@@ -91,27 +67,25 @@ namespace BuddySDK
         [JsonProperty("gender")]
         public UserGender? Gender
         {
-            get
-            {
-                return GetValueOrDefault<UserGender?>("Gender");
-            }
-            set
-            {
-                SetValue<UserGender?>("Gender", value, checkIsProp: false);
-            }
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Get the celebrityMode setting of the user.
+        /// </summary>
+        [JsonProperty("celbMode")]
+        public bool CelebrityMode
+        {
+            get;
+            set;
         }
 
         [JsonProperty("dateOfBirth")]
         public DateTime? DateOfBirth
         {
-            get
-            {
-                return GetValueOrDefault<DateTime?>("DateOfBirth");
-            }
-            set
-            {
-                SetValue<DateTime?>("DateOfBirth", value, checkIsProp: false);
-            }
+            get;
+            set;
         }
       
         /// <summary>
@@ -135,23 +109,15 @@ namespace BuddySDK
         [JsonProperty("profilePictureID")]
         public string ProfilePictureID
         {
-            get
-            {
-                return GetValueOrDefault<string>("ProfilePictureID");
-            }
-            set
-            {
-                ProfilePicture = value == null ? null : new Picture(value);
-            }
+            get;
+            set;
         }
 
         [JsonProperty("profilePictureUrl")]
         public string ProfilePictureUrl
         {
-            get
-            {
-                return GetValueOrDefault<string>("ProfilePictureUrl");
-            }
+            get;
+            private set;
         }
 
         private Picture profilePicture;
@@ -169,9 +135,11 @@ namespace BuddySDK
             set
             {
                 profilePicture = value;
-
-                SetValue<string>("ProfilePictureID", value == null ? null : value.ID, checkIsProp: false);
-                SetValue<string>("ProfilePictureUrl", value == null ? null : value.SignedUrl, checkIsProp: false);
+                if (value != null)
+                {
+                    ProfilePictureID = value.ID;
+                    ProfilePictureUrl = value.SignedUrl;
+                }
             }
         }
 

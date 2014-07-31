@@ -20,6 +20,7 @@ namespace BuddySDK
 
             if (isoStore.FileExists("_buddy"))
             {
+
                 using (var fs = isoStore.OpenFile("_buddy", FileMode.Open))
                 {
                     using (var sr = new StreamReader(fs))
@@ -58,9 +59,6 @@ namespace BuddySDK
                 using (var sw = new StreamWriter(fs))
                 {
                     sw.WriteLine(sb.ToString());
-
-                    sw.Flush();
-                    fs.Flush();
                 }
             }
         }

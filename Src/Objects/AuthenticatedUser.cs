@@ -7,6 +7,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+using Newtonsoft;
+using Newtonsoft.Json;
 
 
 namespace BuddySDK
@@ -16,17 +18,16 @@ namespace BuddySDK
         /// <summary>
         /// Gets the unique user token that is the secret used to log-in this user. Each user has a unique ID, a secret user token and a user/pass combination.
         /// </summary>
+        [JsonProperty("accessToken")]
         public string AccessToken
         {
-            get
-            {
-                return GetValueOrDefault<string>("AccessToken");
-            }
-            protected set
-            {
-                SetValue<string>("AccessToken", value);
-            }
+            get;
+            protected set;
         }
+
+        public AuthenticatedUser()
+            : base()
+        { }
 
         internal AuthenticatedUser(string id, string accessToken)
             : base(id)

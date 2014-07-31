@@ -15,22 +15,16 @@ namespace BuddySDK
         [Newtonsoft.Json.JsonProperty("friendlyName")]
         public string FriendlyName
         {
-            get { return GetValueOrDefault<string>("FriendlyName"); }
-            set { SetValue<string>("FriendlyName", value, checkIsProp: false); }
+            get;
+            set;
         }
 
         [JsonIgnore]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         internal BuddyFile Data
         {
-            get
-            {
-                return GetValueOrDefault<BuddyFile>("Data");
-            }
-            set
-            {
-                SetValue<BuddyFile>("Data", value, checkIsProp: false);
-            }
+            get;
+            set;
         }
 
         internal Blob() : base()
@@ -45,7 +39,7 @@ namespace BuddySDK
         public Blob(string id, string friendlyName)
             : this(id)
         {
-            SetValue<string>("friendlyName", friendlyName, checkIsProp: false);
+            FriendlyName = friendlyName;
         }
     }
 }

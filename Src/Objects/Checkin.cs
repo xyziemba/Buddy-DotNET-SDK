@@ -16,31 +16,19 @@ namespace BuddySDK
             public string Name { get; set; }
         }
 
-       
+
         [Newtonsoft.Json.JsonProperty("comment")]
         public string Comment
         {
-            get
-            {
-                return GetValueOrDefault<string>("Comment");
-            }
-            set
-            {
-                SetValue<string>("Comment", value,checkIsProp:false);
-            }
+            get;
+            set;
         }
 
         [Newtonsoft.Json.JsonProperty("description")]
         public string Description
         {
-            get
-            {
-                return GetValueOrDefault<string>("Description");
-            }
-            set
-            {
-                SetValue<string>("Description", value, checkIsProp: false);
-            }
+            get;
+            set;
         }
 
 

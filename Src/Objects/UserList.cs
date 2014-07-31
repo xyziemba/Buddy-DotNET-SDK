@@ -23,14 +23,8 @@ namespace BuddySDK
         [Newtonsoft.Json.JsonProperty("name")]
         public string Name
         {
-            get
-            {
-                return GetValueOrDefault<string>("Name");
-            }
-            set
-            {
-                SetValue<string>("Name", value, checkIsProp: false);
-            }
+            get;
+            set;
         }
 
         public enum UserListItemType

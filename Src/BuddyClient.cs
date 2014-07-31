@@ -199,18 +199,22 @@ namespace BuddySDK
                 string priorId = null;
                 if (value != null)
                 {
-                    _appSettings.UserToken = value.AccessToken;
-                    _appSettings.UserID = value.ID;
+                    if (_appSettings.UserToken != value.AccessToken
+                        && _appSettings.UserID != value.ID)
+                    {
+                        _appSettings.UserToken = value.AccessToken;
+                        _appSettings.UserID = value.ID;
 
-                    priorId = _appSettings.LastUserID;
+                        priorId = _appSettings.LastUserID;
 
-                    if (_user == null) {
-                        priorId = "";
+                        if (_user == null)
+                        {
+                            priorId = "";
+                        }
+
+                        _appSettings.LastUserID = value.ID;
+                        _appSettings.Save();
                     }
-
-                    _appSettings.LastUserID = value.ID;
-                    _appSettings.Save ();
-
                 }
                 else
                 {
@@ -424,7 +428,7 @@ namespace BuddySDK
                 if (_user == null && _appSettings.UserID != null && _appSettings.UserToken != null)
                 {
                     User = new AuthenticatedUser (_appSettings.UserID, _appSettings.UserToken);
-                    return User;
+                    return _user;
                 }
             }
 
@@ -827,21 +831,16 @@ namespace BuddySDK
 
         private Task<BuddyResult<T>> LoginUserCoreAsync<T>(string path, object parameters, Func<IDictionary<string, object>, T> createUser) where T : AuthenticatedUser
         {
-            return  ResultConversionHelper <IDictionary<string, object>, T>(
-                Post<IDictionary<string,object>>(
+            var t = Post<T>(
                     path,
-                    parameters),
-                map: d => createUser (d),
-                completed: (r1, r2) => {
+                    parameters);
+                    
+            t.ContinueWith(r => {
+                if(r.Result.IsSuccess && r.Result.Value != null)
+                    User = r.Result.Value;
+            });
 
-                    var u = r2.Value;
-
-                    if (u != null){
-                        u.Update(r1.Value);
-                        User = u;
-                    }
-
-                });
+            return t;
         }
 
         private async Task<BuddyResult<bool>> LogoutInternal() {
@@ -913,7 +912,9 @@ namespace BuddySDK
 
         public class Metric
         {
+            [JsonProperty("id")]
             public string ID { get; set; }
+            [JsonProperty("success")]
             public bool success { get; set;}
             internal BuddyClient _client { get; set;}
 
@@ -949,7 +950,7 @@ namespace BuddySDK
                 {
                     value = value,
                     timeoutInSeconds = timeoutInSeconds,
-                        timeStamp = timeStamp
+                    timeStamp = timeStamp
                 });
 
             t.ContinueWith(r => r.Result.Value._client = this);

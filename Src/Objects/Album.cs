@@ -18,31 +18,19 @@ namespace BuddySDK
 		{
 		}
 
-		[Newtonsoft.Json.JsonProperty("caption")]
-		public string Caption
-		{
-			get
-			{
-                return GetValueOrDefault<string>("Caption");
-			}
-			set
-			{
-                SetValue<string>("Caption", value, checkIsProp: false);
-			}
-		}
+        [Newtonsoft.Json.JsonProperty("caption")]
+        public string Caption
+        {
+            get;
+            set;
+        }
 
-		[Newtonsoft.Json.JsonProperty("name")]
-		public string Name
-		{
-			get
-			{
-				return GetValueOrDefault<string>("Name");
-			}
-			set
-			{
-				SetValue<string>("Name", value, checkIsProp: false);
-			}
-		}
+        [Newtonsoft.Json.JsonProperty("name")]
+        public string Name
+        {
+            get;
+            set;
+        }
 
 		private IEnumerable<object> _items;
         public IEnumerable<object> Items
