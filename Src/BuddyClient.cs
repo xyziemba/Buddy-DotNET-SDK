@@ -915,7 +915,7 @@ namespace BuddySDK
         {
             public string ID { get; set; }
             public bool success { get; set;}
-            public BuddyClient _client {private get; set;}
+            internal BuddyClient _client { get; set;}
 
             public Task<BuddyResult<TimeSpan?>> Finish( )
             {     
@@ -945,12 +945,16 @@ namespace BuddySDK
                 timeoutInSeconds = (int)timeout.Value.TotalSeconds;
             }
 
-            return Post<Metric>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(key)), new
+            var t = Post<Metric>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(key)), new
                 {
                     value = value,
                     timeoutInSeconds = timeoutInSeconds,
                         timeStamp = timeStamp
                 });
+
+            t.ContinueWith(r => r.Result.Value._client = this);
+
+            return t;
         }
 
         private class CompleteMetricResult
@@ -1054,12 +1058,6 @@ namespace BuddySDK
         public Task<BuddyResult<T>> Delete<T>(string path, object parameters = null){
             return GenericRestCall(DeleteVerb, path, parameters, false, new TaskCompletionSource<BuddyResult<T>>());
         }
-
-        [Obsolete("Consumers should use Get/Post/Put/Patch/Delete methods instead of direct access")]
-        private Task<BuddyResult<T>> CallServiceMethod<T>(string verb, string path, object parameters = null, bool allowThrow = false) {
-            return GenericRestCall(verb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
-        }
-
         #endregion
     }
 
