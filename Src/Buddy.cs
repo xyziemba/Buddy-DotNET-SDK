@@ -60,23 +60,23 @@ namespace BuddySDK
             }
         }
 
-        public static Task<BuddyResult<T>> Get<T>(string path, object parameters = null)
+        public static Task<BuddyResult<T>> GetAsync<T>(string path, object parameters = null)
         {
             return CurrentInstance.GetAsync<T>(path, parameters);
         }
-        public static Task<BuddyResult<T>> Post<T>(string path, object parameters = null)
+        public static Task<BuddyResult<T>> PostAsync<T>(string path, object parameters = null)
         {
             return CurrentInstance.PostAsync<T>(path, parameters);
         }
-        public static Task<BuddyResult<T>> Put<T>(string path, object parameters = null)
+        public static Task<BuddyResult<T>> PutAsync<T>(string path, object parameters = null)
         {
             return CurrentInstance.PutAsync<T>(path, parameters);
         }
-        public static Task<BuddyResult<T>> Patch<T>(string path, object parameters = null)
+        public static Task<BuddyResult<T>> PatchAsync<T>(string path, object parameters = null)
         {
             return CurrentInstance.PatchAsync<T>(path, parameters);
         }
-        public static Task<BuddyResult<T>> Delete<T>(string path, object parameters = null)
+        public static Task<BuddyResult<T>> DeleteAsync<T>(string path, object parameters = null)
         {
             return CurrentInstance.DeleteAsync<T>(path, parameters);
         }
@@ -183,24 +183,12 @@ namespace BuddySDK
         // 
         // Push Notifications
         //
-        public  static Task<BuddyResult<NotificationResult>> SendPushNotificationAsync(
-            IEnumerable<string> recipientUserIds, 
-            string title = null, string message = null, 
-            int? counter = null, string payload = null, 
-            IDictionary<string,object> osCustomData = null)
-        {
-            return CurrentInstance.SendPushNotificationAsync (
-                recipientUserIds,
-                title,
-                message,
-                counter,
-                payload,
-                osCustomData);
-        }
 
         public static void SetPushToken(string token) {
             CurrentInstance.SetPushToken (token);
         }
+
+        
 
         // 
         // Metrics

@@ -181,7 +181,7 @@ namespace BuddySquare.iOS
                     loc = new BuddyGeoLocation(_selected.ID);
                 }
 
-                await Buddy.Post<Checkin>("/checkins", new {
+                await Buddy.PostAsync<Checkin>("/checkins", new {
                     Comment = comment,
                     Location = loc,
                     Tag = photoID
@@ -202,7 +202,7 @@ namespace BuddySquare.iOS
             if (_chosenImage != null) {
 
 
-                var result = await Buddy.Post<Picture> ("/pictures", new {
+                var result = await Buddy.PostAsync<Picture> ("/pictures", new {
                     data = new BuddyFile (_chosenImage.AsPNG ().AsStream (), "data", "image/png"),
                 });
 
@@ -246,7 +246,7 @@ namespace BuddySquare.iOS
                     return;
                 }
 
-                var r = await Buddy.Get<PagedResult<Location>> ("/locations", new {
+                var r = await Buddy.GetAsync<PagedResult<Location>> ("/locations", new {
                     locationRange = new BuddyGeoLocationRange(_coords.Value.Latitude,_coords.Value.Longitude, 3000)
                 });
 

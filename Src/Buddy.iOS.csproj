@@ -57,7 +57,6 @@
     <Compile Include="Properties\AssemblyInfoNet.cs" />
     <Compile Include="Buddy.cs" />
     <Compile Include="BuddyGeoLocation.cs" />
-    <Compile Include="SearchResult.cs" />
     <Compile Include="BuddyResult.cs" />
     <Compile Include="CurrentUserChangedEventArgs.cs" />
     <Compile Include="ServiceExceptionEventArgs.cs" />
@@ -68,7 +67,6 @@
     <Compile Include="PlatformAccess\IosPlatformAccess.cs" />
     <Compile Include="PlatformAccess\PlatformAccess.cs" />
     <Compile Include="PlatformAccess\WindowsPlatformAccess.cs" />
-    <Compile Include="PushNotificationType.cs" />
     <Compile Include="BuddyUtils.cs" />
     <Compile Include="BuddyServiceClient\IRemoteMethodProvider.cs" />
     <Compile Include="IRestProvider.cs" />

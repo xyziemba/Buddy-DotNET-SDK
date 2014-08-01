@@ -913,6 +913,16 @@ namespace BuddySDK
                 });
         }
 
+
+       static T FromDictionary<T>(IDictionary<string,object> dictionary) {
+
+            // This looks hacky, and well, it is.  But we want all the Json converter goodness
+            // to happen by magic so we go to JSON then back.  This happens pretty rarely 
+            // so perf isn't a major concern.
+            //
+            return JsonConvert.DeserializeObject<T> (JsonConvert.SerializeObject (dictionary));
+        }
+
         private Task<BuddyResult<T>> LoginUserCoreAsync<T>(string path, object parameters) where T : User
         {
             var t = PostAsync<IDictionary<string,object>>(
@@ -929,9 +939,7 @@ namespace BuddySDK
                     // create the user
                     //
                     var dict = r.Result.Value;
-                    user = BuddyServiceClientBase.FromDictionary<T>(dict);
-
-
+                    user = FromDictionary<T>(dict);
                     SetCurrentUser(user, (string)dict["accessToken"], (DateTime?) dict["accessTokenExpires"]);
 
                 }

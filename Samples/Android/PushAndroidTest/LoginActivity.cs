@@ -10,6 +10,7 @@ using Android.Views;
 using Android.Widget;
 using BuddySDK;
 using Gcm.Client;
+using BuddySDK.Models;
 
 namespace PushAndroidTest
 {
@@ -17,7 +18,7 @@ namespace PushAndroidTest
     public class LoginActivity : Activity
     {
 
-        private void NavigateToPush(AuthenticatedUser user){
+        private void NavigateToPush(User user){
             Intent push = new Intent (this, typeof(PushActivity));
             push.PutExtra ("displayName", user.FirstName);
             push.PutExtra ("userId", user.ID);
@@ -27,7 +28,7 @@ namespace PushAndroidTest
         private async void BuddyUserLogin(){
             EditText username = FindViewById<EditText> (Resource.Id.username);
             EditText password = FindViewById<EditText> (Resource.Id.password);
-            BuddyResult<AuthenticatedUser> user = await Buddy.Instance.LoginUserAsync (username.Text.Trim(), password.Text.Trim());
+            BuddyResult<User> user = await Buddy.LoginUserAsync (username.Text.Trim(), password.Text.Trim());
             if (user.IsSuccess) {
                 RegisterForPushNotifications ();
                 NavigateToPush (user.Value);

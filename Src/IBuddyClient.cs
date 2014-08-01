@@ -20,8 +20,6 @@ namespace BuddySDK
 
         event EventHandler<CurrentUserChangedEventArgs> CurrentUserChanged;
 
-        Task<BuddyResult<NotificationResult>> SendPushNotificationAsync(IEnumerable<string> recipientUserIds, string title, string message, int? counter, string payload, IDictionary<string, object> osCustomData);
-
         void RecordNotificationReceived<T>(T args);
 
         Task<BuddyResult<bool>> LogoutUserAsync();

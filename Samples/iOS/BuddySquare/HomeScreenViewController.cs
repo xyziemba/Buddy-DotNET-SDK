@@ -236,7 +236,7 @@ namespace BuddySquare.iOS
                     return _loadingCheckins;
                 }
 
-                var t = Buddy.Get<BuddySDK.Models.PagedResult<Checkin>> ("/checkins");
+                var t = Buddy.GetAsync<BuddySDK.Models.PagedResult<Checkin>> ("/checkins");
 
                
                 _loadingCheckins = t.ContinueWith<IEnumerable<CheckinItem>>((t2) =>  {
@@ -308,7 +308,7 @@ namespace BuddySquare.iOS
                    
 					
                     // get the photo bits, resized to fit 200x200
-                    var loadTask = await Buddy.Get<BuddyFile>("/pictures/" + id + "/file", new {size=200});
+                    var loadTask = await Buddy.GetAsync<BuddyFile>("/pictures/" + id + "/file", new {size=200});
 
 
                     if (loadTask.IsSuccess && loadTask.Value != null) {
@@ -377,11 +377,11 @@ namespace BuddySquare.iOS
                     //
                     if (ci.Checkin.Tag != null) {
 
-                        await Buddy.Delete<bool>("/pictures/" + ci.Checkin.Tag);
+                        await Buddy.DeleteAsync<bool>("/pictures/" + ci.Checkin.Tag);
                     }
 
                     // delete the checkin
-                    await Buddy.Delete<bool> ("/checkins/" + ci.Checkin.ID);
+                    await Buddy.DeleteAsync<bool> ("/checkins/" + ci.Checkin.ID);
                     
 
                      // reload the list

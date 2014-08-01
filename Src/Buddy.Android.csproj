@@ -61,7 +61,6 @@
     <Compile Include="Properties\AssemblyInfoNet.cs" />
     <Compile Include="Buddy.cs" />
     <Compile Include="BuddyGeoLocation.cs" />
-    <Compile Include="SearchResult.cs" />
     <Compile Include="BuddyResult.cs" />
     <Compile Include="ServiceExceptionEventArgs.cs" />
     <Compile Include="CurrentUserChangedEventArgs.cs" />
@@ -72,7 +71,6 @@
     <Compile Include="PlatformAccess\AndroidPlatformAccess.cs" />
     <Compile Include="PlatformAccess\PlatformAccess.cs" />
     <Compile Include="PlatformAccess\WindowsPlatformAccess.cs" />
-    <Compile Include="PushNotificationType.cs" />
     <Compile Include="BuddyUtils.cs" />
     <Compile Include="BuddyServiceClient\IRemoteMethodProvider.cs" />
     <Compile Include="IRestProvider.cs" />
@@ -95,6 +93,7 @@
     <Compile Include="ConnectivityLevel.cs" />
     <Compile Include="IBuddyClient.cs" />
     <Compile Include="BuddyFile.cs" />
+    <Compile Include="Models\PagedResult.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

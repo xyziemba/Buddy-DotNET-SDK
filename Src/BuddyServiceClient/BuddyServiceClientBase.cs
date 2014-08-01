@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace BuddySDK.BuddyServiceClient
 {
@@ -173,24 +174,6 @@ namespace BuddySDK.BuddyServiceClient
             }
         }
 
-        internal static T FromDictionary<T>(IDictionary<string,object> dictionary) {
-
-            var obj = Activator.CreateInstance<T> ();
-
-            foreach (var prop in typeof(T).GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)) {
-
-                if (prop.CanRead && prop.CanWrite) {
-                    // do we have this prop?
-                    //
-                    object value;
-
-                    if (dictionary.TryGetValue (prop.Name, out value)) {
-                        prop.SetValue (obj, value);
-                    }
-                }
-            }
-            return obj;
-        }
     }
 
     internal static class BuddyResultCreator
