@@ -9,33 +9,35 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BuddySDK
+namespace BuddySDK.Models
 {
-    public abstract class BuddyBase
+    public abstract class ModelBase
     {
         [JsonProperty("id")]
         public string ID
         {
             get;
-            private set;
+            set;
         }
 
         [JsonProperty("location")]
         public virtual BuddyGeoLocation Location { get; set; }
 
-        [JsonProperty("readPermissions")]
-        public BuddyPermissions ReadPermissions
-        {
-            get;
-            set;
-        }
-
-        [JsonProperty("writePermissions")]
-        public BuddyPermissions WritePermissions
-        {
-            get;
-            set;
-        }
+        /* TODO: Make the service return these values */
+//
+//        [JsonProperty("readPermissions")]
+//        public BuddyPermissions ReadPermissions
+//        {
+//            get;
+//            set;
+//        }
+//
+//        [JsonProperty("writePermissions")]
+//        public BuddyPermissions WritePermissions
+//        {
+//            get;
+//            set;
+//        }
 
         [JsonProperty("created")]
         public DateTime Created
@@ -58,13 +60,6 @@ namespace BuddySDK
             set;
         }
 
-        protected BuddyBase()
-        {
-        }
-
-        protected BuddyBase(string id)
-        {
-            ID = id;
-        }
+       
     }
 }

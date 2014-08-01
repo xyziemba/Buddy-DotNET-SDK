@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BuddySDK
+namespace BuddySDK.Models
 {
-    [BuddyObjectPath("/messages")]
-    public class Message : BuddyBase
+    public class Message : ModelBase
     {
-
+        public enum MessageType
+        {
+            Sent,
+            Received
+        }
 
         [Newtonsoft.Json.JsonProperty("subject")]
         public string Subject
@@ -76,10 +79,10 @@ namespace BuddySDK
         }
 
         [Newtonsoft.Json.JsonProperty("messageType")]
-        public MessageType MessageType
+        public BuddySDK.Models.Message.MessageType Type
         {
             get;
-            internal set;
+            set;
         }
 
         [Newtonsoft.Json.JsonProperty("isNew")]
@@ -89,16 +92,5 @@ namespace BuddySDK
             set;
         }
 
-        internal Message()
-            : base()
-        {
-
-        }
-
-        public Message(string id)
-            : base(id)
-        {
-
-        }
     }
 }

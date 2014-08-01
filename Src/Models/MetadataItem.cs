@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace BuddySDK
+namespace BuddySDK.Models
 {
     public class MetadataItem
     {
@@ -9,15 +13,5 @@ namespace BuddySDK
         public BuddyGeoLocation Location { get; set; }
         public DateTime Created { get; set; }
         public DateTime LastModified { get; set; }
-    }
-
-    [BuddyObjectPath("/metadata")]
-    public class Metadata : BuddyMetadataBase
-    {
-        public Metadata(string id, BuddyClient client = null)
-            : base(id, client)
-        {
-         
-        }
     }
 }

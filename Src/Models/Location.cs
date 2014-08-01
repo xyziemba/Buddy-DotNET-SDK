@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BuddySDK
+namespace BuddySDK.Models
 {
-    [BuddyObjectPath("/locations")]
-    public class Location : BuddyBase
+    public class Location : ModelBase
     {
         [Newtonsoft.Json.JsonProperty("name")]
         public string Name
@@ -97,16 +96,8 @@ namespace BuddySDK
         public double Distance
         {
             get;
-            internal set;
+            set;
         }
 
-        internal Location() : base()
-        {
-        }
-
-        public Location(string id= null)
-            : base(id)
-        {
-        }
     }
 }

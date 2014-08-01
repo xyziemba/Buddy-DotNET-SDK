@@ -5,10 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace BuddySDK
+namespace BuddySDK.Models
 {
-    [BuddyObjectPath("/checkins")]
-    public class Checkin : BuddyBase
+    public class Checkin : ModelBase
     {
 
         public class BuddyCheckinLocation : BuddyGeoLocation {
@@ -32,15 +31,5 @@ namespace BuddySDK
         }
 
 
-        internal Checkin() : base()
-        {
-
-        }
-       
-        public Checkin(string id)
-            : base(id)
-        {
-
-        }
     }    
 }

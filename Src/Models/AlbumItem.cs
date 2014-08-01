@@ -3,21 +3,20 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace BuddySDK
+namespace BuddySDK.Models
 {
-    public enum AlbumItemType
-    {
-        Picture,
-        Video
-    }
+   
     
-    [BuddyObjectPath("/items")]
-	public class AlbumItem : BuddyBase
+    public class AlbumItem : ModelBase
 	{
-        internal AlbumItem()
-            : base()
+
+        public enum AlbumItemType
         {
+            Picture,
+            Video
         }
+
+       
 
         [Newtonsoft.Json.JsonProperty("caption")]
         public string Caption
@@ -37,7 +36,7 @@ namespace BuddySDK
         public AlbumItemType ItemType
         {
             get;
-            private set;
+            set;
         }
 	}   
 }

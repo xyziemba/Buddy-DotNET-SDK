@@ -23,32 +23,7 @@ namespace BuddySDK.BuddyServiceClient
         public T Result { get; set; }
     }
 
-    internal class BuddyFile
-    {
-        public Stream Data;
-
-        private byte[] _bytes;
-        public byte[] Bytes
-        {
-            get
-            {
-                if (Data != null && _bytes == null)
-                {
-                    _bytes = new byte[Data.Length];
-                    Data.Read(_bytes, 0, _bytes.Length);
-
-                }
-                return _bytes;
-            }
-        }
-        public string Name;
-        public string ContentType = "application/octet-stream";
-
-        public BuddyFile()
-        {
-
-        }
-    }
+   
 
     public class JsonEnvelope<T>
     {
@@ -196,6 +171,25 @@ namespace BuddySDK.BuddyServiceClient
                 var args = new ExceptionEventArgs(ex);
                 ServiceException(this, args);
             }
+        }
+
+        internal static T FromDictionary<T>(IDictionary<string,object> dictionary) {
+
+            var obj = Activator.CreateInstance<T> ();
+
+            foreach (var prop in typeof(T).GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)) {
+
+                if (prop.CanRead && prop.CanWrite) {
+                    // do we have this prop?
+                    //
+                    object value;
+
+                    if (dictionary.TryGetValue (prop.Name, out value)) {
+                        prop.SetValue (obj, value);
+                    }
+                }
+            }
+            return obj;
         }
     }
 

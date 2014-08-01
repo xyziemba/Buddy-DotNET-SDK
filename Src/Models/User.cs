@@ -4,17 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace BuddySDK
+namespace BuddySDK.Models
 {
-    /// <summary>
-    /// Represents the gender of a user.
-    /// </summary>
-    public enum UserGender
-    {
-		Unknown,
-		Male,
-        Female
-    }
 
   
 
@@ -28,10 +19,20 @@ namespace BuddySDK
     /// </example>
     /// </summary>
     /// 
-    [BuddyObjectPath("/users")]
     [JsonObject(MemberSerialization.OptIn)]
-    public class User : BuddyBase
+    public class User : ModelBase
     {
+
+
+        /// <summary>
+        /// Represents the gender of a user.
+        /// </summary>
+        public enum UserGender
+        {
+            Unknown,
+            Male,
+            Female
+        }
 
         [JsonProperty("firstName")]
         public string FirstName
@@ -71,15 +72,7 @@ namespace BuddySDK
             set;
         }
 
-        /// <summary>
-        /// Get the celebrityMode setting of the user.
-        /// </summary>
-        [JsonProperty("celbMode")]
-        public bool CelebrityMode
-        {
-            get;
-            set;
-        }
+       
 
         [JsonProperty("dateOfBirth")]
         public DateTime? DateOfBirth
@@ -120,36 +113,7 @@ namespace BuddySDK
             private set;
         }
 
-        private Picture profilePicture;
-        public Picture ProfilePicture
-        {
-            get
-            {
-                if (ProfilePictureID != null && (profilePicture == null || profilePicture.ID != ProfilePictureID || profilePicture.SignedUrl != ProfilePictureUrl))
-                {
-                    ProfilePicture = new Picture(ProfilePictureID, ProfilePictureUrl);
-                }
 
-                return profilePicture;
-            }
-            set
-            {
-                profilePicture = value;
-                if (value != null)
-                {
-                    ProfilePictureID = value.ID;
-                    ProfilePictureUrl = value.SignedUrl;
-                }
-            }
-        }
 
-        internal User(): base()
-        {
-        }
-
-        public User(string id)
-            : base(id)
-        {
-        }
     }
 }

@@ -9,5 +9,14 @@ namespace BuddySDK
         Carrier,
         WiFi
     }
+
+    public class ConnectivityLevelChangedArgs : EventArgs {
+
+        public ConnectivityLevel ConnectivityLevel {
+            get;
+            internal set;
+        }
+    }
+
 }
 

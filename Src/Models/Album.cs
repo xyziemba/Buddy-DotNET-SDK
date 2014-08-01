@@ -3,21 +3,16 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace BuddySDK
+namespace BuddySDK.Models
 {
-    [BuddyObjectPath("/albums")]
-	public class Album : BuddyBase
+    public class Album : ModelBase
 	{
-        internal Album()
+        public Album()
             : base()
         {
         }
 
-		public Album(string id)
-			: base(id)
-		{
-		}
-
+		
         [Newtonsoft.Json.JsonProperty("caption")]
         public string Caption
         {
@@ -32,13 +27,8 @@ namespace BuddySDK
             set;
         }
 
-		private IEnumerable<object> _items;
-        public IEnumerable<object> Items
-        {
-            get
-            {
-                return _items;
-            }
-        }
+        [Newtonsoft.Json.JsonProperty("items")]
+        public IEnumerable<object> Items { get; set; }
+       
 	}
 }

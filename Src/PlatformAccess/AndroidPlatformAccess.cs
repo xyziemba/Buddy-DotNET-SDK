@@ -35,7 +35,7 @@ namespace BuddySDK
     public partial class Buddy {
         public static void RecordNotificationReceived(Intent message) {
 
-            Instance.RecordNotificationReceived (message);
+            CurrentInstance.RecordNotificationReceived (message);
         }
 
 
