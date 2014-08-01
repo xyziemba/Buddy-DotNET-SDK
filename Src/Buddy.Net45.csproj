@@ -139,6 +139,7 @@
     <Compile Include="Objects\MessageType.cs" />
     <Compile Include="Objects\MetadataItem.cs" />
     <Compile Include="Objects\Notification.cs" />
+    <Compile Include="Objects\PagedResult.cs" />
     <Compile Include="Objects\UserList.cs" />
     <Compile Include="Objects\AuthenticatedUser.cs">
       <SubType>Code</SubType>
