@@ -9,7 +9,7 @@ namespace BuddySDK.Objects
 {
     public class PagedResult<T>
     {
-        [JsonProperty("previousToken")]
+        [JsonProperty("nextToken")]
         public string NextToken
         {
             get;
