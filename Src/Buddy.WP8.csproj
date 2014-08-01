@@ -164,6 +164,8 @@
     <Compile Include="BuddyClient.cs" />
     <Compile Include="Properties\AssemblyInfoWp8.cs" />
     <Compile Include="ServiceExceptionEventArgs.cs" />
+    <Compile Include="Models\BinaryModelBase.cs" />
+    <Compile Include="Models\Video.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json">

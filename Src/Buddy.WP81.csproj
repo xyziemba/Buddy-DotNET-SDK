@@ -129,6 +129,8 @@
     <Compile Include="BuddyClient.cs" />
     <Compile Include="Properties\AssemblyInfoWindows.cs" />
     <Compile Include="ServiceExceptionEventArgs.cs" />
+    <Compile Include="Models\BinaryModelBase.cs" />
+    <Compile Include="Models\Video.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json">

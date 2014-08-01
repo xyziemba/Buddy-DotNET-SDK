@@ -9,7 +9,7 @@ using System.IO;
 
 namespace BuddySDK.Models
 {
-    public class Blob : ModelBase
+    public class Blob : BinaryModelBase
     {
         [Newtonsoft.Json.JsonProperty("friendlyName")]
         public string FriendlyName

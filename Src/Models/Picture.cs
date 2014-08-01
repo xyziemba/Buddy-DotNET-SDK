@@ -5,8 +5,16 @@ using System.Threading.Tasks;
 
 namespace BuddySDK.Models
 {
-    public class Picture : ModelBase
+    public class Picture : BinaryModelBase
     {
+        public class SizeInfo {
+            [Newtonsoft.Json.JsonProperty("w")]
+            public int  W{get;set;}
+
+            [Newtonsoft.Json.JsonProperty("h")]
+            public int  H{get;set;}
+        }
+
         [Newtonsoft.Json.JsonProperty("caption")]
         public string Caption
         {
@@ -14,12 +22,22 @@ namespace BuddySDK.Models
             set;
         }
 
-        [Newtonsoft.Json.JsonProperty("signedUrl")]
-        public string SignedUrl
+        [Newtonsoft.Json.JsonProperty("title")]
+        public string Title
         {
             get;
             set;
         }
+
+        [Newtonsoft.Json.JsonProperty("size")]
+        public SizeInfo Size
+        {
+            get;
+            set;
+        }
+
+
+       
 
     }
 }

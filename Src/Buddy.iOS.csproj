@@ -90,6 +90,8 @@
     <Compile Include="IBuddyClient.cs" />
     <Compile Include="Models\PagedResult.cs" />
     <Compile Include="BuddyFile.cs" />
+    <Compile Include="Models\BinaryModelBase.cs" />
+    <Compile Include="Models\Video.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
