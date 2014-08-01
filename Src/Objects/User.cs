@@ -29,61 +29,37 @@ namespace BuddySDK
     /// </summary>
     /// 
     [BuddyObjectPath("/users")]
+    [JsonObject(MemberSerialization.OptIn)]
     public class User : BuddyBase
     {
 
-		[JsonProperty("firstName")]
-		public string FirstName
+        [JsonProperty("firstName")]
+        public string FirstName
         {
-            get
-            {
-				return GetValueOrDefault<string>("FirstName");
-            }
-            set
-            {
-				SetValue("FirstName", value);
-            }
+            get;
+            set;
         }
 
-		[JsonProperty("lastName")]
-		public string LastName
-		{
-			get
-			{
-				return GetValueOrDefault<string>("LastName");
-			}
-			set
-			{
-				SetValue("LastName", value);
-			}
-		}    
-    
+        [JsonProperty("lastName")]
+        public string LastName
+        {
+            get;
+            set;
+        }
+
         [JsonProperty("userName")]
         public string Username
         {
-            get
-            {
-                return GetValueOrDefault<string>("Username");
-            }
-            set
-            {
-                SetValue<string>("Username", value, checkIsProp: false);
-            }
-            
+            get;
+            set;
+
         }
 
         [JsonProperty("email")]
         public string Email
         {
-            get
-            {
-                return GetValueOrDefault<string>("Email");
-            }
-            set
-            {
-                SetValue<string>("Email", value, checkIsProp: false);
-            }
-
+            get;
+            set;
         }
         /// <summary>
         /// Gets the gender of the user.
@@ -91,27 +67,25 @@ namespace BuddySDK
         [JsonProperty("gender")]
         public UserGender? Gender
         {
-            get
-            {
-                return GetValueOrDefault<UserGender?>("Gender");
-            }
-            set
-            {
-                SetValue<UserGender?>("Gender", value, checkIsProp: false);
-            }
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Get the celebrityMode setting of the user.
+        /// </summary>
+        [JsonProperty("celbMode")]
+        public bool CelebrityMode
+        {
+            get;
+            set;
         }
 
         [JsonProperty("dateOfBirth")]
         public DateTime? DateOfBirth
         {
-            get
-            {
-                return GetValueOrDefault<DateTime?>("DateOfBirth");
-            }
-            set
-            {
-                SetValue<DateTime?>("DateOfBirth", value, checkIsProp: false);
-            }
+            get;
+            set;
         }
       
         /// <summary>
@@ -135,23 +109,15 @@ namespace BuddySDK
         [JsonProperty("profilePictureID")]
         public string ProfilePictureID
         {
-            get
-            {
-                return GetValueOrDefault<string>("ProfilePictureID");
-            }
-            set
-            {
-                ProfilePicture = value == null ? null : new Picture(value);
-            }
+            get;
+            set;
         }
 
         [JsonProperty("profilePictureUrl")]
         public string ProfilePictureUrl
         {
-            get
-            {
-                return GetValueOrDefault<string>("ProfilePictureUrl");
-            }
+            get;
+            private set;
         }
 
         private Picture profilePicture;
@@ -169,74 +135,21 @@ namespace BuddySDK
             set
             {
                 profilePicture = value;
-
-                SetValue<string>("ProfilePictureID", value == null ? null : value.ID, checkIsProp: false);
-                SetValue<string>("ProfilePictureUrl", value == null ? null : value.SignedUrl, checkIsProp: false);
-            }
-        }
-
-        internal User(BuddyClient client = null): base(client)
-        {
-        }
-
-        public User(string id, BuddyClient client = null)
-            : base(id, client)
-        {
-        }
-
-        public async Task<BuddyResult<Picture>> AddProfilePictureAsync(string caption, Stream pictureData, string contentType, BuddyGeoLocation location = null,
-            BuddyPermissions readPermissions = BuddyPermissions.Default, BuddyPermissions writePermissions = BuddyPermissions.Default)
-        {
-           var result = await PictureCollection.AddAsync(this.Client, caption, pictureData, contentType, location,
-               readPermissions, writePermissions);
-
-           if (result.IsSuccess)
-           {
-               ProfilePicture = result.Value;
-           }
-
-           return result;
-        }
-
-        public override async Task<BuddyResult<bool>> FetchAsync(Action updateComplete = null)
-        {
-
-            var r = await base.FetchAsync(updateComplete);
-
-
-            if (r.IsSuccess) {
-
-                if (!string.IsNullOrEmpty(ProfilePictureID))
+                if (value != null)
                 {
-                    await ProfilePicture.FetchAsync();
+                    ProfilePictureID = value.ID;
+                    ProfilePictureUrl = value.SignedUrl;
                 }
             }
-                  
-            return r;
         }
 
-        public override async Task<BuddyResult<bool>> SaveAsync()
+        internal User(): base()
         {
-            Username = Username; // TODO: user name is required on PATCH, so do this to ensure it gets added to the PATCH dictionary.  Remove when user name is optional
-
-            return await Task.Run<BuddyResult<bool>> (async () => {
-
-                var baseResult = await base.SaveAsync();
-
-                if (ProfilePicture != null)
-                {
-                    var pictureResult = await ProfilePicture.SaveAsync();
-
-                    if (!pictureResult.IsSuccess)
-                    {
-                        return pictureResult;
-                    }
-                }
-
-                return baseResult;
-            });
         }
 
-       
+        public User(string id)
+            : base(id)
+        {
+        }
     }
 }

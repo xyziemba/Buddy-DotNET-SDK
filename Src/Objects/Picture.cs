@@ -11,57 +11,38 @@ namespace BuddySDK
         [Newtonsoft.Json.JsonProperty("caption")]
         public string Caption
         {
-            get
-            {
-                return GetValueOrDefault<string>("Caption");
-            }
-            set
-            {
-                SetValue<string>("Caption", value, checkIsProp: false);
-            }
+            get;
+            set;
         }
 
         [JsonIgnore]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         internal BuddyFile Data
         {
-            get
-            {
-                return GetValueOrDefault<BuddyFile>("Data");
-            }
-            set
-            {
-                SetValue<BuddyFile>("Data", value, checkIsProp: false);
-            }
+            get;
+            set;
         }
 
         [Newtonsoft.Json.JsonProperty("signedUrl")]
         public string SignedUrl
         {
-            get
-            {
-                return GetValueOrDefault<string>("signedUrl");
-            }
+            get;
+            private set;
         }
 
-        internal Picture(BuddyClient client = null) : base(client)
+        internal Picture() : base()
         {
         }
 
-        public Picture(string id, BuddyClient client = null)
-            : base(id, client)
+        public Picture(string id)
+            : base(id)
         {
         }
 
-        public Picture(string id, string signedUrl, BuddyClient client = null)
-            : this(id, client)
+        public Picture(string id, string signedUrl)
+            : this(id)
         {
-            SetValue<string>("signedUrl", signedUrl, checkIsProp: false);
-        }
-
-        public Task<BuddyResult<Stream>> GetFileAsync(int? size = null)
-        {
-            return base.GetFileCoreAsync (GetObjectPath() + "/file", new { size = size });
+            SignedUrl = signedUrl;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace BuddySDK
         Default = AutoCrashReport,
     }
 
-    public class BuddyCreds
+    class BuddyCreds
     {
         public string AppID { get; set; }
         public string AppKey { get; set; }
@@ -32,7 +32,6 @@ namespace BuddySDK
     public static partial class Buddy
     {
         static IDictionary<string, BuddyClient> _clients = new Dictionary<string, BuddyClient>();
-        static BuddyCreds _creds;
         static string _currentClientKey;
 
         private static string GetClientKey(BuddyCreds creds)
@@ -44,19 +43,19 @@ namespace BuddySDK
         {
             get
             {
-                if (_creds == null)
+                if (_currentClientKey == null || _clients[_currentClientKey] == null)
                 {
                     throw new InvalidOperationException("Init must be called before accessing Instance.");
                 }
-                if (_currentClientKey == null)
-                {
-                    _currentClientKey = GetClientKey(_creds);
-                    if (!_clients.ContainsKey(_currentClientKey) || _clients[_currentClientKey] == null)
-                    {
-                        _clients[_currentClientKey] = new BuddyClient(_creds.AppID, _creds.AppKey, _creds.Options);
-                    }
-                }
+
                 return _clients[_currentClientKey];
+            }
+            set
+            {
+                var clientKey = GetClientKey(new BuddyCreds(value.AppId, value.AppKey, value.Options));
+                _currentClientKey = clientKey;
+
+                _clients[clientKey] = value;
             }
         }
 
@@ -79,18 +78,6 @@ namespace BuddySDK
         public static Task<BuddyResult<T>> Delete<T>(string path, object parameters = null)
         {
             return CurrentInstance.Delete<T>(path, parameters);
-        }
-
-        [Obsolete("Call Buddy.Instance.[Get/Post/Put/Patch/Delete] instead")]
-        public static Task<BuddyResult<IDictionary<string, object>>> CallServiceMethod(string verb, string path, object parameters = null)
-        {
-            return CurrentInstance.CallServiceMethod<IDictionary<string, object>>(verb, path, parameters);
-        }
-
-        [Obsolete("Call Buddy.Instance.[Get/Post/Put/Patch/Delete] instead")]
-        public static Task<BuddyResult<T>> CallServiceMethod<T>(string verb, string path, object parameters = null)
-        {
-            return CurrentInstance.CallServiceMethod<T>(verb, path, parameters);
         }
 
         public static AuthenticatedUser CurrentUser
@@ -124,15 +111,6 @@ namespace BuddySDK
             }
         }
 
-        public static event EventHandler<ConnectivityLevelChangedArgs> ConnectivityLevelChanged {
-            add {
-                CurrentInstance.ConnectivityLevelChanged += value;
-            }
-            remove {
-                CurrentInstance.ConnectivityLevelChanged -= value;
-            }
-        }
-
         public static event EventHandler<CurrentUserChangedEventArgs> CurrentUserChanged {
             add {
                 CurrentInstance.CurrentUserChanged += value;
@@ -153,29 +131,19 @@ namespace BuddySDK
 
         #endregion
 
-        [Obsolete("Please use Init(string appId, string appKey) or Init(string appId, string appKey, BuddyOptions options).")]
-        public static IBuddyClient Init(string appId, string appKey, BuddyClientFlags flags = PlatformAccess.DefaultFlags, 
-            string instanceName = null, string appVersion = null)
+        public static IBuddyClient Init(string appId, string appKey, BuddyOptions options = null)
         {
-            var options = new BuddyOptions(flags, instanceName, appVersion);
+            if (options == null)
+            {
+                options = new BuddyOptions();
+            }
 
-            return Init(appId, appKey, options);
-        }
-
-        public static IBuddyClient Init(string appId, string appKey)
-        {
-            return Init(appId, appKey, new BuddyOptions());
-        }
-
-        public static IBuddyClient Init(string appId, string appKey, BuddyOptions options)
-        {
-            if (_creds != null && !options.Flags.HasFlag(BuddyClientFlags.AllowReinitialize))
+            if (_currentClientKey != null && !options.Flags.HasFlag(BuddyClientFlags.AllowReinitialize))
             {
                 throw new InvalidOperationException("Already initialized.");
             }
-            _creds = new BuddyCreds(appId, appKey, options);
 
-            _currentClientKey = null;
+            CurrentInstance = new BuddyClient(appId, appKey, options);
 
             return CurrentInstance;
         }
@@ -228,18 +196,9 @@ namespace BuddySDK
         // 
         // Metrics
         //
-        public static Task<BuddyResult<string>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
+        public static Task<BuddyResult<BuddySDK.BuddyClient.Metric>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
         {
             return CurrentInstance.RecordMetricAsync(key, value, timeout, timeStamp);
-        }
-
-        public static Task<BuddyResult<TimeSpan?>> RecordTimedMetricEndAsync(string timedMetricId) {
-            return CurrentInstance.RecordTimedMetricEndAsync (timedMetricId);
-        }
-
-        public static Task AddCrashReportAsync (Exception ex, string message = null)
-        {
-            return CurrentInstance.AddCrashReportAsync (ex, message);
         }
 
         public static BuddyGeoLocation LastLocation

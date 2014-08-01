@@ -10,8 +10,8 @@ namespace BuddySDK
     {
         public bool IsNew { get; protected set; }
 
-        internal SocialAuthenticatedUser(string id, string accessToken, bool isNew, BuddyClient client = null)
-            : base(id, accessToken, client)
+        internal SocialAuthenticatedUser(string id, string accessToken, bool isNew)
+            : base(id, accessToken)
         {
             IsNew = isNew;
         }

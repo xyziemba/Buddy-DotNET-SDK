@@ -39,7 +39,6 @@ namespace BuddySDK
     {
 
         public event EventHandler<ServiceExceptionEventArgs> ServiceException;
-        public event EventHandler<ConnectivityLevelChangedArgs> ConnectivityLevelChanged;
         public event EventHandler<CurrentUserChangedEventArgs> CurrentUserChanged;
         public event EventHandler AuthorizationLevelChanged;
         public event EventHandler AuthorizationNeedsUserLogin;
@@ -200,18 +199,22 @@ namespace BuddySDK
                 string priorId = null;
                 if (value != null)
                 {
-                    _appSettings.UserToken = value.AccessToken;
-                    _appSettings.UserID = value.ID;
+                    if (_appSettings.UserToken != value.AccessToken
+                        && _appSettings.UserID != value.ID)
+                    {
+                        _appSettings.UserToken = value.AccessToken;
+                        _appSettings.UserID = value.ID;
 
-                    priorId = _appSettings.LastUserID;
+                        priorId = _appSettings.LastUserID;
 
-                    if (_user == null) {
-                        priorId = "";
+                        if (_user == null)
+                        {
+                            priorId = "";
+                        }
+
+                        _appSettings.LastUserID = value.ID;
+                        _appSettings.Save();
                     }
-
-                    _appSettings.LastUserID = value.ID;
-                    _appSettings.Save ();
-
                 }
                 else
                 {
@@ -250,6 +253,8 @@ namespace BuddySDK
         private AppSettings _appSettings;
         private bool _userInitialized = false;
 
+        public BuddyOptions Options { get; set; }
+
         public BuddyClient(string appid, string appkey, BuddyOptions options = null)
         {
             if (String.IsNullOrEmpty(appid))
@@ -268,7 +273,9 @@ namespace BuddySDK
 
             this.AppId = appid.Trim();
             this.AppKey = appkey.Trim();
-            
+
+            this.Options = options;
+
             _appSettings = new AppSettings (appid, appkey, options);
 
             UpdateAccessLevel();
@@ -420,21 +427,15 @@ namespace BuddySDK
                 _userInitialized = true;
                 if (_user == null && _appSettings.UserID != null && _appSettings.UserToken != null)
                 {
-                    User = new AuthenticatedUser (_appSettings.UserID, _appSettings.UserToken, this);
-                    return User;
+                    User = new AuthenticatedUser (_appSettings.UserID, _appSettings.UserToken);
+                    return _user;
                 }
             }
 
             if (_user == null) {
                 this.OnAuthorizationFailure (null);
-            } else if (_user != null && !_user.IsPopulated) {
-                // make sure the user exists.
-                //
-                _user.FetchAsync ().ContinueWith ((r) => {
-                });
-
-               
             }
+
             return _user;
         }
 
@@ -473,7 +474,12 @@ namespace BuddySDK
                     var ex = e.Exception as Exception;
 
                     // need to do this synchronously or the OS won't wait for us.
-                    var t = AddCrashReportAsync (ex);
+                    var t = Post<string>(
+                        "/devices/current/crashreports",
+                            new {
+                                stackTrace = ex.ToString(),
+                                message = e.Message
+                        }).WrapResult<string, bool>((r1) => r1.IsSuccess);
                    
                     // wait up to a second to let it go out
                     t.Wait(TimeSpan.FromSeconds(2));
@@ -600,7 +606,7 @@ namespace BuddySDK
             }
             var id = _appSettings.LastUserID;
             if (_appSettings.UserToken != null && id != null) {
-                User = new AuthenticatedUser (id, _appSettings.UserToken, this);
+                User = new AuthenticatedUser (id, _appSettings.UserToken);
             }
         }
 
@@ -657,9 +663,6 @@ namespace BuddySDK
 
             if (r != null && r.IsSuccess)
             {
-                PlatformAccess.Current.InvokeOnUiThread(async () => {
-                    await OnConnectivityChanged(PlatformAccess.Current.ConnectionType);
-                });
             }
             else
             {
@@ -668,33 +671,6 @@ namespace BuddySDK
                 
                 DotNetDeltas.Sleep((int)waitTime.TotalMilliseconds);
                 await CheckConnectivity(waitTime);
-            }
-        }
-
-        protected virtual async Task OnConnectivityChanged(ConnectivityLevel level) {
-            using (await new AsyncLock().LockAsync())
-            {
-                if (level == _connectivity)
-                {
-                    return;
-                }
-
-                if (ConnectivityLevelChanged != null)
-                {
-                    ConnectivityLevelChanged(this, new ConnectivityLevelChangedArgs
-                    {
-                        ConnectivityLevel = level
-                    });
-                }
-
-                _connectivity = level;
-                
-                switch (level)
-                {
-                    case ConnectivityLevel.None:
-                        await CheckConnectivity(TimeSpan.FromSeconds(1));
-                        break;
-                }
             }
         }
       
@@ -707,9 +683,6 @@ namespace BuddySDK
                 client.OnAuthorizationFailure ((BuddyUnauthorizedException)buddyException);
                 return false;
             } else if (buddyException is BuddyNoInternetException) {
-#pragma warning disable 4014
-                OnConnectivityChanged (ConnectivityLevel.None); // We don't care about async here.
-#pragma warning restore 4014
                 return false;
             }
 
@@ -820,7 +793,7 @@ namespace BuddySDK
 					dateOfBirth = dateOfBirth,
                     tag = tag
                 }).ContinueWith( r =>  r.Result.Convert<AuthenticatedUser>( d => {
-                    var user = new AuthenticatedUser( (string)d["id"], (string)d["accessToken"], this);
+                    var user = new AuthenticatedUser( (string)d["id"], (string)d["accessToken"]);
 
                     this.User = user;
                     return user;
@@ -843,7 +816,7 @@ namespace BuddySDK
             {
                 Username = username,
                 Password = password
-                }, (result) => new AuthenticatedUser((string)result["id"], (string)result["accessToken"], this));
+                }, (result) => new AuthenticatedUser((string)result["id"], (string)result["accessToken"]));
         }
 
         public Task<BuddyResult<SocialAuthenticatedUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
@@ -853,26 +826,21 @@ namespace BuddySDK
                         IdentityProviderName = identityProviderName,
                         IdentityID = identityID,
                         IdentityAccessToken = identityAccessToken
-                }, (result) => new SocialAuthenticatedUser((string)result["id"], (string)result["accessToken"], (bool)result["isNew"], this));
+                }, (result) => new SocialAuthenticatedUser((string)result["id"], (string)result["accessToken"], (bool)result["isNew"]));
         }
 
         private Task<BuddyResult<T>> LoginUserCoreAsync<T>(string path, object parameters, Func<IDictionary<string, object>, T> createUser) where T : AuthenticatedUser
         {
-            return  ResultConversionHelper <IDictionary<string, object>, T>(
-                Post<IDictionary<string,object>>(
+            var t = Post<T>(
                     path,
-                    parameters),
-                map: d => createUser (d),
-                completed: (r1, r2) => {
+                    parameters);
+                    
+            t.ContinueWith(r => {
+                if(r.Result.IsSuccess && r.Result.Value != null)
+                    User = r.Result.Value;
+            });
 
-                    var u = r2.Value;
-
-                    if (u != null){
-                        u.Update(r1.Value);
-                        User = u;
-                    }
-
-                });
+            return t;
         }
 
         private async Task<BuddyResult<bool>> LogoutInternal() {
@@ -932,136 +900,6 @@ namespace BuddySDK
                     newPassword = newPassword
                 });
         }
-             
-        private Metadata _appMetadata;
-
-        public Metadata AppMetadata
-        {
-            get
-            {
-                if (_appMetadata == null)
-                {
-                    _appMetadata = new Metadata("app", this);
-                }
-                return _appMetadata;
-            }
-        }
-
-        //
-        // Collections
-        //
-
-        private  CheckinCollection _checkins;
-        public  CheckinCollection Checkins
-        {
-            get
-            {
-                if (_checkins == null)
-                {
-                    _checkins = new CheckinCollection(this);
-                }
-                return _checkins;
-            }
-        }
-
-
-        private  LocationCollection _locations;
-
-        public  LocationCollection Locations
-        {
-            get
-            {
-                if (_locations == null)
-                {
-                    _locations = new LocationCollection(this);
-                }
-                return _locations;
-            }
-        }
-
-        private MessageCollection _messages;
-
-        public MessageCollection Messages
-        {
-            get
-            {
-                if (_messages == null)
-                {
-                    _messages = new MessageCollection(this);
-                }
-                return _messages;
-            }
-        }
-
-        private BlobCollection _blobs;
-
-        public BlobCollection Blobs
-        {
-            get
-            {
-                if (_blobs == null)
-                {
-                    _blobs = new BlobCollection(this);
-                }
-                return _blobs;
-            }
-        }
-
-        private  PictureCollection _pictures;
-
-        public  PictureCollection Pictures
-        {
-            get
-            {
-                if (_pictures == null)
-                {
-                    _pictures = new PictureCollection(this);
-                }
-                return _pictures;
-            }
-        }
-
-        private  AlbumCollection _albums;
-
-        public  AlbumCollection Albums
-        {
-            get
-            {
-                if (_albums == null)
-                {
-                    _albums = new AlbumCollection(this);
-                }
-                return this._albums;
-            }
-        }
-        
-        private UserCollection _users;
-             
-        public  UserCollection Users
-        {
-            get
-            {
-                if (_users == null)
-                {
-                    _users = new UserCollection(this);
-                }
-                return this._users;
-            }
-        }
-        
-        private UserListCollection _userLists;
-
-        public UserListCollection UserLists
-        {
-            get
-            {
-                if (_userLists == null)
-                {
-                    _userLists = new UserListCollection(this);
-                }
-                return this._userLists;
-            }
-        }
       
         //
         // Metrics
@@ -1072,7 +910,34 @@ namespace BuddySDK
             public bool success { get; set; }
         }
 
-        public Task<BuddyResult<string>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
+        public class Metric
+        {
+            [JsonProperty("id")]
+            public string ID { get; set; }
+            [JsonProperty("success")]
+            public bool success { get; set;}
+            internal BuddyClient _client { get; set;}
+
+            public Task<BuddyResult<TimeSpan?>> Finish( )
+            {     
+                var r = _client.Delete<CompleteMetricResult>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(ID)), null);
+                return r.WrapResult<CompleteMetricResult, TimeSpan?>((r1) => {
+
+                    var cmr = r1.Value;
+
+                    TimeSpan? elapsedTime = null;
+
+                    if (cmr.elaspedTimeInMs != null) {
+                        elapsedTime = TimeSpan.FromMilliseconds(cmr.elaspedTimeInMs.Value);
+                    }
+
+                    return elapsedTime;
+
+                });
+            }
+        }
+
+        public Task<BuddyResult<Metric>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
         {
             int? timeoutInSeconds = null;
 
@@ -1081,55 +946,21 @@ namespace BuddySDK
                 timeoutInSeconds = (int)timeout.Value.TotalSeconds;
             }
 
-            return Post<MetricsResult>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(key)), new
+            var t = Post<Metric>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(key)), new
                 {
                     value = value,
                     timeoutInSeconds = timeoutInSeconds,
-                        timeStamp = timeStamp
-                }).WrapResult<MetricsResult, string>((r1) => r1.Value != null ? r1.Value.id : null);
+                    timeStamp = timeStamp
+                });
+
+            t.ContinueWith(r => r.Result.Value._client = this, TaskContinuationOptions.ExecuteSynchronously);
+
+            return t;
         }
 
         private class CompleteMetricResult
         {
             public long? elaspedTimeInMs { get; set; }
-        }
-
-        public Task<BuddyResult<TimeSpan?>> RecordTimedMetricEndAsync(string timedMetricId)
-        {
-
-            var r = Delete<CompleteMetricResult>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(timedMetricId)), null);
-            return r.WrapResult<CompleteMetricResult, TimeSpan?>((r1) => {
-
-                var cmr = r1.Value;
-
-                TimeSpan? elapsedTime = null;
-
-                if (cmr.elaspedTimeInMs != null) {
-                    elapsedTime = TimeSpan.FromMilliseconds(cmr.elaspedTimeInMs.Value);
-                }
-
-                return elapsedTime;
-
-            });
-                
-           
-        }
-
-        public Task<BuddyResult<bool>> AddCrashReportAsync (Exception ex, string message = null)
-        {           
-            try {
-                return Post<string>(
-                    "/devices/current/crashreports", 
-                        new {
-                            stackTrace = ex.ToString(),
-                            message = message
-                    }).WrapResult<string, bool>((r1) => r1.IsSuccess);
-            }
-            catch {
-
-            }
-            return Task.FromResult(new BuddyResult<bool>{Value=false});
-            
         }
 
         protected Task<BuddyResult<Notification>> SendPushNotificationAsyncCore(
@@ -1228,12 +1059,6 @@ namespace BuddySDK
         public Task<BuddyResult<T>> Delete<T>(string path, object parameters = null){
             return GenericRestCall(DeleteVerb, path, parameters, false, new TaskCompletionSource<BuddyResult<T>>());
         }
-
-        [Obsolete("Consumers should use Get/Post/Put/Patch/Delete methods instead of direct access")]
-        public Task<BuddyResult<T>> CallServiceMethod<T>(string verb, string path, object parameters = null, bool allowThrow = false) {
-            return GenericRestCall(verb, path, parameters, allowThrow, new TaskCompletionSource<BuddyResult<T>>());
-        }
-
         #endregion
     }
 
