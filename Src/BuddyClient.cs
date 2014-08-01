@@ -953,7 +953,7 @@ namespace BuddySDK
                     timeStamp = timeStamp
                 });
 
-            t.ContinueWith(r => r.Result.Value._client = this);
+            t.ContinueWith(r => r.Result.Value._client = this, TaskContinuationOptions.ExecuteSynchronously);
 
             return t;
         }

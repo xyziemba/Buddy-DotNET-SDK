@@ -125,6 +125,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncLock.cs" />
     <Compile Include="BuddyUtils.cs" />
     <Compile Include="BuddyObjectPathAttribute.cs" />
     <Compile Include="BuddyPermissions.cs" />
