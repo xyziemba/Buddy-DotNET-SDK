@@ -42,17 +42,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="monotouch" />
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\..\..\Projects\TestAPI\Components\json.net-4.5.11\lib\ios\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\Samples\iOS\BuddySquare\Components\json.net-4.5.11\lib\ios\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Compile Include="AuthenticatedUser.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="BuddyBase.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="BuddyClient.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -63,47 +57,41 @@
     <Compile Include="Properties\AssemblyInfoNet.cs" />
     <Compile Include="Buddy.cs" />
     <Compile Include="BuddyGeoLocation.cs" />
-    <Compile Include="SearchResult.cs" />
-    <Compile Include="SocialAuthenticatedUser.cs" />
     <Compile Include="BuddyResult.cs" />
-    <Compile Include="ConnectivityLevelChangedEventArgs.cs" />
     <Compile Include="CurrentUserChangedEventArgs.cs" />
     <Compile Include="ServiceExceptionEventArgs.cs" />
-    <Compile Include="Metadata.cs" />
     <Compile Include="DateRange.cs" />
-    <Compile Include="BuddyMetadataBase.cs" />
     <Compile Include="BuddyPermissions.cs" />
-    <Compile Include="BuddyObjectPathAttribute.cs" />
     <Compile Include="BuddyServiceClient\DateRangeJsonConverter.cs" />
     <Compile Include="BuddyServiceClient\BuddyLocationGeoConverter.cs" />
-    <Compile Include="Objects\Album.cs" />
-    <Compile Include="Objects\AlbumItem.cs" />
-    <Compile Include="Objects\Checkin.cs" />
-    <Compile Include="Objects\Location.cs" />
-    <Compile Include="Objects\Message.cs" />
-    <Compile Include="Objects\MessageType.cs" />
-    <Compile Include="Objects\Picture.cs" />
-    <Compile Include="Objects\User.cs" />
-    <Compile Include="Objects\UserList.cs" />
-    <Compile Include="Collections\AlbumCollection.cs" />
-    <Compile Include="Collections\AlbumItemCollection.cs" />
-    <Compile Include="Collections\BuddyCollectionBase.cs" />
-    <Compile Include="Collections\CheckinCollection.cs" />
-    <Compile Include="Collections\LocationCollection.cs" />
-    <Compile Include="Collections\MessageCollection.cs" />
-    <Compile Include="Collections\PictureCollection.cs" />
-    <Compile Include="Collections\UserCollection.cs" />
-    <Compile Include="Collections\UserListCollection.cs" />
     <Compile Include="PlatformAccess\IosPlatformAccess.cs" />
     <Compile Include="PlatformAccess\PlatformAccess.cs" />
     <Compile Include="PlatformAccess\WindowsPlatformAccess.cs" />
-    <Compile Include="PushNotificationType.cs" />
-    <Compile Include="Objects\Notification.cs" />
     <Compile Include="BuddyUtils.cs" />
     <Compile Include="BuddyServiceClient\IRemoteMethodProvider.cs" />
     <Compile Include="IRestProvider.cs" />
-    <Compile Include="Collections\BlobCollection.cs" />
-    <Compile Include="Objects\Blob.cs" />
+    <Compile Include="Models\Album.cs" />
+    <Compile Include="Models\AlbumItem.cs" />
+    <Compile Include="Models\Blob.cs" />
+    <Compile Include="Models\Checkin.cs" />
+    <Compile Include="Models\Location.cs" />
+    <Compile Include="Models\Message.cs" />
+    <Compile Include="Models\MessageType.cs" />
+    <Compile Include="Models\MetadataItem.cs" />
+    <Compile Include="Models\ModelBase.cs" />
+    <Compile Include="Models\Notification.cs" />
+    <Compile Include="Models\Picture.cs" />
+    <Compile Include="Models\SocialAuthenticatedUser.cs" />
+    <Compile Include="Models\User.cs" />
+    <Compile Include="Models\UserList.cs" />
+    <Compile Include="Models\UserListItem.cs" />
+    <Compile Include="AsyncLock.cs" />
+    <Compile Include="ConnectivityLevel.cs" />
+    <Compile Include="IBuddyClient.cs" />
+    <Compile Include="Models\PagedResult.cs" />
+    <Compile Include="BuddyFile.cs" />
+    <Compile Include="Models\BinaryModelBase.cs" />
+    <Compile Include="Models\Video.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -114,9 +102,8 @@
   </Target>
   -->
   <ItemGroup>
-    <Folder Include="Objects\" />
-    <Folder Include="Collections\" />
     <Folder Include="PlatformAccess\" />
+    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <XamarinComponentReference Include="json.net">

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace BuddySDK.BuddyServiceClient
 {
@@ -23,32 +24,7 @@ namespace BuddySDK.BuddyServiceClient
         public T Result { get; set; }
     }
 
-    internal class BuddyFile
-    {
-        public Stream Data;
-
-        private byte[] _bytes;
-        public byte[] Bytes
-        {
-            get
-            {
-                if (Data != null && _bytes == null)
-                {
-                    _bytes = new byte[Data.Length];
-                    Data.Read(_bytes, 0, _bytes.Length);
-
-                }
-                return _bytes;
-            }
-        }
-        public string Name;
-        public string ContentType = "application/octet-stream";
-
-        public BuddyFile()
-        {
-
-        }
-    }
+   
 
     public class JsonEnvelope<T>
     {
@@ -75,13 +51,13 @@ namespace BuddySDK.BuddyServiceClient
 
     public abstract partial class BuddyServiceClientBase : IRemoteMethodProvider
     {
-        public BuddySDK.BuddyClient Client
+        internal BuddySDK.BuddyClient Client
         {
             get;
-            protected set;
+            set;
         }
 
-        public static BuddyServiceClientBase CreateServiceClient(BuddySDK.BuddyClient client, string serviceRoot)
+        internal static BuddyServiceClientBase CreateServiceClient(BuddySDK.BuddyClient client, string serviceRoot)
         {
             var type = typeof(BuddyServiceClientHttp);
             string typeName = null;
@@ -197,6 +173,7 @@ namespace BuddySDK.BuddyServiceClient
                 ServiceException(this, args);
             }
         }
+
     }
 
     internal static class BuddyResultCreator

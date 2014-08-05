@@ -8,6 +8,7 @@ using Android.OS;
 
 using Gcm.Client;
 using BuddySDK;
+using BuddySDK.Models;
 
 namespace PushAndroidTest
 {
@@ -17,10 +18,10 @@ namespace PushAndroidTest
 		// TODO: Go to http://dev.buddyplatform.com to get an app ID and app key.
 		//private const String APP_ID = "\Your App ID";
 		//private const String APP_KEY = "\Your App Key"; 
-		private const String APP_ID = "bbbbbc.zqdbvNGqgsMg";
-		private const String APP_KEY = "0B56F2C8-E405-4A67-94DA-A86343A21DA0"; 
+        private const String APP_ID = "bbbbbc.rcdbvlNmjKbj";
+        private const String APP_KEY = "BDE88F15-D1DA-4DD2-BA8B-566B9F33385E"; 
 
-        private void NavigateToPush(AuthenticatedUser user){
+        private void NavigateToPush(User user){
             Intent push = new Intent (this, typeof(PushActivity));
             push.PutExtra ("displayName", user.FirstName);
             push.PutExtra ("userId", user.ID);
@@ -36,12 +37,12 @@ namespace PushAndroidTest
         }
 
 
-        protected override void OnCreate (Bundle bundle)
+        protected override async void OnCreate (Bundle bundle)
         {
 
             base.OnCreate (bundle);
             try{
-                Buddy.Init (APP_ID, APP_KEY, BuddyClientFlags.AutoCrashReport);
+                Buddy.Init (APP_ID, APP_KEY);
             } catch(InvalidOperationException){
                 //already intitialized
             }
@@ -53,13 +54,13 @@ namespace PushAndroidTest
                 StartActivity(loginIntent);
             };
 
-
-            if (null == Buddy.CurrentUser) {
+            var user = await Buddy.GetCurrentUserAsync ();
+            if (null == user) {
                 Intent loginIntent = new Intent(this, typeof(LoginActivity));
                 StartActivity(loginIntent);
                 return;
             }
-            NavigateToPush (Buddy.CurrentUser);
+            NavigateToPush (user);
         }
     }
 }

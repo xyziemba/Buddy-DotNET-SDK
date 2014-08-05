@@ -19,7 +19,8 @@ namespace PushAndroidTest
         protected override void OnRegistered (Context context, string registrationId)
         {
             //Receive registration Id for sending GCM Push Notifications to
-            Buddy.Instance.UpdateDeviceAsync(registrationId);
+            Buddy.SetPushToken (registrationId);
+
         }
 
         protected override void OnUnRegistered (Context context, string registrationId)
@@ -53,7 +54,8 @@ namespace PushAndroidTest
             builder.SetVibrate (new long[] { 500, 300, 100, 1000, 300, 300, 300 ,300 });
             manager.Notify (1000, builder.Build ());
 
-            Buddy.Instance.RecordNotificationReceived (intent);
+            Buddy.RecordNotificationReceived(intent);
+         
         }
 
         protected override bool OnRecoverableError (Context context, string errorId)

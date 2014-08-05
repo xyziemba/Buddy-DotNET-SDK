@@ -20,8 +20,8 @@ namespace PhoneApp5
 
 
 	    // TODO: Go to http://dev.buddyplatform.com to get an app ID and app key.
-        public const string AppId = "\Your App ID";
-        public const string AppKey = "\Your App Key";
+        public const string AppId = "bbbbbc.rcdbvlNmjKbj";
+        public const string AppKey = "BDE88F15-D1DA-4DD2-BA8B-566B9F33385E";
         public const string PushChannelName = "SamplePushChannel";
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace PhoneApp5
         {
             try
             {
-                Buddy.Init(AppId, AppKey, BuddyClientFlags.AutoCrashReport);
+                Buddy.Init(AppId, AppKey);
             }
             catch (InvalidOperationException)
             {

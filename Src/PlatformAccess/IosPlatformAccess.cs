@@ -16,7 +16,7 @@ using MonoTouch.SystemConfiguration;
 
 namespace BuddySDK
 {
-    public partial class BuddyClient {
+    internal partial class BuddyClient {
 
         public void RecordNotificationReceived<T>(T args) {
             var message = args as UILocalNotification;
@@ -31,7 +31,7 @@ namespace BuddySDK
     public partial class Buddy {
         public static void RecordNotificationReceived(UILocalNotification message) {
 
-            Instance.RecordNotificationReceived (message);
+            CurrentInstance.RecordNotificationReceived (message);
         }
     }
 

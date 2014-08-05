@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BuddySDK.Models;
 
 namespace BuddySDK
 {
@@ -59,33 +60,32 @@ namespace BuddySDK
             }
         }
 
-        public static Task<BuddyResult<T>> Get<T>(string path, object parameters = null)
+        public static Task<BuddyResult<T>> GetAsync<T>(string path, object parameters = null)
         {
-            return CurrentInstance.Get<T>(path, parameters);
+            return CurrentInstance.GetAsync<T>(path, parameters);
         }
-        public static Task<BuddyResult<T>> Post<T>(string path, object parameters = null)
+        public static Task<BuddyResult<T>> PostAsync<T>(string path, object parameters = null)
         {
-            return CurrentInstance.Post<T>(path, parameters);
+            return CurrentInstance.PostAsync<T>(path, parameters);
         }
-        public static Task<BuddyResult<T>> Put<T>(string path, object parameters = null)
+        public static Task<BuddyResult<T>> PutAsync<T>(string path, object parameters = null)
         {
-            return CurrentInstance.Put<T>(path, parameters);
+            return CurrentInstance.PutAsync<T>(path, parameters);
         }
-        public static Task<BuddyResult<T>> Patch<T>(string path, object parameters = null)
+        public static Task<BuddyResult<T>> PatchAsync<T>(string path, object parameters = null)
         {
-            return CurrentInstance.Patch<T>(path, parameters);
+            return CurrentInstance.PatchAsync<T>(path, parameters);
         }
-        public static Task<BuddyResult<T>> Delete<T>(string path, object parameters = null)
+        public static Task<BuddyResult<T>> DeleteAsync<T>(string path, object parameters = null)
         {
-            return CurrentInstance.Delete<T>(path, parameters);
+            return CurrentInstance.DeleteAsync<T>(path, parameters);
         }
 
-        public static AuthenticatedUser CurrentUser
+       
+        public static Task<User> GetCurrentUserAsync (bool reload = false)
         {
-            get
-            {
-                return CurrentInstance.User;
-            }
+           
+            return CurrentInstance.GetCurrentUserAsync (reload);
         }
 
         public static void RunOnUiThread(Action a) {
@@ -120,6 +120,15 @@ namespace BuddySDK
             }
         }
 
+        public static event EventHandler<ConnectivityLevelChangedArgs> ConnectivityLevelChanged {
+            add {
+                CurrentInstance.ConnectivityLevelChanged += value;
+            }
+            remove {
+                CurrentInstance.ConnectivityLevelChanged -= value;
+            }
+        }
+
         public static event EventHandler<ServiceExceptionEventArgs> ServiceException {
             add {
                 CurrentInstance.ServiceException += value;
@@ -148,11 +157,11 @@ namespace BuddySDK
             return CurrentInstance;
         }
 
-        public static Task<BuddyResult<AuthenticatedUser>> CreateUserAsync(string username, string password, string firstName = null, string lastName = null, string email = null, UserGender? gender = null, DateTime? dateOfBirth = null, string tag = null) {
+        public static Task<BuddyResult<User>> CreateUserAsync(string username, string password, string firstName = null, string lastName = null, string email = null, User.UserGender? gender = null, DateTime? dateOfBirth = null, string tag = null) {
             return CurrentInstance.CreateUserAsync (username, password, firstName, lastName, email, gender, dateOfBirth, tag : tag);
         }
 
-        public static Task<BuddyResult<AuthenticatedUser>> LoginUserAsync(string username, string password)
+        public static Task<BuddyResult<User>> LoginUserAsync(string username, string password)
         {
             var t = CurrentInstance.LoginUserAsync(username, password);
 
@@ -164,7 +173,7 @@ namespace BuddySDK
             return CurrentInstance.LogoutUserAsync ();
         }
 
-        public static Task<BuddyResult<SocialAuthenticatedUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
+        public static Task<BuddyResult<SocialNetworkUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
         {
             var t = CurrentInstance.SocialLoginUserAsync(identityProviderName, identityID, identityAccessToken);
 
@@ -174,29 +183,17 @@ namespace BuddySDK
         // 
         // Push Notifications
         //
-        public  static Task<BuddyResult<Notification>> SendPushNotificationAsync(
-            IEnumerable<string> recipientUserIds, 
-            string title = null, string message = null, 
-            int? counter = null, string payload = null, 
-            IDictionary<string,object> osCustomData = null)
-        {
-            return CurrentInstance.SendPushNotificationAsync (
-                recipientUserIds,
-                title,
-                message,
-                counter,
-                payload,
-                osCustomData);
-        }
 
         public static void SetPushToken(string token) {
             CurrentInstance.SetPushToken (token);
         }
 
+        
+
         // 
         // Metrics
         //
-        public static Task<BuddyResult<BuddySDK.BuddyClient.Metric>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
+        public static Task<BuddyResult<Metric>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
         {
             return CurrentInstance.RecordMetricAsync(key, value, timeout, timeStamp);
         }

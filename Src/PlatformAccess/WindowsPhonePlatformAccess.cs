@@ -17,6 +17,15 @@ using System.Xml.Linq;
 
 namespace BuddySDK
 {
+
+    internal partial class Buddy
+    {
+        public static void RecordNotificationReceived<T>(T args) 
+        {
+            CurrentInstance.RecordNotificationReceived(args);
+        }
+    }
+
     public partial class BuddyClient
     {
         private WindowsPhonePlatformAccess WpPlatformAccess
@@ -28,10 +37,9 @@ namespace BuddySDK
             }
         }
 
-        public void RecordNotificationReceived<T>(T args)
+        public void RecordNotificationReceived<T>(T args) 
         {
             var context = args as NavigationContext;
-
             string value;
             if (context != null && context.QueryString.TryGetValue(PlatformAccess.BuddyPushKey, out value))
             {

@@ -171,33 +171,25 @@ namespace BuddySDK.BuddyServiceClient
             {
                 var bcr = new BuddyCallResult<T>();
                 
-				var isResponseRequest = typeof(T).Equals(typeof(HttpWebResponse));
+                var isFile = typeof(BuddyFile).Equals(typeof(T));
 
-                if (isResponseRequest)
-                {
-                    bcr.Result = (T)(object)response;
-                }
-
+               
                 if (response == null && ex != null && ex is WebException)
                 {
                     response = (HttpWebResponse)((WebException)ex).Response;
-                    
-                   
                 }
                 
 
-                if ((response == null || isResponseRequest) && ex != null)
+                if ((response == null) && ex != null)
                 {
                     finishMethodCall(ex, bcr);
-                    
                     return;
                 }
                 else if (response != null)
                 {
                     bcr.StatusCode = (int)response.StatusCode;
-                    if (!isResponseRequest)
+                    if (!isFile || (bcr.StatusCode >= 400 && response.ContentType.Contains("application/json")))
                     {
-                    
                         string body = null;
                         try
                         {
@@ -258,9 +250,22 @@ namespace BuddySDK.BuddyServiceClient
                             bcr.Message = "Couldn't parse JSON: \r\n" + body;
                         }
                     }
+                    else {
+
+                       
+                        bcr = new BuddyCallResult<T>();
+
+                        if (bcr.StatusCode < 400) {
+                            var file = new BuddyFile(response.GetResponseStream(), null, response.ContentType);
+                            bcr.Result = (T)(object)file;
+                        }
+                        bcr.StatusCode = (int)response.StatusCode;
+                    }
+
+
                     try
                     {
-                            finishMethodCall(null, bcr);
+                        finishMethodCall(null, bcr);
                     }
                     catch (Exception ex3)
                     {
@@ -268,6 +273,7 @@ namespace BuddySDK.BuddyServiceClient
                     }
 
                 }
+                  
             });
 
 
@@ -367,12 +373,8 @@ namespace BuddySDK.BuddyServiceClient
                     // get json for the remainder and make it into a file
                     var json = JsonConvert.SerializeObject(parameters, Formatting.None);
 
-                    var jsonFile = new BuddyFile()
-                    {
-                        ContentType = "application/json",
-                        Data = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json)),
-                        Name = "body"
-                    };
+                    var jsonFile = new BuddyFile(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json)), "body", "application/json");
+                  
                     newParameters.Add(jsonFile.Name, jsonFile);
                     parameters = newParameters;
                 }
@@ -552,7 +554,7 @@ namespace BuddySDK.BuddyServiceClient
 
         private static void HttpPostMultipart(HttpWebRequest wr, Stream requestStream, IDictionary<string, object> nvc)
         {
-            var files = new List<BuddyFile>();
+            var files = new List<Tuple<string,BuddyFile>>();
             
             string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
 
@@ -568,7 +570,7 @@ namespace BuddySDK.BuddyServiceClient
 
                 if (kvp.Value is BuddyFile)
                 {
-                    files.Add((BuddyFile)kvp.Value);
+                    files.Add(new Tuple<string,BuddyFile>(kvp.Key, (BuddyFile)kvp.Value));
                     continue;
                 }
 
@@ -585,19 +587,19 @@ namespace BuddySDK.BuddyServiceClient
 
             for (var i = files.Count-1; i >=0; i--)
             {
-                var file = files[i];
+                var file = files[i].Item2;
                 string headerTemplate = "Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\r\nContent-Type: {2}\r\n\r\n";
-                string header = string.Format(CultureInfo.InvariantCulture, headerTemplate, file.Name, file.Name, file.ContentType);
+                string header = string.Format(CultureInfo.InvariantCulture, headerTemplate, files[i].Item1, file.Name, file.ContentType);
                 byte[] headerbytes = System.Text.Encoding.UTF8.GetBytes(header);
                 requestStream.Write(headerbytes, 0, headerbytes.Length);
                 requestStream.Write(file.Bytes, 0, (int)file.Data.Length);
                 requestStream.Write(boundarybytes, 0, boundarybytes.Length);
-
-              
             }
 
             byte[] trailer = System.Text.Encoding.UTF8.GetBytes("\r\n--" + boundary + "--\r\n");
             requestStream.Write(trailer, 0, trailer.Length);
+
+           
         }
        
      }

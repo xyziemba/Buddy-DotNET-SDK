@@ -111,9 +111,6 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\Libs\Json50r8\Bin\Net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -122,41 +119,25 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncLock.cs" />
     <Compile Include="BuddyUtils.cs" />
-    <Compile Include="BuddyObjectPathAttribute.cs" />
     <Compile Include="BuddyPermissions.cs" />
     <Compile Include="BuddyResult.cs" />
     <Compile Include="BuddyServiceClient\DateRangeJsonConverter.cs" />
     <Compile Include="BuddyServiceClient\BuddyLocationGeoConverter.cs" />
     <Compile Include="ConnectivityLevel.cs" />
-    <Compile Include="Objects\DateRange.cs" />
-    <Compile Include="Objects\Blob.cs" />
-    <Compile Include="Objects\Message.cs" />
-    <Compile Include="Objects\MessageType.cs" />
-    <Compile Include="Objects\MetadataItem.cs" />
-    <Compile Include="Objects\Notification.cs" />
-    <Compile Include="Objects\PagedResult.cs" />
-    <Compile Include="Objects\UserList.cs" />
-    <Compile Include="Objects\AuthenticatedUser.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Buddy.cs" />
-    <Compile Include="Objects\BuddyBase.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="BuddyClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Objects\BuddyGeoLocation.cs" />
     <Compile Include="BuddyServiceClient\BuddyServiceClientBase.cs" />
     <Compile Include="BuddyServiceClient\BuddyServiceClientHttp.cs" />
     <Compile Include="BuddyServiceException.cs" />
-    <Compile Include="Objects\Checkin.cs" />
-    <Compile Include="Objects\Location.cs" />
-    <Compile Include="Objects\Picture.cs" />
     <Compile Include="PlatformAccess\DotNetPlatformAccess.cs" />
     <Compile Include="PlatformAccess\DotNetPlatformBase.cs" />
     <Compile Include="PlatformAccess\IsolatedStorageSettings.cs" />
@@ -164,18 +145,34 @@
     <Compile Include="PlatformAccess\WindowsPlatformAccess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\AssemblyInfoNet.cs" />
-    <Compile Include="PushNotificationType.cs" />
-    <Compile Include="SocialAuthenticatedUser.cs" />
-    <Compile Include="SearchResult.cs" />
-    <Compile Include="Objects\User.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Objects\AlbumItem.cs" />
-    <Compile Include="Objects\Album.cs" />
     <Compile Include="CurrentUserChangedEventArgs.cs" />
     <Compile Include="ServiceExceptionEventArgs.cs" />
     <Compile Include="BuddyServiceClient\IRemoteMethodProvider.cs" />
     <Compile Include="IRestProvider.cs" />
+    <Compile Include="Models\Album.cs" />
+    <Compile Include="Models\AlbumItem.cs" />
+    <Compile Include="Models\Blob.cs" />
+    <Compile Include="Models\Checkin.cs" />
+    <Compile Include="Models\Location.cs" />
+    <Compile Include="Models\Message.cs" />
+    <Compile Include="Models\MetadataItem.cs" />
+    <Compile Include="Models\Notification.cs" />
+    <Compile Include="Models\Picture.cs" />
+    <Compile Include="Models\User.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Models\UserList.cs" />
+    <Compile Include="BuddyGeoLocation.cs" />
+    <Compile Include="Models\ModelBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Models\SocialAuthenticatedUser.cs" />
+    <Compile Include="DateRange.cs" />
+    <Compile Include="Models\UserListItem.cs" />
+    <Compile Include="IBuddyClient.cs" />
+    <Compile Include="BuddyFile.cs" />
+    <Compile Include="Models\BinaryModelBase.cs" />
+    <Compile Include="Models\Video.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.Buddy.Net45.config" />
@@ -189,4 +186,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
 </Project>

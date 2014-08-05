@@ -8,6 +8,7 @@ using MonoTouch.CoreLocation;
 using MonoTouch.MapKit;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BuddySDK.Models;
 
 namespace BuddySquare.iOS
 {
@@ -180,8 +181,12 @@ namespace BuddySquare.iOS
                     loc = new BuddyGeoLocation(_selected.ID);
                 }
 
-                await Buddy.Checkins.AddAsync (comment, null, loc, photoID);
-
+                await Buddy.PostAsync<Checkin>("/checkins", new {
+                    Comment = comment,
+                    Location = loc,
+                    Tag = photoID
+                });
+                       
                
 
                 this.NavigationController.PopViewControllerAnimated(true);
@@ -196,10 +201,10 @@ namespace BuddySquare.iOS
             //
             if (_chosenImage != null) {
 
-                var bytes = _chosenImage.AsJPEG ();
 
-
-				var result = await Buddy.Pictures.AddAsync (comment, bytes.AsStream (), "image/jpeg", loc);
+                var result = await Buddy.PostAsync<Picture> ("/pictures", new {
+                    data = new BuddyFile (_chosenImage.AsPNG ().AsStream (), "data", "image/png"),
+                });
 
                 if (result.IsSuccess) {
                     finish (result.Value);
@@ -241,10 +246,12 @@ namespace BuddySquare.iOS
                     return;
                 }
 
-                var r = await Buddy.Locations.FindAsync(locationRange: new BuddyGeoLocationRange(_coords.Value.Latitude,_coords.Value.Longitude, 3000));
+                var r = await Buddy.GetAsync<PagedResult<Location>> ("/locations", new {
+                    locationRange = new BuddyGeoLocationRange(_coords.Value.Latitude,_coords.Value.Longitude, 3000)
+                });
 
                 if (r.IsSuccess) {
-                    _locations = r.PageResults;
+                    _locations = r.Value.PageResults;
                     _parent.OnLocationsUpdate (_locations);                
                 }
             }
