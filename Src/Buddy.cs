@@ -80,7 +80,6 @@ namespace BuddySDK
         {
             return CurrentInstance.DeleteAsync<T>(path, parameters);
         }
-
        
         public static Task<User> GetCurrentUserAsync (bool reload = false)
         {
@@ -183,12 +182,15 @@ namespace BuddySDK
         // 
         // Push Notifications
         //
-
-        public static void SetPushToken(string token) {
-            CurrentInstance.SetPushToken (token);
+        public static void SetPushToken(string token)
+        {
+            CurrentInstance.SetPushToken(token);
         }
 
-        
+        public static void RecordNotificationReceived<T>(T args)
+        {
+            CurrentInstance.RecordNotificationReceived(args);
+        }   
 
         // 
         // Metrics
