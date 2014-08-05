@@ -1050,55 +1050,6 @@ namespace BuddySDK
             return t;
         }
 
-       
-
-        protected Task<BuddyResult<NotificationResult>> SendPushNotificationAsyncCore(
-            IEnumerable<string> recipientUserIds,
-            string title = null,
-            string message = null,
-            int? counter = null,
-            string payload = null,
-            IDictionary<string, object> osCustomData = null)
-        {
-            var result = PostAsync<NotificationResult>(
-                "/notifications",
-                          new
-                          {
-                              title = title,
-                              message = message,
-                              counterValue = counter,
-                              payload = payload,
-                              osCustomData = osCustomData,
-                              recipients = recipientUserIds
-                          }
-              );
-
-            return result; 
-        }
-
-        //
-        // Push Notifications
-        //
-        public Task<BuddyResult<NotificationResult>> SendPushNotificationAsync(
-            IEnumerable<string> recipientUserIds, 
-            string title = null, 
-            string message = null, 
-            int? counter = null, 
-            string payload = null, 
-            IDictionary<string,object> osCustomData = null)
-        {
-
-
-            return SendPushNotificationAsyncCore(
-                recipientUserIds,
-                title,
-                message,
-                counter,
-                payload,
-                osCustomData);
-          
-        }
-
         public void SetPushToken(string token) {
             PlatformAccess.Current.SetPushToken (token);
         }

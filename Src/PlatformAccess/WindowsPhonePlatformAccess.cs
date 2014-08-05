@@ -1,32 +1,16 @@
-﻿
-#if WINDOWS_PHONE
+﻿#if WINDOWS_PHONE
 
 using Microsoft.Phone.Notification;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Navigation;
 using System.Xml.Linq;
 
 namespace BuddySDK
 {
-
-    internal partial class Buddy
-    {
-        public static void RecordNotificationReceived<T>(T args) 
-        {
-            CurrentInstance.RecordNotificationReceived(args);
-        }
-    }
-
-    public partial class BuddyClient
+    internal partial class BuddyClient
     {
         private WindowsPhonePlatformAccess WpPlatformAccess
         {
