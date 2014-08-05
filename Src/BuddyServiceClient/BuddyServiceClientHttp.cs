@@ -167,7 +167,7 @@ namespace BuddySDK.BuddyServiceClient
             };
 
             var d = ParametersToDictionary (parameters);
-            MakeRequest(verb, path, d, async (ex, response) =>
+            MakeRequest<T>(verb, path, d, async (ex, response) =>
             {
                 var bcr = new BuddyCallResult<T>();
                 
@@ -330,7 +330,7 @@ namespace BuddySDK.BuddyServiceClient
         {
             return verb + " " + path;
         }
-        private async void MakeRequest(string verb, string path, IDictionary<string, object> parameters, Action<Exception, HttpWebResponse> callback)
+        private async void MakeRequest<T>(string verb, string path, IDictionary<string, object> parameters, Action<Exception, HttpWebResponse> callback)
         {
             if (!path.StartsWith("/"))
             {
@@ -347,6 +347,17 @@ namespace BuddySDK.BuddyServiceClient
             switch (verb.ToUpperInvariant())
             {
             case "GET":
+
+
+                // For redirects (specifically Azure Blob), if our authentication header is in there
+                // it'll deny us access.  So for that case, we just need to add the access token to the parameters
+                // collection so it doesn't get added as a header.
+                //
+                if (typeof(T) == typeof(BuddyFile) && !parameters.ContainsKey("accessToken"))
+                {
+                    parameters["accessToken"] = token;
+                    token = null;
+                }
                 url += "?" + GetUrlEncodedParameters(parameters);
                 requestType = HttpRequestType.HttpGet;
                 break;
