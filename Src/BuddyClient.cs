@@ -22,6 +22,7 @@ namespace BuddySDK
         public BuddyClientFlags Flags { get; set; }
         public string InstanceName { get; set; }
         public string AppVersion { get; set; }
+        public string DeviceTag { get; set; }
 
         public BuddyOptions()
         {
@@ -75,7 +76,7 @@ namespace BuddySDK
             public string LastUserID {get;set;}
 
             public string DevicePushToken { get; set; }
-
+            
             public BuddyOptions Options { get; set; }
 
             public AppSettings() {
@@ -334,7 +335,8 @@ namespace BuddySDK
                     Model = PlatformAccess.Current.Model,
                     OSVersion = PlatformAccess.Current.OSVersion,
                     PushToken = await PlatformAccess.Current.GetPushTokenAsync (),
-                    AppVersion = _appSettings.Options.AppVersion ?? PlatformAccess.Current.AppVersion
+                    AppVersion = _appSettings.Options.AppVersion ?? PlatformAccess.Current.AppVersion,
+                    Tag = _appSettings.Options.DeviceTag
                 });
 
             var dr = await ResultConversionHelper  <DeviceRegistration, DeviceRegistration> (
