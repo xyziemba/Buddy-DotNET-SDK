@@ -1,12 +1,21 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
-namespace Buddy
+namespace BuddySDK.Models
 {
-    public class Video
+    public class Video : BinaryModelBase
     {
-        public Video ()
-        {
-        }
+        [JsonProperty("encoding")]
+        public string Encoding { get; set; }
+
+         [JsonProperty("bitRate")]
+        public int BitRate { get; set; }
+
+         [JsonProperty("lengthInSeconds")]
+        public double LengthInSeconds { get; set; }
+
+         [JsonProperty("thumbnailID")]
+        public string ThumbnailID { get; set; }
     }
 }
 

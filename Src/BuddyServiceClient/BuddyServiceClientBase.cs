@@ -51,13 +51,13 @@ namespace BuddySDK.BuddyServiceClient
 
     public abstract partial class BuddyServiceClientBase : IRemoteMethodProvider
     {
-        public BuddySDK.BuddyClient Client
+        internal BuddySDK.BuddyClient Client
         {
             get;
-            protected set;
+            set;
         }
 
-        public static BuddyServiceClientBase CreateServiceClient(BuddySDK.BuddyClient client, string serviceRoot)
+        internal static BuddyServiceClientBase CreateServiceClient(BuddySDK.BuddyClient client, string serviceRoot)
         {
             var type = typeof(BuddyServiceClientHttp);
             string typeName = null;

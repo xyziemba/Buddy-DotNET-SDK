@@ -18,7 +18,7 @@ using System.Xml.Linq;
 namespace BuddySDK
 {
 
-    public partial class Buddy
+    internal partial class Buddy
     {
         public static void RecordNotificationReceived<T>(T args) 
         {

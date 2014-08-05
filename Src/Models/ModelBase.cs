@@ -62,4 +62,55 @@ namespace BuddySDK.Models
 
        
     }
+
+    public class PagingModel<T>
+    {
+
+         [JsonProperty("currentToken")]
+        public string CurrentToken { get; set; }
+
+         [JsonProperty("nextToken")]
+        public string NextToken { get; set; }
+
+         [JsonProperty("previousToken")]
+        public string PreviousToken { get; set; }
+
+         [JsonProperty("pageResults")]
+        public IEnumerable<T> PageResults { get; set; }
+
+    }
+
+    public class Metric
+    {
+        [JsonProperty("id")]
+        public string ID { get; set; }
+        [JsonProperty("success")]
+        public bool success { get; set; }
+        internal BuddyClient _client { get; set; }
+
+
+        private class CompleteMetricResult
+        {
+            public long? elaspedTimeInMs { get; set; }
+        }
+        public Task<BuddyResult<TimeSpan?>> FinishAsync()
+        {
+            var r = _client.DeleteAsync<CompleteMetricResult>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(ID)), null);
+            return r.WrapResult<CompleteMetricResult, TimeSpan?>((r1) =>
+            {
+
+                var cmr = r1.Value;
+
+                TimeSpan? elapsedTime = null;
+
+                if (cmr.elaspedTimeInMs != null)
+                {
+                    elapsedTime = TimeSpan.FromMilliseconds(cmr.elaspedTimeInMs.Value);
+                }
+
+                return elapsedTime;
+
+            });
+        }
+    }
 }

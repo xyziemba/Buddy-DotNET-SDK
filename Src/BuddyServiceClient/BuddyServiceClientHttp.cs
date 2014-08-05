@@ -554,7 +554,7 @@ namespace BuddySDK.BuddyServiceClient
 
         private static void HttpPostMultipart(HttpWebRequest wr, Stream requestStream, IDictionary<string, object> nvc)
         {
-            var files = new List<BuddyFile>();
+            var files = new List<Tuple<string,BuddyFile>>();
             
             string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
 
@@ -570,7 +570,7 @@ namespace BuddySDK.BuddyServiceClient
 
                 if (kvp.Value is BuddyFile)
                 {
-                    files.Add((BuddyFile)kvp.Value);
+                    files.Add(new Tuple<string,BuddyFile>(kvp.Key, (BuddyFile)kvp.Value));
                     continue;
                 }
 
@@ -587,9 +587,9 @@ namespace BuddySDK.BuddyServiceClient
 
             for (var i = files.Count-1; i >=0; i--)
             {
-                var file = files[i];
+                var file = files[i].Item2;
                 string headerTemplate = "Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\r\nContent-Type: {2}\r\n\r\n";
-                string header = string.Format(CultureInfo.InvariantCulture, headerTemplate, file.Name, file.Name, file.ContentType);
+                string header = string.Format(CultureInfo.InvariantCulture, headerTemplate, files[i].Item1, file.Name, file.ContentType);
                 byte[] headerbytes = System.Text.Encoding.UTF8.GetBytes(header);
                 requestStream.Write(headerbytes, 0, headerbytes.Length);
                 requestStream.Write(file.Bytes, 0, (int)file.Data.Length);
@@ -598,6 +598,8 @@ namespace BuddySDK.BuddyServiceClient
 
             byte[] trailer = System.Text.Encoding.UTF8.GetBytes("\r\n--" + boundary + "--\r\n");
             requestStream.Write(trailer, 0, trailer.Length);
+
+           
         }
        
      }

@@ -32,7 +32,7 @@ namespace BuddySDK
 
         event EventHandler AuthorizationLevelChanged;
 
-        Task<BuddyResult<BuddySDK.BuddyClient.Metric>> RecordMetricAsync(string key, IDictionary<string, object> value, TimeSpan? timeout, DateTime? timeStamp);
+        Task<BuddyResult<Metric>> RecordMetricAsync(string key, IDictionary<string, object> value, TimeSpan? timeout, DateTime? timeStamp);
     }
 }
 

@@ -193,7 +193,7 @@ namespace BuddySDK
         // 
         // Metrics
         //
-        public static Task<BuddyResult<BuddySDK.BuddyClient.Metric>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
+        public static Task<BuddyResult<Metric>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
         {
             return CurrentInstance.RecordMetricAsync(key, value, timeout, timeStamp);
         }

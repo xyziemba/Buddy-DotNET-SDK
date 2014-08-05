@@ -39,7 +39,7 @@ namespace BuddySDK
    
 
   
-    public partial class BuddyClient : IRestProvider, IBuddyClient
+    internal partial class BuddyClient : IRestProvider, IBuddyClient
     {
 
 
@@ -1019,32 +1019,7 @@ namespace BuddySDK
             public bool success { get; set; }
         }
 
-        public class Metric
-        {
-            [JsonProperty("id")]
-            public string ID { get; set; }
-            [JsonProperty("success")]
-            public bool success { get; set;}
-            internal BuddyClient _client { get; set;}
-
-            public Task<BuddyResult<TimeSpan?>> FinishAsync( )
-            {     
-                var r = _client.DeleteAsync<CompleteMetricResult>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(ID)), null);
-                return r.WrapResult<CompleteMetricResult, TimeSpan?>((r1) => {
-
-                    var cmr = r1.Value;
-
-                    TimeSpan? elapsedTime = null;
-
-                    if (cmr.elaspedTimeInMs != null) {
-                        elapsedTime = TimeSpan.FromMilliseconds(cmr.elaspedTimeInMs.Value);
-                    }
-
-                    return elapsedTime;
-
-                });
-            }
-        }
+       
 
         public Task<BuddyResult<Metric>> RecordMetricAsync(string key, IDictionary<string, object> value = null, TimeSpan? timeout = null, DateTime? timeStamp = null)
         {
@@ -1067,10 +1042,7 @@ namespace BuddySDK
             return t;
         }
 
-        private class CompleteMetricResult
-        {
-            public long? elaspedTimeInMs { get; set; }
-        }
+       
 
         protected Task<BuddyResult<NotificationResult>> SendPushNotificationAsyncCore(
             IEnumerable<string> recipientUserIds,

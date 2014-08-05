@@ -18,7 +18,7 @@ using Android.Provider;
 namespace BuddySDK
 {
 
-    public partial class BuddyClient {
+    internal partial class BuddyClient {
 
         public void RecordNotificationReceived<T>(T args) {
             var message = args as Intent;

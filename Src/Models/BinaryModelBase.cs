@@ -1,27 +1,24 @@
 ﻿
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 
-namespace Buddy
+namespace BuddySDK.Models
 {
-    [Activity (Label = "BinaryModelBase")]            
-    public class BinaryModelBase : Activity
+    public class BinaryModelBase : ModelBase
     {
-        protected override void OnCreate (Bundle bundle)
-        {
-            base.OnCreate (bundle);
+        [JsonProperty("contentType")]
+        public string ContentType { get; set; }
 
-            // Create your application here
-        }
+         [JsonProperty("contentLength")]
+        public long ContentLength { get; set; }
+
+         [JsonProperty("signedUrl")]
+        public Uri SignedUrl { get; set; }
+
     }
 }
 
