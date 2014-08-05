@@ -791,6 +791,7 @@ namespace BuddySDK
             var count = System.Threading.Interlocked.Increment (ref _processingAuthFailure);
 
             if (count > 1) {
+                System.Threading.Interlocked.Decrement(ref _processingAuthFailure);
                 return;
             }
 
@@ -956,6 +957,8 @@ namespace BuddySDK
 
             IDictionary<string,object> dresult = null;
 
+            bool hadUser = _appSettings.UserToken != null;
+
             var r = await ResultConversionHelper<IDictionary<string,object>, bool>(
                 PostAsync<IDictionary<string,object>>(
                     "/users/me/logout",
@@ -980,6 +983,11 @@ namespace BuddySDK
                     _appSettings.DeviceToken = token;
                     _appSettings.Save ();
                     OnAccessTokenChanged(token, AccessTokenType.Device, expires);
+                }
+
+                if (hadUser)
+                {
+                    OnAuthorizationFailure(null);
                 }
             }
             return r;
