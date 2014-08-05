@@ -123,6 +123,11 @@ Our download example uses pictures.
     // Gets the photo bits, resized to 200x200
     var loadTask = await Buddy.GetAsync<BuddyFile>("/pictures/" + id + "/file", new {size=200});
 
+    if (loadTask.IsSuccess && loadTask.Value != null) {
+        
+        // Load the image data from loadTask.Value.Data
+    }
+
 ### <Remaining SDK-specific Instructions>
 
 <Any further recommendations or instructions for our users go here. This is where you can provide suggestions, best practices, and sample use-cases for the specific SDK.>
