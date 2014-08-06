@@ -22,6 +22,7 @@ namespace BuddySDK
         public BuddyClientFlags Flags { get; set; }
         public string InstanceName { get; set; }
         public string AppVersion { get; set; }
+        public string DeviceTag { get; set; }
 
         public BuddyOptions()
         {
@@ -75,7 +76,7 @@ namespace BuddySDK
             public string LastUserID {get;set;}
 
             public string DevicePushToken { get; set; }
-
+            
             public BuddyOptions Options { get; set; }
 
             public AppSettings() {
@@ -334,7 +335,8 @@ namespace BuddySDK
                     Model = PlatformAccess.Current.Model,
                     OSVersion = PlatformAccess.Current.OSVersion,
                     PushToken = await PlatformAccess.Current.GetPushTokenAsync (),
-                    AppVersion = _appSettings.Options.AppVersion ?? PlatformAccess.Current.AppVersion
+                    AppVersion = _appSettings.Options.AppVersion ?? PlatformAccess.Current.AppVersion,
+                    Tag = _appSettings.Options.DeviceTag
                 });
 
             var dr = await ResultConversionHelper  <DeviceRegistration, DeviceRegistration> (
@@ -1048,55 +1050,6 @@ namespace BuddySDK
             t.ContinueWith(r => r.Result.Value._client = this, TaskContinuationOptions.ExecuteSynchronously);
 
             return t;
-        }
-
-       
-
-        protected Task<BuddyResult<NotificationResult>> SendPushNotificationAsyncCore(
-            IEnumerable<string> recipientUserIds,
-            string title = null,
-            string message = null,
-            int? counter = null,
-            string payload = null,
-            IDictionary<string, object> osCustomData = null)
-        {
-            var result = PostAsync<NotificationResult>(
-                "/notifications",
-                          new
-                          {
-                              title = title,
-                              message = message,
-                              counterValue = counter,
-                              payload = payload,
-                              osCustomData = osCustomData,
-                              recipients = recipientUserIds
-                          }
-              );
-
-            return result; 
-        }
-
-        //
-        // Push Notifications
-        //
-        public Task<BuddyResult<NotificationResult>> SendPushNotificationAsync(
-            IEnumerable<string> recipientUserIds, 
-            string title = null, 
-            string message = null, 
-            int? counter = null, 
-            string payload = null, 
-            IDictionary<string,object> osCustomData = null)
-        {
-
-
-            return SendPushNotificationAsyncCore(
-                recipientUserIds,
-                title,
-                message,
-                counter,
-                payload,
-                osCustomData);
-          
         }
 
         public void SetPushToken(string token) {
