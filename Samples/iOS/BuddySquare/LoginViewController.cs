@@ -5,6 +5,7 @@ using MonoTouch.UIKit;
 using System.Threading.Tasks;
 using System.Linq;
 using BuddySDK;
+using BuddySDK.Models;
 
 namespace BuddySquare.iOS
 {
@@ -62,10 +63,10 @@ namespace BuddySquare.iOS
                 uav.Show();
             };
 
-            BuddyResult<AuthenticatedUser> userTask = null;
+            BuddyResult<User> userTask = null;
              if (isLogin) {
                 userTask =  await Buddy.LoginUserAsync (username, password); 
-                }
+            }
             else {
                 userTask = await Buddy.CreateUserAsync (username, password);
             }

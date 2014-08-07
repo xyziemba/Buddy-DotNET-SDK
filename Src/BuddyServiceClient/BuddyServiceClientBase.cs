@@ -1,8 +1,9 @@
-﻿﻿using BuddySDK;
+﻿using BuddySDK;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace BuddySDK.BuddyServiceClient
 {
@@ -23,32 +24,7 @@ namespace BuddySDK.BuddyServiceClient
         public T Result { get; set; }
     }
 
-    public class BuddyFile // Was internal
-    {
-        public Stream Data;
-
-        private byte[] _bytes;
-        public byte[] Bytes
-        {
-            get
-            {
-                if (Data != null && _bytes == null)
-                {
-                    _bytes = new byte[Data.Length];
-                    Data.Read(_bytes, 0, _bytes.Length);
-
-                }
-                return _bytes;
-            }
-        }
-        public string Name;
-        public string ContentType = "application/octet-stream";
-
-        public BuddyFile()
-        {
-
-        }
-    }
+   
 
     public class JsonEnvelope<T>
     {
@@ -73,15 +49,15 @@ namespace BuddySDK.BuddyServiceClient
     }
 
 
-    public abstract partial class BuddyServiceClientBase
+    public abstract partial class BuddyServiceClientBase : IRemoteMethodProvider
     {
-        public BuddySDK.BuddyClient Client
+        internal BuddySDK.BuddyClient Client
         {
             get;
-            protected set;
+            set;
         }
 
-        public static BuddyServiceClientBase CreateServiceClient(BuddySDK.BuddyClient client, string serviceRoot)
+        internal static BuddyServiceClientBase CreateServiceClient(BuddySDK.BuddyClient client, string serviceRoot)
         {
             var type = typeof(BuddyServiceClientHttp);
             string typeName = null;
@@ -127,7 +103,7 @@ namespace BuddySDK.BuddyServiceClient
         {
         }
 
-        public static IDictionary<string, object> ParametersToDictionary(object parameters)
+        internal static IDictionary<string, object> ParametersToDictionary(object parameters)
         {
             IDictionary<string, object> d = parameters as IDictionary<string, object>;
             if (d != null)
@@ -155,12 +131,13 @@ namespace BuddySDK.BuddyServiceClient
             PlatformAccess.Current.InvokeOnUiThread(callback);
         }
 
-        public System.Threading.Tasks.Task<BuddyCallResult<T1>> CallMethodAsync<T1>(string verb, string path, object parameters = null)
-        {
-            var tcs = new TaskCompletionSource<BuddyCallResult<T1>>();
+        public Task<BuddyCallResult<T>> CallMethodAsync<T>(string verb, string path, object parameters = null)
+        {   
+            var tcs = new TaskCompletionSource<BuddyCallResult<T>>();
 
 
-            CallMethodAsync<T1>(verb, path, parameters, (bcr) =>
+
+            CallMethodAsync<T>(verb, path, parameters, (bcr) =>
             {
 
                 tcs.TrySetResult(bcr);
@@ -170,7 +147,7 @@ namespace BuddySDK.BuddyServiceClient
             return tcs.Task;
         }
 
-        public abstract void CallMethodAsync<T>(string verb, string path, object parameters, Action<BuddyCallResult<T>> callback);
+        protected abstract void CallMethodAsync<T>(string verb, string path, object parameters, Action<BuddyCallResult<T>> callback);
 
         private string serviceRoot;
         public string ServiceRoot
@@ -196,13 +173,13 @@ namespace BuddySDK.BuddyServiceClient
                 ServiceException(this, args);
             }
         }
+
     }
 
     internal static class BuddyResultCreator
     {
         public static BuddyCallResult<T> Create<T>(T result, object err)
         {
-            // return new BuddyCallResult<T>(){Result = result, Error = err};
             return null;
         }
     }

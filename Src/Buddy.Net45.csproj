@@ -12,7 +12,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">.\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -125,46 +125,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncLock.cs" />
     <Compile Include="BuddyUtils.cs" />
-    <Compile Include="Collections\AlbumCollection.cs" />
-    <Compile Include="Collections\AlbumItemCollection.cs" />
-    <Compile Include="BuddyMetadataBase.cs" />
-    <Compile Include="BuddyObjectPathAttribute.cs" />
     <Compile Include="BuddyPermissions.cs" />
     <Compile Include="BuddyResult.cs" />
     <Compile Include="BuddyServiceClient\DateRangeJsonConverter.cs" />
     <Compile Include="BuddyServiceClient\BuddyLocationGeoConverter.cs" />
-    <Compile Include="Collections\MessageCollection.cs" />
-    <Compile Include="Collections\UserListCollection.cs" />
-    <Compile Include="DateRange.cs" />
-    <Compile Include="Metadata.cs" />
-    <Compile Include="ConnectivityLevelChangedEventArgs.cs" />
-    <Compile Include="Collections\UserCollection.cs" />
-    <Compile Include="Objects\Message.cs" />
-    <Compile Include="Objects\MessageType.cs" />
-    <Compile Include="Objects\Notification.cs" />
-    <Compile Include="Objects\UserList.cs" />
-    <Compile Include="AuthenticatedUser.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="ConnectivityLevel.cs" />
     <Compile Include="Buddy.cs" />
-    <Compile Include="BuddyBase.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="BuddyClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Collections\BuddyCollectionBase.cs" />
-    <Compile Include="BuddyGeoLocation.cs" />
     <Compile Include="BuddyServiceClient\BuddyServiceClientBase.cs" />
     <Compile Include="BuddyServiceClient\BuddyServiceClientHttp.cs" />
     <Compile Include="BuddyServiceException.cs" />
-    <Compile Include="Objects\Checkin.cs" />
-    <Compile Include="Collections\CheckinCollection.cs" />
-    <Compile Include="Objects\Location.cs" />
-    <Compile Include="Collections\LocationCollection.cs" />
-    <Compile Include="Objects\Picture.cs" />
-    <Compile Include="Collections\PictureCollection.cs" />
     <Compile Include="PlatformAccess\DotNetPlatformAccess.cs" />
     <Compile Include="PlatformAccess\DotNetPlatformBase.cs" />
     <Compile Include="PlatformAccess\IsolatedStorageSettings.cs" />
@@ -172,20 +146,39 @@
     <Compile Include="PlatformAccess\WindowsPlatformAccess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\AssemblyInfoNet.cs" />
-    <Compile Include="PushNotificationType.cs" />
-    <Compile Include="SocialAuthenticatedUser.cs" />
-    <Compile Include="SearchResult.cs" />
-    <Compile Include="Objects\User.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Objects\AlbumItem.cs" />
-    <Compile Include="Objects\Album.cs" />
     <Compile Include="CurrentUserChangedEventArgs.cs" />
     <Compile Include="ServiceExceptionEventArgs.cs" />
+    <Compile Include="BuddyServiceClient\IRemoteMethodProvider.cs" />
+    <Compile Include="IRestProvider.cs" />
+    <Compile Include="Models\Album.cs" />
+    <Compile Include="Models\AlbumItem.cs" />
+    <Compile Include="Models\Blob.cs" />
+    <Compile Include="Models\Checkin.cs" />
+    <Compile Include="Models\Location.cs" />
+    <Compile Include="Models\Message.cs" />
+    <Compile Include="Models\MetadataItem.cs" />
+    <Compile Include="Models\Notification.cs" />
+    <Compile Include="Models\Picture.cs" />
+    <Compile Include="Models\User.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Models\UserList.cs" />
+    <Compile Include="BuddyGeoLocation.cs" />
+    <Compile Include="Models\ModelBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Models\SocialAuthenticatedUser.cs" />
+    <Compile Include="DateRange.cs" />
+    <Compile Include="Models\UserListItem.cs" />
+    <Compile Include="IBuddyClient.cs" />
+    <Compile Include="BuddyFile.cs" />
+    <Compile Include="Models\BinaryModelBase.cs" />
+    <Compile Include="Models\Video.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.Buddy.Net45.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -194,4 +187,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup />
 </Project>

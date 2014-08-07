@@ -9,6 +9,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using BuddySDK.Models;
 
 using BuddySDK;
 
@@ -44,13 +45,14 @@ namespace PushAndroidTest
 
         }
 
-        private async Task<BuddySDK.Notification> HandleSend(){
+        private async Task<NotificationResult> HandleSend(){
             EditText messageBody = (EditText)SendDialog.FindViewById (Resource.Id.messageBody);
 
             if (null != SelectedUser && null != messageBody) {
-                var result = await Buddy.SendPushNotificationAsync (new string[] { SelectedUser },
-                    null,
-                    messageBody.Text);
+                var result = await Buddy.PostAsync<NotificationResult>("/notificaitons", new {
+                    message =  messageBody.Text
+                }
+                );
                 if (result.IsSuccess) {
                     return result.Value;
                 }
@@ -63,32 +65,35 @@ namespace PushAndroidTest
         {
             base.OnCreate (bundle);
             SetContentView (Resource.Layout.Push);
-            var users = await Buddy.Users.FindAsync ();
-            ListView userList = FindViewById<ListView> (Resource.Id.userList);
-            UserChatAdapter userListAdapter = new UserChatAdapter (this, Resource.Layout.UserListItem, users.PageResults.ToList());
-            userList.Adapter = userListAdapter;
-            userList.ItemLongClick += (object sender, AdapterView.ItemLongClickEventArgs e) => {
-                User user = users.PageResults.ElementAt(e.Position);
-                LayoutInflater inflater = (LayoutInflater) GetSystemService(Context.LayoutInflaterService);
-                AlertDialog.Builder senderBuilder = new AlertDialog.Builder(this);
-                senderBuilder.SetView(inflater.Inflate(Resource.Layout.PushSendDialog,null));
-                SendDialog =  senderBuilder.Create();
-                SendDialog.Show();
-                SelectedUser = user.ID;
-                Button pusher = SendDialog.FindViewById<Button> (Resource.Id.sendMessage);
-                pusher.Click += async (clickSender, pushere) => {
-                    var note = HandleSend();
-                    if(null != note){
-                        Toast sendConfirmed = Toast.MakeText(this,"Message sent",ToastLength.Long);
-                        sendConfirmed.Show();
-                    }
-                    if(null != SendDialog){
-                        SendDialog.Hide();
-                    }
+            var users = await Buddy.GetAsync<BuddySDK.Models.PagedResult<User>>("/users");
 
+            if (users.IsSuccess) {
+                ListView userList = FindViewById<ListView> (Resource.Id.userList);
+                UserChatAdapter userListAdapter = new UserChatAdapter (this, Resource.Layout.UserListItem, users.Value.PageResults.ToList ());
+                userList.Adapter = userListAdapter;
+                userList.ItemLongClick += (object sender, AdapterView.ItemLongClickEventArgs e) => {
+                    User user = users.Value.PageResults.ElementAt (e.Position);
+                    LayoutInflater inflater = (LayoutInflater)GetSystemService (Context.LayoutInflaterService);
+                    AlertDialog.Builder senderBuilder = new AlertDialog.Builder (this);
+                    senderBuilder.SetView (inflater.Inflate (Resource.Layout.PushSendDialog, null));
+                    SendDialog = senderBuilder.Create ();
+                    SendDialog.Show ();
+                    SelectedUser = user.ID;
+                    Button pusher = SendDialog.FindViewById<Button> (Resource.Id.sendMessage);
+                    pusher.Click += async (clickSender, pushere) => {
+                        var note = HandleSend ();
+                        if (null != note) {
+                            Toast sendConfirmed = Toast.MakeText (this, "Message sent", ToastLength.Long);
+                            sendConfirmed.Show ();
+                        }
+                        if (null != SendDialog) {
+                            SendDialog.Hide ();
+                        }
+
+                    };
                 };
-            };
 
+            }
 
 
 

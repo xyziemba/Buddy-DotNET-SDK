@@ -1,24 +1,18 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading;
-using System.Diagnostics;
-using System.Globalization;
-using System.Threading.Tasks;
 using System.Reflection;
+using System.Text;
 
 namespace BuddySDK.BuddyServiceClient
 {
-  
      internal class BuddyServiceClientHttp :BuddyServiceClientBase
      {
-         
-      
          public bool LoggingEnabled { get; set; }
 
          protected override string ClientName
@@ -35,7 +29,7 @@ namespace BuddySDK.BuddyServiceClient
          }
         private string SdkVersion {
             get {
-                return String.Format("{0};{1}", ClientName, ClientVersion); 
+                return String.Format(CultureInfo.InvariantCulture, "{0};{1}", ClientName, ClientVersion); 
             }
         }
 
@@ -125,7 +119,7 @@ namespace BuddySDK.BuddyServiceClient
        
        
 
-        public override void CallMethodAsync<T>(string verb, string path, object parameters, Action<BuddyCallResult<T>> callback)
+        protected override void CallMethodAsync<T>(string verb, string path, object parameters, Action<BuddyCallResult<T>> callback)
         {
             DateTime start = DateTime.Now;
 
@@ -173,43 +167,35 @@ namespace BuddySDK.BuddyServiceClient
             };
 
             var d = ParametersToDictionary (parameters);
-            MakeRequest(verb, path, d, (ex, response) =>
+            MakeRequest<T>(verb, path, d, async (ex, response) =>
             {
                 var bcr = new BuddyCallResult<T>();
                 
-				var isResponseRequest = typeof(T).Equals(typeof(HttpWebResponse));
+                var isFile = typeof(BuddyFile).Equals(typeof(T));
 
-                if (isResponseRequest)
-                {
-                    bcr.Result = (T)(object)response;
-                }
-
+               
                 if (response == null && ex != null && ex is WebException)
                 {
                     response = (HttpWebResponse)((WebException)ex).Response;
-                    
-                   
                 }
                 
 
-                if ((response == null || isResponseRequest) && ex != null)
+                if ((response == null) && ex != null)
                 {
                     finishMethodCall(ex, bcr);
-                    
                     return;
                 }
                 else if (response != null)
                 {
                     bcr.StatusCode = (int)response.StatusCode;
-                    if (!isResponseRequest)
+                    if (!isFile || (bcr.StatusCode >= 400 && response.ContentType.Contains("application/json")))
                     {
-                    
                         string body = null;
                         try
                         {
-                            using (var responseStream = response.GetResponseStream())
+                            using (var responseStream =  response.GetResponseStream())
                             {
-                                body = new StreamReader(responseStream).ReadToEnd();
+                                body = await new StreamReader(responseStream).ReadToEndAsync();
                             }
 
                         }
@@ -264,9 +250,22 @@ namespace BuddySDK.BuddyServiceClient
                             bcr.Message = "Couldn't parse JSON: \r\n" + body;
                         }
                     }
+                    else {
+
+                       
+                        bcr = new BuddyCallResult<T>();
+
+                        if (bcr.StatusCode < 400) {
+                            var file = new BuddyFile(response.GetResponseStream(), null, response.ContentType);
+                            bcr.Result = (T)(object)file;
+                        }
+                        bcr.StatusCode = (int)response.StatusCode;
+                    }
+
+
                     try
                     {
-                            finishMethodCall(null, bcr);
+                        finishMethodCall(null, bcr);
                     }
                     catch (Exception ex3)
                     {
@@ -274,6 +273,7 @@ namespace BuddySDK.BuddyServiceClient
                     }
 
                 }
+                  
             });
 
 
@@ -312,14 +312,14 @@ namespace BuddySDK.BuddyServiceClient
                 if (kvp.Value is BuddyFile)
                 {
                     val = Convert.ToBase64String(((BuddyFile)kvp.Value).Bytes);
-                    val = EscapeDataString(val);
                 }
                 else
                 {
-                    val = EscapeDataString(kvp.Value.ToString());
-
+                    val = GetGlobalizedString(kvp.Value);
                 }
-                sb.AppendFormat("{2}{0}={1}", kvp.Key, val, isFirst ? "" : "&");
+                val = EscapeDataString(val);
+
+                sb.AppendFormat(CultureInfo.InvariantCulture, "{2}{0}={1}", kvp.Key, val, isFirst ? "" : "&");
                 isFirst = false;
             }
             return sb.ToString();
@@ -330,7 +330,7 @@ namespace BuddySDK.BuddyServiceClient
         {
             return verb + " " + path;
         }
-        private async void MakeRequest(string verb, string path, IDictionary<string, object> parameters, Action<Exception, HttpWebResponse> callback)
+        private async void MakeRequest<T>(string verb, string path, IDictionary<string, object> parameters, Action<Exception, HttpWebResponse> callback)
         {
             if (!path.StartsWith("/"))
             {
@@ -340,13 +340,24 @@ namespace BuddySDK.BuddyServiceClient
             // get the token before generating the request url, as there may be a new ServiceRoot
             var token = await Client.GetAccessToken();
 
-            var url = String.Format("{0}{1}", ServiceRoot, path);
+            var url = String.Format(CultureInfo.InvariantCulture, "{0}{1}", ServiceRoot, path);
             var requestType = HttpRequestType.HttpPostJson;
             IEnumerable<KeyValuePair<string, object>> files = null;
          
             switch (verb.ToUpperInvariant())
             {
             case "GET":
+
+
+                // For redirects (specifically Azure Blob), if our authentication header is in there
+                // it'll deny us access.  So for that case, we just need to add the access token to the parameters
+                // collection so it doesn't get added as a header.
+                //
+                if (typeof(T) == typeof(BuddyFile) && !parameters.ContainsKey("accessToken"))
+                {
+                    parameters["accessToken"] = token;
+                    token = null;
+                }
                 url += "?" + GetUrlEncodedParameters(parameters);
                 requestType = HttpRequestType.HttpGet;
                 break;
@@ -373,12 +384,8 @@ namespace BuddySDK.BuddyServiceClient
                     // get json for the remainder and make it into a file
                     var json = JsonConvert.SerializeObject(parameters, Formatting.None);
 
-                    var jsonFile = new BuddyFile()
-                    {
-                        ContentType = "application/json",
-                        Data = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json)),
-                        Name = "body"
-                    };
+                    var jsonFile = new BuddyFile(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json)), "body", "application/json");
+                  
                     newParameters.Add(jsonFile.Name, jsonFile);
                     parameters = newParameters;
                 }
@@ -551,9 +558,14 @@ namespace BuddySDK.BuddyServiceClient
             return parameters;
         }
 
+        private static string GetGlobalizedString(object value)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0}", value);
+        }
+
         private static void HttpPostMultipart(HttpWebRequest wr, Stream requestStream, IDictionary<string, object> nvc)
         {
-            var files = new List<BuddyFile>();
+            var files = new List<Tuple<string,BuddyFile>>();
             
             string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
 
@@ -569,12 +581,15 @@ namespace BuddySDK.BuddyServiceClient
 
                 if (kvp.Value is BuddyFile)
                 {
-                    files.Add((BuddyFile)kvp.Value);
+                    files.Add(new Tuple<string,BuddyFile>(kvp.Key, (BuddyFile)kvp.Value));
                     continue;
                 }
 
                 requestStream.Write(boundarybytes, 0, boundarybytes.Length);
-                string formitem = string.Format(formdataTemplate, kvp.Key, kvp.Value.ToString());
+
+                var globalizedString = GetGlobalizedString(kvp.Value);
+
+                string formitem = string.Format(CultureInfo.InvariantCulture, formdataTemplate, kvp.Key, globalizedString);
                 byte[] formitembytes = System.Text.Encoding.UTF8.GetBytes(formitem);
                 requestStream.Write(formitembytes, 0, formitembytes.Length);
             }
@@ -583,63 +598,20 @@ namespace BuddySDK.BuddyServiceClient
 
             for (var i = files.Count-1; i >=0; i--)
             {
-                var file = files[i];
+                var file = files[i].Item2;
                 string headerTemplate = "Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\r\nContent-Type: {2}\r\n\r\n";
-                string header = string.Format(headerTemplate, file.Name, file.Name, file.ContentType);
+                string header = string.Format(CultureInfo.InvariantCulture, headerTemplate, files[i].Item1, file.Name, file.ContentType);
                 byte[] headerbytes = System.Text.Encoding.UTF8.GetBytes(header);
                 requestStream.Write(headerbytes, 0, headerbytes.Length);
                 requestStream.Write(file.Bytes, 0, (int)file.Data.Length);
                 requestStream.Write(boundarybytes, 0, boundarybytes.Length);
-
-              
             }
 
             byte[] trailer = System.Text.Encoding.UTF8.GetBytes("\r\n--" + boundary + "--\r\n");
             requestStream.Write(trailer, 0, trailer.Length);
+
+           
         }
        
      }
-
-
-//  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-//#if PUBLIC_SERIALIZATION
-//        public
-//#else
-//     internal
-//#endif
-//   class JsonEnvelope<T> {
-
-//            public int status
-//            {
-//                get;
-//                set;
-//            }
-//            public string error {
-//                get;
-//                set;
-//            }
-
-//            public int? errorNumber {
-//                get;
-//                set;
-//            }
-
-//            public string message
-//            {
-//                get;
-//                set;
-//            }
-
-//            public T result {
-//                get;
-//                set;
-//            }
-
-//            public string request_id {
-//                get;
-//                set;
-//            }
-//        }
-
-
 }

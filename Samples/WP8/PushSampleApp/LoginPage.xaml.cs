@@ -12,6 +12,7 @@ using PhoneApp5.Resources;
 using Microsoft.Phone.Notification;
 
 using BuddySDK;
+using BuddySDK.Models;
 
 namespace PhoneApp5
 {
@@ -77,7 +78,7 @@ namespace PhoneApp5
             var username = UsernameInput.Text.Trim();
             var password = PasswordInput.Password.Trim();
             StatusMsg.Text = String.Empty;
-            BuddyResult<AuthenticatedUser> result = await Buddy.LoginUserAsync(username, password);
+            var result = await Buddy.LoginUserAsync(username, password);
             if (result.IsSuccess)
             {
                 MessageBox.Show(String.Format("Logged in as {0}", result.Value.Username));
