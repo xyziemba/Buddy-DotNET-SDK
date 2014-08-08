@@ -86,8 +86,15 @@ namespace BuddySDK.Models
         public string ID { get; set; }
         [JsonProperty("success")]
         public bool success { get; set; }
-        internal BuddyClient _client { get; set; }
+        internal IBuddyClient _client { get; set; }
 
+        public Metric()
+        { }
+
+        public Metric(IBuddyClient client)
+        {
+            _client = client;
+        }
 
         private class CompleteMetricResult
         {
@@ -95,6 +102,10 @@ namespace BuddySDK.Models
         }
         public Task<BuddyResult<TimeSpan?>> FinishAsync()
         {
+            if (string.IsNullOrEmpty(ID) || _client == null)
+            {
+                throw new InvalidOperationException("Can't call finish on a metric that's missing an ID or BuddyClient.");
+            }
             var r = _client.DeleteAsync<CompleteMetricResult>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(ID)), null);
             return r.WrapResult<CompleteMetricResult, TimeSpan?>((r1) =>
             {
