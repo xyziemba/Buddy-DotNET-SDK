@@ -1047,9 +1047,13 @@ namespace BuddySDK
                     timeStamp = timeStamp
                 });
 
-            t.ContinueWith(r => r.Result.Value._client = this, TaskContinuationOptions.ExecuteSynchronously);
-
-            return t;
+            return t.ContinueWith((r) => {
+                if (r.Result.Value != null)
+                {
+                    r.Result.Value._client = this;
+                }
+                return r.Result;
+            });
         }
 
         public void SetPushToken(string token) {
