@@ -351,7 +351,7 @@ namespace BuddySDK
             var dr = await ResultConversionHelper  <DeviceRegistration, DeviceRegistration> (
                 reg,
                 completed: (r1, r2) => { 
-                    if (r2.IsSuccess && r2.Value.ServiceRoot != null)
+                    if (r2.IsSuccess)
                     {
                         if (sharedSecret != null)
                         {
@@ -363,8 +363,11 @@ namespace BuddySDK
                                 return;
                             }
                         }
-                        _service.ServiceRoot = r2.Value.ServiceRoot;
-                        _appSettings.ServiceUrl = r2.Value.ServiceRoot;
+                        if (r2.Value.ServiceRoot != null)
+                        {
+                            _service.ServiceRoot = r2.Value.ServiceRoot;
+                            _appSettings.ServiceUrl = r2.Value.ServiceRoot;
+                        }
                     }
                     else if (!r2.IsSuccess){
                         ClearCredentials();
@@ -694,7 +697,7 @@ namespace BuddySDK
 
                 var root = GetRootUrl();
 
-                this._service = BuddyServiceClientBase.CreateServiceClient(this,AppId, root,sharedSecret);
+                this._service = BuddyServiceClientBase.CreateServiceClient(this,root,AppId,sharedSecret);
 
                 this._service.ServiceException += (object sender, ExceptionEventArgs e) =>
                 {
