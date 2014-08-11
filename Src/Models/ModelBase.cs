@@ -104,7 +104,7 @@ namespace BuddySDK.Models
         {
             if (string.IsNullOrEmpty(ID) || _client == null)
             {
-                throw new InvalidOperationException("Can't call finish on a metric that's missing an ID or BuddyClient.");
+                throw new InvalidOperationException("Can't call finish on a metric that's missing an ID.");
             }
             var r = _client.DeleteAsync<CompleteMetricResult>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(ID)), null);
             return r.WrapResult<CompleteMetricResult, TimeSpan?>((r1) =>
