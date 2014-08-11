@@ -139,6 +139,7 @@
     <Compile Include="BuddyServiceClient\BuddyServiceClientBase.cs" />
     <Compile Include="BuddyServiceClient\BuddyServiceClientHttp.cs" />
     <Compile Include="BuddyServiceException.cs" />
+    <Compile Include="Models\Identity.cs" />
     <Compile Include="Models\MessageType.cs" />
     <Compile Include="Models\PagedResult.cs" />
     <Compile Include="PlatformAccess\DotNetPlatformAccess.cs" />
