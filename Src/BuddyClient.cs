@@ -23,7 +23,7 @@ namespace BuddySDK
         public string InstanceName { get; set; }
         public string AppVersion { get; set; }
         public string DeviceTag { get; set; }
-
+        public string SharedSecret { get; set; }
         public BuddyOptions()
         {
             Flags = PlatformAccess.DefaultFlags;
@@ -217,7 +217,7 @@ namespace BuddySDK
         
         private AppSettings _appSettings;
         private bool _userInitialized = false;
-
+        private string sharedSecret = null; // We keep it outside of BuddyOptions to avoid serializing it to stable storage
         public BuddyOptions Options { get; set; }
 
         public BuddyClient(string appid, string appkey, BuddyOptions options = null)
@@ -230,6 +230,9 @@ namespace BuddySDK
             {
                 options = new BuddyOptions();
             }
+
+            sharedSecret = options.SharedSecret;
+            options.SharedSecret = null;
 
             if (!PlatformAccess.Current.SupportsFlags(options.Flags))
             {
@@ -288,6 +291,7 @@ namespace BuddySDK
         {
             public string AccessToken { get; set; }
             public string ServiceRoot { get; set; }
+            public string ServerSignature { get; set; }
         }
         
         internal async Task<string> GetAccessToken() {
@@ -320,7 +324,12 @@ namespace BuddySDK
             }
         }
 
-        
+        private string GenerateServerSig()
+        {
+            string stringToSign = string.Format("{0}\n", AppKey);
+            return BuddyUtils.SignString(sharedSecret,stringToSign);
+        }
+
         private async Task<string> GetDeviceToken()
         {
 
@@ -344,6 +353,16 @@ namespace BuddySDK
                 completed: (r1, r2) => { 
                     if (r2.IsSuccess && r2.Value.ServiceRoot != null)
                     {
+                        if (sharedSecret != null)
+                        {
+                            // Check the server Sig
+                            string serverSig = GenerateServerSig();
+                            if (serverSig != r2.Value.ServerSignature)
+                            {
+                                ClearCredentials();
+                                return;
+                            }
+                        }
                         _service.ServiceRoot = r2.Value.ServiceRoot;
                         _appSettings.ServiceUrl = r2.Value.ServiceRoot;
                     }
@@ -675,7 +694,7 @@ namespace BuddySDK
 
                 var root = GetRootUrl();
 
-                this._service = BuddyServiceClientBase.CreateServiceClient(this, root);
+                this._service = BuddyServiceClientBase.CreateServiceClient(this,AppId, root,sharedSecret);
 
                 this._service.ServiceException += (object sender, ExceptionEventArgs e) =>
                 {

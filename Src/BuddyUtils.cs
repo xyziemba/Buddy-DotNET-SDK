@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
 
 namespace BuddySDK
 {
@@ -27,6 +28,32 @@ namespace BuddySDK
 
             return tcs.Task;
 
+        }
+
+        public static string ToHex(byte[] bytes)
+        {
+            char[] c = new char[bytes.Length * 2];
+
+            byte b;
+
+            for (int bx = 0, cx = 0; bx < bytes.Length; ++bx, ++cx)
+            {
+                b = ((byte)(bytes[bx] >> 4));
+                c[cx] = (char)(b > 9 ? b + 0x37 + 0x20 : b + 0x30);
+
+                b = ((byte)(bytes[bx] & 0x0F));
+                c[++cx] = (char)(b > 9 ? b + 0x37 + 0x20 : b + 0x30);
+            }
+
+            return new string(c);
+        }
+
+        public static string SignString(string key, string stringToSign)
+        {
+            using (var hasher = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
+            {
+                return ToHex(hasher.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
+            }
         }
 
         internal static Task<BuddyResult<T2>> WrapResult<T1, T2>(this Task<BuddyResult<T1>> mainTask, Func<BuddyResult<T1>, T2> mapper, Func<BuddyResult<T1>, T2, BuddyResult<T2>> converter = null)

@@ -22,6 +22,8 @@ namespace BuddySDK.BuddyServiceClient
 			}
          }
 
+         private string AppID;
+         private string SharedSecret;
          private string sdkVersion;
          protected override string ClientVersion
          {
@@ -49,9 +51,38 @@ namespace BuddySDK.BuddyServiceClient
             }
         }
 
-      
-        public BuddyServiceClientHttp(string root)
+        private string MakeStringToSign(string verb, string path)
         {
+            if (path == null || verb == null)
+            {
+                return null;
+            }
+
+            string fullPath = path;
+            if (!fullPath.StartsWith("/"))
+            {
+                fullPath = "/" + fullPath;
+            }
+
+            return string.Format("{0}\n{1}\n{2}", verb.ToUpper(), AppID, fullPath);
+        }
+
+        private string GenerateSignatureForRequest(string verb, string path)
+        {
+            string stringToSign = MakeStringToSign(verb, path);
+            if(stringToSign==null)
+            {
+                return null;
+            }
+
+            return BuddyUtils.SignString(SharedSecret,stringToSign);
+        }
+
+        public BuddyServiceClientHttp(string root,string appID,string sharedSecret)
+        {
+            SharedSecret = sharedSecret;
+            AppID = appID;
+
             if (String.IsNullOrEmpty(root)) throw new ArgumentNullException("root");
             if (root.EndsWith("/"))
             {
@@ -80,7 +111,6 @@ namespace BuddySDK.BuddyServiceClient
                 if (body != null)
                 {
                     Debug.WriteLine(body);
-                    
                 }
             }
         }
@@ -104,21 +134,16 @@ namespace BuddySDK.BuddyServiceClient
             }
         }
 
-
         private void StartRequest() {
 
              BuddySDK.PlatformAccess.Current.ShowActivity = true;
-
         }
 
         private void EndRequest() {
 
             BuddySDK.PlatformAccess.Current.ShowActivity = false;
-
         }
        
-       
-
         protected override void CallMethodAsync<T>(string verb, string path, object parameters, Action<BuddyCallResult<T>> callback)
         {
             DateTime start = DateTime.Now;
@@ -150,7 +175,6 @@ namespace BuddySDK.BuddyServiceClient
                         if (bcr.StatusCode >= 400) {
                             err = "UnknownServiceError";
                         }
-
                     }
                     else {
                         bcr.Message = webEx.Status.ToString();
@@ -179,7 +203,6 @@ namespace BuddySDK.BuddyServiceClient
                     response = (HttpWebResponse)((WebException)ex).Response;
                 }
                 
-
                 if ((response == null) && ex != null)
                 {
                     finishMethodCall(ex, bcr);
@@ -197,7 +220,6 @@ namespace BuddySDK.BuddyServiceClient
                             {
                                 body = await new StreamReader(responseStream).ReadToEndAsync();
                             }
-
                         }
                         catch (Exception rex)
                         {
@@ -205,9 +227,7 @@ namespace BuddySDK.BuddyServiceClient
                             return;
                         }
 
-
                         LogResponse(MethodName(verb, path), body, DateTime.Now.Subtract(start), response);
-
 
                         //json parse
                         try
@@ -410,7 +430,18 @@ namespace BuddySDK.BuddyServiceClient
 
             if (token != null && (parameters == null || !parameters.ContainsKey("accessToken")))
             {
-                wr.Headers ["Authorization"] = String.Format ("Buddy {0}", token);
+                if (SharedSecret != null)
+                {
+                    string requestSig = GenerateSignatureForRequest(verb, path);
+                    if(requestSig!=null)
+                    {
+                        wr.Headers["Authorization"] = String.Format("Buddy {0} {1}", token,requestSig);
+                    }
+                }
+                else
+                {
+                    wr.Headers["Authorization"] = String.Format("Buddy {0}", token);
+                }
             }
 
             wr.Method = verb;
