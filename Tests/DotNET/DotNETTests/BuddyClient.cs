@@ -6,21 +6,20 @@ using BuddySDK;
 using BuddySDK.BuddyServiceClient;
 
 
-namespace DotNetTests
+namespace BuddySDK.DotNetTests
 {
     //TODO write some cool network-isolated tests here
     public class BuddyClient
     {
-        private class  NetworkIsolatedBuddyClient : BuddySDK.BuddyClient {
+		private class  NetworkIsolatedBuddyClient : BuddyClient {
             private readonly BuddySDK.BuddyServiceClient.IRemoteMethodProvider _remoteMethodProvider;
             public NetworkIsolatedBuddyClient(string appid, string appkey, IRemoteMethodProvider remoteMethodProvider, BuddyOptions options)
-                :base(appid, appkey, options)
             {
                 _remoteMethodProvider = remoteMethodProvider;
             }
 
 
-            protected override Task<IRemoteMethodProvider> GetService ()
+            protected Task<IRemoteMethodProvider> GetService ()
             {
                 return Task.FromResult(_remoteMethodProvider);
             }
@@ -29,7 +28,6 @@ namespace DotNetTests
         public BuddyClient ()
         {
         }
-
     }
 }
 
