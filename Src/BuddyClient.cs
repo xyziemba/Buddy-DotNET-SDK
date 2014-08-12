@@ -23,7 +23,7 @@ namespace BuddySDK
         public string InstanceName { get; set; }
         public string AppVersion { get; set; }
         public string DeviceTag { get; set; }
-        public string SharedSecret { get; set; }
+        public string SharedSecret {internal get; set; }
         public BuddyOptions()
         {
             Flags = PlatformAccess.DefaultFlags;
