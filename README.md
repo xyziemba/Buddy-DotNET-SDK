@@ -9,7 +9,7 @@ We realized most developers end up writing the same code over and over again: us
 
 Buddy's scenario-focused APIs let you spend more time building your application and less time worrying about backend infrastructure.
 
-The .NBT SDK handles the following functionality:
+The .NET SDK handles the following functionality:
 
 * Building and formatting requests
 * Managing authentication
