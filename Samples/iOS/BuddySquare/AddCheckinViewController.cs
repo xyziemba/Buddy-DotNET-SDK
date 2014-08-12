@@ -125,7 +125,7 @@ namespace BuddySquare.iOS
         }
 
         [MonoTouch.Foundation.Export("ImageTapped")]
-        public void ImageTapped (UIGestureRecognizer sender) {
+        public void ImageTapped () {
             var imagePicker = new UIImagePickerController ();
             imagePicker.SourceType = UIImagePickerControllerSourceType.PhotoLibrary | UIImagePickerControllerSourceType.SavedPhotosAlbum ;
             //imagePicker.MediaTypes = UIImagePickerController.AvailableMediaTypes (UIImagePickerControllerSourceType.PhotoLibrary | UIImagePickerControllerSourceType.SavedPhotosAlbum);

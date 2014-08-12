@@ -1,13 +1,13 @@
 using System;
-using System.Drawing;
-using MonoTouch.Foundation;
-using MonoTouch.UIKit;
-using BuddySDK;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
-using MonoTouch.MapKit;
-using MonoTouch.CoreLocation;
 using System.Threading.Tasks;
+using BuddySDK;
+using MonoTouch.CoreLocation;
+using MonoTouch.Foundation;
+using MonoTouch.MapKit;
+using MonoTouch.UIKit;
 using BuddySDK.Models;
 
 namespace BuddySquare.iOS
@@ -39,9 +39,6 @@ namespace BuddySquare.iOS
             checkinTable.AddSubview (rc);
         }
 
-        private BuddySDK.BuddyClient.Metric _timedMetricId;
-
-
         public override void ViewDidLoad ()
         {
             base.ViewDidLoad ();
@@ -57,12 +54,9 @@ namespace BuddySquare.iOS
                 _dataSource.Clear();
 
 
-                var result = await Buddy.RecordMetricAsync("adding_checkin", null, TimeSpan.FromDays(1));
-               
-                if (result.IsSuccess) {
-                    _timedMetricId = result.Value;
-                }
+              	await Buddy.RecordMetricAsync("adding_checkin", null, TimeSpan.FromDays(1));
             };
+
             this.NavigationItem.RightBarButtonItem = addButton;
 
             UIBarButtonItem logoutButton = new UIBarButtonItem ("Logout", UIBarButtonItemStyle.Plain, 
@@ -77,7 +71,6 @@ namespace BuddySquare.iOS
 
             _dataSource = new CheckinDataSource (this);
             this.checkinTable.Source = _dataSource;
-
         }
 
 
@@ -97,11 +90,6 @@ namespace BuddySquare.iOS
 
             var user = await Buddy.GetCurrentUserAsync ();
             HandleCurrentUserChanged (null, new CurrentUserChangedEventArgs (user, null));
-           
-            if (_timedMetricId != null) {
-                await _timedMetricId.FinishAsync();
-                _timedMetricId = null;
-            }
 
             UpdateData ();
         }

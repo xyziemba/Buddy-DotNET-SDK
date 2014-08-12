@@ -29,11 +29,13 @@ namespace BuddySquare.iOS
             Current = this;
         }
 
-       
+		// TODO: Go to http://dev.buddyplatform.com to get an app ID and app key.
+		private const String APP_ID = "\Your App ID";
+		private const String APP_KEY = "\Your App Key"; 
+
         public override bool WillFinishLaunching (UIApplication application, NSDictionary launchOptions)
         {
-			// TODO: Go to http://buddyplatform.com to get an app ID and app key.
-            Buddy.Init("bbbbbc.xcbbvjJvlKwg", "4C3081D3-26DE-4224-A106-37E43E621599");
+			Buddy.Init(APP_ID, APP_KEY);
 
             bool showingError = false;
 
