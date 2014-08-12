@@ -24,8 +24,6 @@ namespace BuddySDK.BuddyServiceClient
         public T Result { get; set; }
     }
 
-   
-
     public class JsonEnvelope<T>
     {
         public int status { get; set; }
@@ -48,7 +46,6 @@ namespace BuddySDK.BuddyServiceClient
         }
     }
 
-
     public abstract partial class BuddyServiceClientBase : IRemoteMethodProvider
     {
         internal BuddySDK.BuddyClient Client
@@ -57,7 +54,7 @@ namespace BuddySDK.BuddyServiceClient
             set;
         }
 
-        internal static BuddyServiceClientBase CreateServiceClient(BuddySDK.BuddyClient client, string serviceRoot)
+        internal static BuddyServiceClientBase CreateServiceClient(BuddySDK.BuddyClient client, string serviceRoot,string appID,string sharedSecret)
         {
             var type = typeof(BuddyServiceClientHttp);
             string typeName = null;
@@ -81,7 +78,7 @@ namespace BuddySDK.BuddyServiceClient
                 throw new ArgumentException(type.FullName + " is not a BuddyServiceClientBase implementor.");
             }
 
-            var bsc = (BuddyServiceClientBase)Activator.CreateInstance(type, serviceRoot);
+            var bsc = (BuddyServiceClientBase)Activator.CreateInstance(type, serviceRoot,appID, sharedSecret);
             bsc.Client = client;
             return bsc;
         }
