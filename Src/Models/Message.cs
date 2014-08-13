@@ -92,5 +92,11 @@ namespace BuddySDK.Models
             set;
         }
 
+        [Newtonsoft.Json.JsonProperty("warnings")]
+        public IEnumerable<IDictionary<string, object>> Warnings
+        {
+            get;
+            set;
+        }
     }
 }
