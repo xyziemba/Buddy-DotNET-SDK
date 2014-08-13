@@ -71,7 +71,7 @@ namespace BuddySDK.Models
             set;
         }
 
-        [Newtonsoft.Json.JsonProperty("addressees")]
+        [Newtonsoft.Json.JsonProperty("recipients")]
         public IEnumerable<string> Recipients
         {
             get;
