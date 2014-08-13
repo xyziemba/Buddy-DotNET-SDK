@@ -323,13 +323,13 @@ namespace BuddySDK
                 return _appSettings.UserToken ?? _appSettings.DeviceToken;
             }
         }
-
+#if SHARED_SECRET
         private string GenerateServerSig()
         {
             string stringToSign = string.Format("{0}\n", AppKey);
             return BuddyUtils.SignString(sharedSecret,stringToSign);
         }
-
+#endif
         private async Task<string> GetDeviceToken()
         {
 
@@ -353,6 +353,7 @@ namespace BuddySDK
                 completed: (r1, r2) => { 
                     if (r2.IsSuccess)
                     {
+#if SHARED_SECRET
                         if (sharedSecret != null)
                         {
                             // Check the server Sig
@@ -363,6 +364,7 @@ namespace BuddySDK
                                 return;
                             }
                         }
+#endif
                         if (r2.Value.ServiceRoot != null)
                         {
                             _service.ServiceRoot = r2.Value.ServiceRoot;
