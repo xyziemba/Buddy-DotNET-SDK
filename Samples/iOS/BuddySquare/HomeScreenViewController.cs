@@ -1,13 +1,14 @@
 using System;
-using System.Drawing;
-using MonoTouch.Foundation;
-using MonoTouch.UIKit;
-using BuddySDK;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
-using MonoTouch.MapKit;
-using MonoTouch.CoreLocation;
 using System.Threading.Tasks;
+using BuddySDK;
+using MonoTouch.CoreLocation;
+using MonoTouch.Foundation;
+using MonoTouch.MapKit;
+using MonoTouch.UIKit;
+using BuddySDK.Models;
 
 namespace BuddySquare.iOS
 {
@@ -18,14 +19,7 @@ namespace BuddySquare.iOS
             this.Title = "BuddySquare!";
         }
 
-        public override void DidReceiveMemoryWarning ()
-        {
-            // Releases the view if it doesn't have a superview.
-            base.DidReceiveMemoryWarning ();
-            
-            // Release any cached data, images, etc that aren't in use.
-        }
-
+      
 
         CheckinDataSource _dataSource;
 
@@ -35,18 +29,15 @@ namespace BuddySquare.iOS
             var rc = new UIRefreshControl();
             rc.AttributedTitle = new NSAttributedString(new NSString("Pull to Refresh"));
 
-            rc.AddTarget ((obj, sender) => {
+            rc.AddTarget ( (obj, sender) => {
                 _dataSource.Clear();
-                checkinTable.ReloadData();
+                UpdateData();
                 rc.EndRefreshing();
 
             }, UIControlEvent.ValueChanged);
 
             checkinTable.AddSubview (rc);
         }
-
-        private string _timedMetricId;
-
 
         public override void ViewDidLoad ()
         {
@@ -63,12 +54,9 @@ namespace BuddySquare.iOS
                 _dataSource.Clear();
 
 
-                var result = await Buddy.RecordMetricAsync("adding_checkin", null, TimeSpan.FromDays(1));
-               
-                if (result.IsSuccess) {
-                    _timedMetricId = result.Value;
-                }
+              	await Buddy.RecordMetricAsync("adding_checkin", null, TimeSpan.FromDays(1));
             };
+
             this.NavigationItem.RightBarButtonItem = addButton;
 
             UIBarButtonItem logoutButton = new UIBarButtonItem ("Logout", UIBarButtonItemStyle.Plain, 
@@ -83,30 +71,32 @@ namespace BuddySquare.iOS
 
             _dataSource = new CheckinDataSource (this);
             this.checkinTable.Source = _dataSource;
-
         }
 
+
+        private async void UpdateData() {
+
+            await this._dataSource.LoadCheckins ();
+            checkinTable.ReloadData ();
+        }
        
 
-        public override void ViewDidAppear (bool animated)
+        public async override void ViewDidAppear (bool animated)
         {
 
-            Buddy.ConnectivityLevelChanged += HandleConnectivityLevelChanged;
-            Buddy.Instance.CurrentUserChanged += HandleCurrentUserChanged;
+           // Buddy.ConnectivityLevelChanged += HandleConnectivityLevelChanged;
+            Buddy.CurrentUserChanged += HandleCurrentUserChanged;
             base.ViewDidAppear (animated);
 
-           
-            HandleCurrentUserChanged (null, new CurrentUserChangedEventArgs (Buddy.CurrentUser, null));
-           
-            if (_timedMetricId != null) {
-                Buddy.RecordTimedMetricEndAsync (_timedMetricId);
-                _timedMetricId = null;
-            }
+            var user = await Buddy.GetCurrentUserAsync ();
+            HandleCurrentUserChanged (null, new CurrentUserChangedEventArgs (user, null));
+
+            UpdateData ();
         }
 
-        void HandleCurrentUserChanged (object sender, CurrentUserChangedEventArgs e)
+        async void HandleCurrentUserChanged (object sender, CurrentUserChangedEventArgs e)
         {
-            var user = e.NewUser ?? Buddy.CurrentUser;
+            var user = e.NewUser ?? await Buddy.GetCurrentUserAsync();
 
 			PlatformAccess.Current.InvokeOnUiThread (() => {
 				if (user != null) {
@@ -120,21 +110,21 @@ namespace BuddySquare.iOS
 			});
         }
 
-        bool noConn;
-        void HandleConnectivityLevelChanged (object sender, ConnectivityLevelChangedArgs e)
-        {
-            if (noConn && e.ConnectivityLevel != ConnectivityLevel.None) {
-                noConn = false;
-                _dataSource.Clear ();
-                checkinTable.ReloadData ();
-            } else {
-                noConn = true;
-            }
-        }
+//        bool noConn;
+//        void HandleConnectivityLevelChanged (object sender, ConnectivityLevelChangedArgs e)
+//        {
+//            if (noConn && e.ConnectivityLevel != ConnectivityLevel.None) {
+//                noConn = false;
+//                _dataSource.Clear ();
+//                checkinTable.ReloadData ();
+//            } else {
+//                noConn = true;
+//            }
+//        }
 
         public override void ViewWillDisappear (bool animated)
         {
-            Buddy.ConnectivityLevelChanged += HandleConnectivityLevelChanged;
+            //Buddy.ConnectivityLevelChanged += HandleConnectivityLevelChanged;
             base.ViewWillDisappear (animated);
         }
 
@@ -164,14 +154,14 @@ namespace BuddySquare.iOS
                
                 }
 
-
                 foreach (var c in checkins) {
 
                     mapView.AddAnnotation (c.Annotation);
                 }
 
                 _lastCheckins = checkins;
-                checkinTable.ReloadData ();
+
+                UpdateData ();
             } else {
                 checkinTable.ReloadRows (new []{ path }, UITableViewRowAnimation.None);
             }
@@ -223,43 +213,50 @@ namespace BuddySquare.iOS
 
             public void Clear() {
                 _checkins = null;
-
             }
 
-            private async void LoadCheckins() {
+            Task<IEnumerable<CheckinItem>> _loadingCheckins;
+
+
+            public  Task<IEnumerable<CheckinItem>> LoadCheckins() {
                 // load the checkins
-
-                var r = await Buddy.Checkins.FindAsync ();
-
-                if (r.IsSuccess) {
-
-                    _checkins = from c in r.PageResults
-                                    orderby c.Created descending
-                                    select new CheckinItem {
-                        Checkin = c
-                    };
-
-                    _parent.OnCheckinsUpdate (_checkins);
-                } 
-            }
-
-            private IEnumerable<CheckinItem> GetCheckins() {
-
-                if (_checkins == null) {
-                    LoadCheckins ();
-                    _checkins = new CheckinItem[0];
+                if (_loadingCheckins != null) {
+                    return _loadingCheckins;
                 }
-                return _checkins;
+
+                var t = Buddy.GetAsync<BuddySDK.Models.PagedResult<Checkin>> ("/checkins");
+
+               
+                _loadingCheckins = t.ContinueWith<IEnumerable<CheckinItem>>((t2) =>  {
+
+                    _loadingCheckins = null;
+                    if (t2.Result != null && t2.Result.IsSuccess) {
+
+                        _checkins = from c in t2.Result.Value.PageResults
+                            orderby c.Created descending
+                            select new CheckinItem {
+                            Checkin = c
+                        };
+
+                        return _checkins;
+                       
+                    }  
+                    var r = _checkins ?? new CheckinItem[0];
+                    _parent.OnCheckinsUpdate (r);
+                    return r;
+                });
+                return _loadingCheckins;
             }
 
+           
             public override void RowSelected (UITableView tableView, NSIndexPath indexPath)
             { 
-                var ci = GetCheckins ();
+
                     
-                if (ci == null)
+                if (_checkins == null)
                     return;
                             
-                var c = ci.ElementAt (indexPath.Row);
+                var c = _checkins.ElementAt (indexPath.Row);
 
                 _parent.OnCheckinSelected (c);
                 tableView.DeselectRow (indexPath, true); // normal iOS behaviour is to remove the blue highlight
@@ -267,7 +264,7 @@ namespace BuddySquare.iOS
 
             public override int RowsInSection (UITableView tableView, int section)
             {
-                var ci = GetCheckins();
+                var ci = _checkins;
                 if (ci == null || ci.Count() == 0)
                     return 0;
 
@@ -283,28 +280,28 @@ namespace BuddySquare.iOS
                 UIImage photoData = null;
 
                 WeakReference wr;
-
+                bool found = false;
 
                 if (_photos.TryGetValue (id, out wr)) {
 
                     if (wr.IsAlive) {
+                        found = true;
                         photoData = (UIImage)wr.Target;
                     } else {
                         _photos.Remove (id);
                     }
                 }
 
-                if (photoData == null) {
+                if (photoData == null && !found) {
                    
-					var photo = new Picture (id);
-
+					
                     // get the photo bits, resized to fit 200x200
-                    var loadTask = await photo.GetFileAsync (200);
+                    var loadTask = await Buddy.GetAsync<BuddyFile>("/pictures/" + id + "/file", new {size=200});
 
 
                     if (loadTask.IsSuccess && loadTask.Value != null) {
 
-                        NSData d = NSData.FromStream (loadTask.Value);
+                        NSData d = NSData.FromStream (loadTask.Value.Data);
                         photoData = UIImage.LoadFromData (d);
                         _photos [id] = new WeakReference(photoData);
 
@@ -319,7 +316,7 @@ namespace BuddySquare.iOS
 
             public override UITableViewCell GetCell (UITableView tableView, NSIndexPath indexPath)
             {
-                var c = GetCheckins();
+                var c = _checkins;
 
                
                 var ci = c.ElementAt (indexPath.Row);
@@ -354,7 +351,7 @@ namespace BuddySquare.iOS
             public override async void CommitEditingStyle (UITableView tableView, UITableViewCellEditingStyle editingStyle, NSIndexPath indexPath)
             {
 
-                var r = GetCheckins ();
+                var r = _checkins;
 
                 var ci = r.ElementAt (indexPath.Row);
 
@@ -363,23 +360,22 @@ namespace BuddySquare.iOS
                     // clear existing - bit of a hack to prevent deleted
                     // object from complaining later
                     //
-                    _parent.OnCheckinsUpdate (new CheckinItem[0]);
 
                     // do we have a photo?
                     //
                     if (ci.Checkin.Tag != null) {
-                        var p = new Picture (ci.Checkin.Tag);
-                        await p.DeleteAsync ();
+
+                        await Buddy.DeleteAsync<bool>("/pictures/" + ci.Checkin.Tag);
                     }
 
                     // delete the checkin
-                    await ci.Checkin.DeleteAsync ();
+                    await Buddy.DeleteAsync<bool> ("/checkins/" + ci.Checkin.ID);
                     
 
                      // reload the list
                     //
                     this.Clear ();
-                    _parent.checkinTable.ReloadData ();
+                    this._parent.UpdateData ();
                 }
             }
 

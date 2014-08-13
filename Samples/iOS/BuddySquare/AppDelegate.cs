@@ -29,11 +29,13 @@ namespace BuddySquare.iOS
             Current = this;
         }
 
-       
+		// TODO: Go to http://dev.buddyplatform.com to get an app ID and app key.
+		private const String APP_ID = "\Your App ID";
+		private const String APP_KEY = "\Your App Key"; 
+
         public override bool WillFinishLaunching (UIApplication application, NSDictionary launchOptions)
         {
-			// TODO: Go to http://dev.buddyplatform.com to get an app ID and app key.
-			Buddy.Init ("\Your App ID", "\Your App Key");
+			Buddy.Init(APP_ID, APP_KEY);
 
             bool showingError = false;
 
@@ -73,14 +75,13 @@ namespace BuddySquare.iOS
            
             Buddy.CurrentUserChanged += async(sender, e) => {
                 if (e.NewUser != null) {
-                    await e.NewUser.FetchAsync();
+                    await Buddy.GetCurrentUserAsync();
                     SetupNavController();
                 }
             };
 
-            UIAlertView connectivityAlert = null;
-
-            Buddy.ConnectivityLevelChanged += (sender, e) => {
+           UIAlertView connectivityAlert = null;
+           Buddy.ConnectivityLevelChanged += (sender, e) => {
 
                
                 if (e.ConnectivityLevel == ConnectivityLevel.None) {
@@ -107,13 +108,14 @@ namespace BuddySquare.iOS
 
                 // create a login view.
                 // 
+                showingLoginView = true;
+
                 var lv = new LoginViewController(window.RootViewController, () => {
                     showingLoginView = false;
                 }
                 );
 
-                showingLoginView = true;
-
+                
                 window.RootViewController.PresentViewController(lv, true,null);
         }
 
@@ -128,8 +130,10 @@ namespace BuddySquare.iOS
             navController = new UINavigationController (homeController);
 
             window.RootViewController = navController;
+            window.MakeKeyAndVisible ();
         }
 
+       
         //
         // This method is invoked when the application has loaded and is ready to run. In this
         // method you should instantiate the window, load the UI into it and then make the window
@@ -138,13 +142,12 @@ namespace BuddySquare.iOS
         // You have 17 seconds to return from this method, or iOS will terminate your application.
         //
         public override bool FinishedLaunching (UIApplication app, NSDictionary options)
-        {
-
-             
+        {    
             window = new UIWindow (UIScreen.MainScreen.Bounds);
 
-            var loadingController = new LoadingViewController ();
+            Buddy.GetCurrentUserAsync ();
 
+            var loadingController = new LoadingViewController ();
             window.RootViewController = loadingController;
             window.MakeKeyAndVisible ();
 

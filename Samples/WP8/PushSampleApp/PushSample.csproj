@@ -158,7 +158,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Src\Buddy.WP8.csproj">
-      <Project>{5763718e-f772-42b4-9cfb-9e735095f86b}</Project>
+      <Project>{5763718E-F772-42B4-9CFB-9E735095F86B}</Project>
       <Name>Buddy.WP8</Name>
     </ProjectReference>
   </ItemGroup>

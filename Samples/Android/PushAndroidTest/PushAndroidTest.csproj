@@ -46,7 +46,7 @@
     <Reference Include="System.Core" />
     <Reference Include="Mono.Android" />
     <Reference Include="GCM.Client">
-      <HintPath>..\Components\GCMClient-1.0\lib\android\GCM.Client.dll</HintPath>
+      <HintPath>Components\GCMClient-1.0\lib\android\GCM.Client.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Android.Support.v4" />
   </ItemGroup>
@@ -90,6 +90,7 @@
     <ProjectReference Include="..\..\..\Src\Buddy.Android.csproj">
       <Project>{6051EF7E-1A39-4C5C-A06B-82A9A2B5304F}</Project>
       <Name>Buddy.Android</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
 </Project>

@@ -2,31 +2,30 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using System.Reflection;
-using Windows.Storage;
-using Windows.UI.Xaml;
-using Windows.Networking.PushNotifications;
-using Windows.Foundation;
-using Windows.ApplicationModel.Activation;
-using System.Text.RegularExpressions;
-using Windows.ApplicationModel.Store;
 using System.Runtime.InteropServices;
-
-using Windows.Devices.Enumeration.Pnp;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
-using Windows.UI.Core; 
+using Windows.ApplicationModel.Store;
+using Windows.Devices.Enumeration.Pnp;
+using Windows.Networking.PushNotifications;
+using Windows.Storage;
+using Windows.Storage.Streams;
+using Windows.System.Profile;
+using Windows.UI.Xaml;
 
 namespace BuddySDK
 {
-    public partial class BuddyClient
+    internal partial class BuddyClient
     {
-
-        public void RecordNotificationReceived(LaunchActivatedEventArgs args)
+        public void RecordNotificationReceived<T>(T args)
         {
-            var id = args.Arguments;
+            var launchArgs = args as LaunchActivatedEventArgs;
+
+            var id = launchArgs.Arguments;
+
             if (!String.IsNullOrEmpty(id))
             {
                 var match = Regex.Match(id, PlatformAccess.BuddyPushKey + "=(?<id>[^;]+)");
@@ -106,6 +105,23 @@ namespace BuddySDK
                 var t = CSharpAnalytics.WindowsStoreSystemInformation.GetWindowsVersionAsync();
                 t.Wait();
                 return t.Result;
+            }
+        }
+
+        public override string DeviceUniqueId
+        {
+            get
+            {
+                var packageToken = HardwareIdentification.GetPackageSpecificToken(null);
+
+                var dataReader = DataReader.FromBuffer(packageToken.Id);
+
+                var bytes = new byte[packageToken.Id.Length];
+                dataReader.ReadBytes(bytes);
+
+                var id = BitConverter.ToString(bytes).Replace("-", "");
+
+                return id;
             }
         }
 
@@ -196,7 +212,8 @@ namespace BuddySDK
         }
         public static ConstructorInfo GetConstructor(this System.Type t, params Type[] paramTypes)
         {
-            return t.GetTypeInfo().DeclaredConstructors.Where(ci => Enumerable.SequenceEqual(ci.GetParameters().Select(pi => pi.ParameterType), paramTypes)).FirstOrDefault();
+            return t.GetTypeInfo().DeclaredConstructors.Where(c => c.GetParameters().Count().Equals(paramTypes.Count()))
+                .FirstOrDefault(c => c.GetParameters().All(p => p.ParameterType.IsAssignableFrom(paramTypes.ElementAt(p.Position))));
         }
         public static T GetCustomAttribute<T>(this System.Reflection.PropertyInfo pi) where T : System.Attribute
         {
@@ -303,66 +320,7 @@ namespace BuddySDK
             private const string RootContainer = "{00000000-0000-0000-FFFF-FFFFFFFFFFFF}";
             private const string RootContainerQuery = "System.Devices.ContainerId:=\"" + RootContainer + "\"";
 
-            /// <summary>
-            /// Build a system user agent string that contains the Windows version number
-            /// and CPU architecture.
-            /// </summary>
-            /// <returns>String containing formatted system parts of the user agent.</returns>
-            public static async Task<string> GetSystemUserAgent()
-            {
-                try
-                {
-                    var parts = new[] {
-                        "Windows NT " + await GetWindowsVersionAsync(),
-                        FormatForUserAgent(GetProcessorArchitecture())
-                    };
-
-                    return "(" + String.Join("; ", parts.Where(e => !String.IsNullOrEmpty(e))) + ")";
-                }
-                catch
-                {
-                    return "";
-                }
-            }
-
-            /// <summary>
-            /// Format a ProcessorArchitecture as it would be expected in a user agent of a browser.
-            /// </summary>
-            /// <returns>String containing the format processor architecture.</returns>
-            static string FormatForUserAgent(ProcessorArchitecture architecture)
-            {
-                switch (architecture)
-                {
-                    case ProcessorArchitecture.AMD64:
-                        return "x64";
-                    case ProcessorArchitecture.ARM:
-                        return "ARM";
-                    default:
-                        return "";
-                }
-            }
-
-            /// <summary>
-            /// Get the processor architecture of this computer.
-            /// </summary>
-            /// <returns>The processor architecture of this computer.</returns>
-            public static ProcessorArchitecture GetProcessorArchitecture()
-            {
-                try
-                {
-                    var sysInfo = new _SYSTEM_INFO();
-                    GetNativeSystemInfo(ref sysInfo);
-
-                    return Enum.IsDefined(typeof(ProcessorArchitecture), sysInfo.wProcessorArchitecture)
-                        ? (ProcessorArchitecture)sysInfo.wProcessorArchitecture
-                        : ProcessorArchitecture.UNKNOWN;
-                }
-                catch
-                {
-                }
-
-                return ProcessorArchitecture.UNKNOWN;
-            }
+            
 
             /// <summary>
             /// Get the name of the manufacturer of this computer.
@@ -428,9 +386,6 @@ namespace BuddySDK
                 TValue value;
                 return dictionary.TryGetValue(key, out value) ? value : default(TValue);
             }
-
-            [DllImport("kernel32.dll")]
-            static extern void GetNativeSystemInfo(ref _SYSTEM_INFO lpSystemInfo);
 
             [StructLayout(LayoutKind.Sequential)]
             struct _SYSTEM_INFO

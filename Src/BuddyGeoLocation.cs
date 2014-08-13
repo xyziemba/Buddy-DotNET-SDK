@@ -1,5 +1,6 @@
-using System;
 using Newtonsoft.Json;
+using System;
+using System.Globalization;
 
 namespace BuddySDK
 {
@@ -35,8 +36,9 @@ namespace BuddySDK
         }
         public override string ToString()
         {
-            if (LocationID == null) {
-                return String.Format ("{0},{1}", Latitude, Longitude);
+            if (LocationID == null)
+            {
+                return String.Format(CultureInfo.InvariantCulture.NumberFormat, "{0},{1}", Latitude, Longitude);
             }
             return LocationID;
         }
@@ -55,7 +57,7 @@ namespace BuddySDK
 
         public override string ToString()
         {
-            return String.Format("{0},{1},{2}", Latitude, Longitude, DistanceInMeters);
+            return String.Format(CultureInfo.InvariantCulture.NumberFormat, "{0},{1},{2}", Latitude, Longitude, DistanceInMeters);
         }
     }
 }

@@ -1,3 +1,4 @@
+
 bin/
 obj/
 *.sln
@@ -5,3 +6,5 @@ obj/
 *.userprefs
 *.csproj.user
 Resource.designer.cs
+Src/packages/*
+Src/Components/
