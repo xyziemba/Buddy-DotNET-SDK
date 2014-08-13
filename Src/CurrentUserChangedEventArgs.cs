@@ -1,12 +1,13 @@
 using System;
+using BuddySDK.Models;
 
 namespace BuddySDK
 {
     public class CurrentUserChangedEventArgs {
 
         public User PreviousUser {get; private set;}
-        public AuthenticatedUser NewUser { get; set; }
-        public CurrentUserChangedEventArgs(AuthenticatedUser newUser, User previousUser = null) {
+        public User NewUser { get; set; }
+        public CurrentUserChangedEventArgs(User newUser, User previousUser = null) {
             PreviousUser = previousUser;
             NewUser = newUser;
         }

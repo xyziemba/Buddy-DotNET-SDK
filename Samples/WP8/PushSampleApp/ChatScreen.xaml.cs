@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 
 using BuddySDK;
 using System.Windows.Controls.Primitives;
+using BuddySDK.Models;
 
 namespace PhoneApp5
 {
@@ -26,19 +27,20 @@ namespace PhoneApp5
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            Buddy.Instance.RecordNotificationReceived(this.NavigationContext);
-            LoadUsers();
+            Buddy.RecordNotificationReceived(this.NavigationContext);
+            LoadUsers().ConfigureAwait(false);
         }
 
         public async Task LoadUsers()
         {
             Buddy.AuthorizationNeedsUserLogin += Buddy_AuthorizationNeedsUserLogin;
-            if (null == Buddy.CurrentUser)
+            var user = await Buddy.GetCurrentUserAsync();
+            if (null == user)
             {
                 NavigationService.Navigate(new Uri("/LoginPage.xaml", UriKind.Relative));
             }
-            SearchResult<User> users = await Buddy.Users.FindAsync();
-            userList.ItemsSource = users.PageResults.ToList();
+            var users = await Buddy.GetAsync<PagedResult<User>>("/users");
+            userList.ItemsSource = users.Value.PageResults.ToList();
         }
 
         public void DisplaySend(object sender, RoutedEventArgs args)
@@ -50,7 +52,7 @@ namespace PhoneApp5
             {
                 MessagePopup.IsOpen = true;
             }
-            catch (Exception e)
+            catch 
             {
 
             }
@@ -60,8 +62,14 @@ namespace PhoneApp5
         public async void SendMessage(object sender, RoutedEventArgs args)
         {
             MessagePopup.IsOpen = false;
+            var user = await Buddy.GetCurrentUserAsync();
             MessageBox.Show(String.Format("Sending to {0}", Recipient), "Sending...", MessageBoxButton.OK);
-            BuddyResult<Notification> result = await Buddy.SendPushNotificationAsync(new string[] { Recipient }, String.Format("Message from {0}", Buddy.CurrentUser.FirstName)  , MessageBody.Text);
+            var result = await Buddy.PostAsync<NotificationResult>("/notifications", new {
+                recipients = new string[] { Recipient },
+                title =  String.Format("Message from {0}", user.FirstName ?? user.Username), 
+                message = MessageBody.Text
+                
+            });
             
             if (result.IsSuccess)
             {

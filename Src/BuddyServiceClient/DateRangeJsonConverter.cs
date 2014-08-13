@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Globalization;
 
 namespace BuddySDK.BuddyServiceClient
 {
@@ -45,14 +42,19 @@ namespace BuddySDK.BuddyServiceClient
             var dr = (DateRange)value;
             var val = "";
             if (dr.StartDate.HasValue) {
-                val += String.Format("/Date({0})/", ToUnixTicks(dr.StartDate.Value));
+                val += GetUnixTicksString(dr.StartDate.Value);
             }
             val += "-";
 
             if (dr.EndDate.HasValue) {
-                val += String.Format("/Date({0})/", ToUnixTicks(dr.StartDate.Value));
+                val += GetUnixTicksString(dr.EndDate.Value);
             }
             writer.WriteValue(val);
+        }
+
+        private string GetUnixTicksString(DateTime dateTime)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "/Date({0})/", ToUnixTicks(dateTime));
         }
     }
 }

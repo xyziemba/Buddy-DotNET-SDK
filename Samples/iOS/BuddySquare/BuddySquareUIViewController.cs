@@ -17,9 +17,9 @@ namespace BuddySquare.iOS
         private void HookUserChange(bool hook) {
             if (hook != _userChangeHooked) {
                 if (hook) {
-                    Buddy.Instance.CurrentUserChanged += HandleCurrentUserChanged;
+                    Buddy.CurrentUserChanged += HandleCurrentUserChanged;
                 } else {
-                    Buddy.Instance.CurrentUserChanged -= HandleCurrentUserChanged;
+                    Buddy.CurrentUserChanged -= HandleCurrentUserChanged;
                 }
                 _userChangeHooked = hook;
             }
