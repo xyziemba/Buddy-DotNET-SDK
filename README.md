@@ -83,7 +83,7 @@ Each SDK provides general wrappers that make REST calls to Buddy.
 #### GET
 
     // GET the paged results from application-level metadata based on the "someData_" key prefix
-    var _data = await Buddy.GetAsync<PagedResult<Metadata>>("/metadata/app", new { "keyPrefix": "someData_" } );
+    var result = await Buddy.GetAsync<PagedResult<Metadata>>("/metadata/app", new { "keyPrefix": "someData_" } );
 
 #### POST
 
@@ -111,7 +111,7 @@ Here we demonstrate uploading a picture. For all binary files (e.g. blobs and vi
 
     // Create a new BuddyFile with the picture we want to upload
     var result = await Buddy.PostAsync<Picture> ("/pictures", new {
-                            data = new BuddyFile (_chosenImage.AsPNG().AsStream(), "data", "image/png"),
+                            data = new BuddyFile (chosenImage.AsPNG().AsStream(), "data", "image/png"),
                         });
 
 #### Download A File
@@ -119,11 +119,11 @@ Here we demonstrate uploading a picture. For all binary files (e.g. blobs and vi
 Our download example uses pictures.
 
     // Gets the photo bits, resized to 200x200
-    var loadTask = await Buddy.GetAsync<BuddyFile>("/pictures/" + id + "/file", new {size=200});
+    var result = await Buddy.GetAsync<BuddyFile>("/pictures/" + id + "/file", new {size=200});
 
-    if (loadTask.IsSuccess && loadTask.Value != null) {
+    if (result.IsSuccess && result.Value != null) {
         
-        // Load the image data from loadTask.Value.Data
+        // Load the image data from result.Value.Data
     }
 
 ### <Remaining SDK-specific Instructions>
