@@ -110,6 +110,12 @@ namespace BuddySDK
 
         public abstract void ClearUserSetting (string str);
 
+        // Crypto
+        public string SignString(string key, string stringToSign)
+        {
+            return DotNetDeltas.SignString(key, stringToSign);
+        }
+
         // platform
         //
 

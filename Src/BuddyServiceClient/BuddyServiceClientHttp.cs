@@ -67,7 +67,6 @@ namespace BuddySDK.BuddyServiceClient
             return string.Format("{0}\n{1}\n{2}", verb.ToUpper(), AppID, fullPath);
         }
 
-#if SHARED_SECRET
         private string GenerateSignatureForRequest(string verb, string path)
         {
             string stringToSign = MakeStringToSign(verb, path);
@@ -76,9 +75,8 @@ namespace BuddySDK.BuddyServiceClient
                 return null;
             }
 
-            return BuddyUtils.SignString(SharedSecret,stringToSign);
+            return PlatformAccess.Current.SignString(SharedSecret,stringToSign);
         }
-#endif
 
         public BuddyServiceClientHttp(string root,string appID,string sharedSecret)
         {
@@ -432,19 +430,19 @@ namespace BuddySDK.BuddyServiceClient
 
             if (token != null && (parameters == null || !parameters.ContainsKey("accessToken")))
             {
-#if SHARED_SECRET
                 if (SharedSecret != null)
                 {
 
                     string requestSig = GenerateSignatureForRequest(verb, path);
-                    if(requestSig!=null)
+                    if (requestSig != null)
                     {
-                        wr.Headers["Authorization"] = String.Format("Buddy {0} {1}", token,requestSig);
+                        wr.Headers["Authorization"] = String.Format("Buddy {0} {1}", token, requestSig);
                     }
                 }
-#endif
-                wr.Headers["Authorization"] = String.Format("Buddy {0}", token);
-                
+                else
+                {
+                    wr.Headers["Authorization"] = String.Format("Buddy {0}", token);
+                }
             }
 
             wr.Method = verb;
