@@ -46,13 +46,17 @@ Visit the [Buddy Dashboard](https://buddyplatform.com) to obtain your applicatio
 
 ### Initialize the SDK
 
-The `Init` method should be called once at the start of your app, a good place to put it is in the constructor for your application. To reference the Buddy SDK in your source file, you need to put a 'using' keyword at the top of the file that contains the constructor:
+To reference the Buddy SDK in your source file, you need to put a 'using' keyword at the top of the file that contains the constructor:
 
     using BuddySDK;
-    // In your application constructor...
-    public MyCoolApp() {
-        Buddy.Init(AppId, AppKey);
-    }
+
+The `Init` method should be called once at the start of your app; we recommend placing it in your project's constructor. You should replace "your app ID" and "your app key" with the app ID and key you created at the [Buddy Dev Dashboard](http://buddyplatform.com):
+
+    public MyCoolApp()
+    {
+        // Don't forget to get your app ID and key from http://buddyplatform.com!
+        Buddy.Init("your app ID", "your app key");
+     }
 
 ### User Flow
 
@@ -78,16 +82,14 @@ Each SDK provides general wrappers that make REST calls to Buddy.
 
 #### GET
 
-    // GET the paged results from application-level metadata based on the "someData_" key prefix
-    var result = await Buddy.GetAsync<PagedResult<Metadata>>("/metadata/app", new { "keyPrefix": "someData_" } );
+    // GET all checkins within a 5000 meter radius around the point 47.1, -122.3
+    var result = await Buddy.GetAsync<PagedResult<Checkin>>("/checkins", new { locationRange = "47.1,-122.3,5000" } );
 
 #### POST
 
-    var result = await Buddy.PostAsync<NotificationResult>("/notifications", new {
-					        recipients = new string[] { Recipient },
-					        title =  String.Format("Message from {0}", user.FirstName ?? user.Username), 
-					        message = MessageBody.Text
-					        
+    var result = await Buddy.PostAsync<Checkin>("/checkins", new {
+					        location = new BuddyGeoLocation(47.1, -122.3),
+					        comment =  "This place was awesome!"
 					    });
 	// POST results return similar responses to GET, use the result to check for success
 
