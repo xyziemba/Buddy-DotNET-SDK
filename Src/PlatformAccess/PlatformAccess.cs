@@ -110,6 +110,9 @@ namespace BuddySDK
 
         public abstract void ClearUserSetting (string str);
 
+        // Crypto
+        public abstract string SignString(string key, string stringToSign);
+
         // platform
         //
 

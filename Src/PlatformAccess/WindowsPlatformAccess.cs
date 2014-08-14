@@ -15,6 +15,8 @@ using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System.Profile;
 using Windows.UI.Xaml;
+using Windows.Security.Cryptography;
+
 
 namespace BuddySDK
 {
@@ -196,6 +198,18 @@ namespace BuddySDK
             // Create a simple setting
 
             return localSettings.Values[key] as string;
+        }
+
+        public override string SignString(string key, string stringToSign)
+        {
+             var messageBytes= Encoding.UTF8.GetBytes(stringToSign);
+             MacAlgorithmProvider objMacProv = MacAlgorithmProvider.OpenAlgorithm("HMAC_SHA256");
+
+             var keyBytes = key.toByteArray();
+
+             CryptographicKey hmacKey = objMacProv.CreateKey(keyBytes.AsBuffer());
+             IBuffer buffHMAC = CryptographicEngine.Sign(hmacKey, messageBytes.AsBuffer());
+             return BuddyUtils.ToHex(buffHMAC.ToArray());
         }
 
         protected override void InvokeOnUiThreadCore(Action a)

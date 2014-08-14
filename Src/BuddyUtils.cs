@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-#if SHARED_SECRET
-using System.Security.Cryptography;
-#endif
+
 
 namespace BuddySDK
 {
@@ -49,16 +47,6 @@ namespace BuddySDK
 
             return new string(c);
         }
-
-#if SHARED_SECRET
-        public static string SignString(string key, string stringToSign)
-        {
-            using (var hasher = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
-            {
-                return ToHex(hasher.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
-            }
-        }
-#endif
 
         internal static Task<BuddyResult<T2>> WrapResult<T1, T2>(this Task<BuddyResult<T1>> mainTask, Func<BuddyResult<T1>, T2> mapper, Func<BuddyResult<T1>, T2, BuddyResult<T2>> converter = null)
         {
