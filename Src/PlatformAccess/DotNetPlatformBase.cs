@@ -7,8 +7,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Security.Cryptography;
-
 
 namespace BuddySDK
 {
@@ -88,13 +86,6 @@ namespace BuddySDK
             }
         }
 
-        public override string SignString(string key, string stringToSign)
-        {
-            using (var hasher = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
-            {
-                return BuddyUtils.ToHex(hasher.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
-            }
-        }
 
         public override ConnectivityLevel ConnectionType
         {
