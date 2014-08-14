@@ -24,10 +24,6 @@ Application IDs and keys are obtained at the Buddy Developer Dashboard at [buddy
 
 Full documentation for Buddy's services are available at [buddyplatform.com/docs](https://buddyplatform.com/docs).
 
-## Installing the SDK
-
-The Buddy .NET SDK is distributed via [NuGet](https://www.nuget.org/packages/BuddyPlatformSdk/), and directly in binary form. Source code for the SDK can be obtained from [GitHub](https://github.com/).
-
 #### Visual Studio - NuGet
 
 We recommend using NuGet to include the SDK in your project. To include the Buddy .NET SDK in your project:
