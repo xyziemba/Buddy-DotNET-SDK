@@ -43,6 +43,25 @@ namespace PhoneApp5
             userList.ItemsSource = users.Value.PageResults.ToList();
         }
 
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            DisableBuddyAuthLoginUI();
+        }
+
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            base.OnNavigatingFrom(e);
+
+            DisableBuddyAuthLoginUI();
+        }
+
+        private void DisableBuddyAuthLoginUI()
+        {
+            Buddy.AuthorizationNeedsUserLogin -= Buddy_AuthorizationNeedsUserLogin;
+        }
+
         public void DisplaySend(object sender, RoutedEventArgs args)
         {
             string sendId = (sender as Button).Tag as string;
