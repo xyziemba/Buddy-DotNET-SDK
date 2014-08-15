@@ -124,10 +124,6 @@ Our download example uses pictures.
         // Load the image data from result.Value.Data
     }
 
-### <Remaining SDK-specific Instructions>
-
-<Any further recommendations or instructions for our users go here. This is where you can provide suggestions, best practices, and sample use-cases for the specific SDK.>
-
 ## Contributing Back: Pull Requests
 
 We'd love to have your help making the Buddy SDK as good as it can be!
