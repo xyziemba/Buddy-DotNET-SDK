@@ -24,10 +24,6 @@ Application IDs and keys are obtained at the Buddy Developer Dashboard at [buddy
 
 Full documentation for Buddy's services are available at [buddyplatform.com/docs](https://buddyplatform.com/docs).
 
-## Installing the SDK
-
-The Buddy .NET SDK is distributed via [NuGet](https://www.nuget.org/packages/BuddyPlatformSdk/), and directly in binary form. Source code for the SDK can be obtained from [GitHub](https://github.com/).
-
 #### Visual Studio - NuGet
 
 We recommend using NuGet to include the SDK in your project. To include the Buddy .NET SDK in your project:
@@ -50,13 +46,17 @@ Visit the [Buddy Dashboard](https://buddyplatform.com) to obtain your applicatio
 
 ### Initialize the SDK
 
-The `Init` method should be called once at the start of your app, a good place to put it is in the constructor for your application. To reference the Buddy SDK in your source file, you need to put a 'using' keyword at the top of the file that contains the constructor:
+To reference the Buddy SDK in your source file, you need to put a 'using' keyword at the top of the file that contains the constructor:
 
     using BuddySDK;
-    // In your application constructor...
-    public MyCoolApp() {
-        Buddy.Init(AppId, AppKey);
-    }
+
+The `Init` method should be called once at the start of your app; we recommend placing it in your project's constructor. You should replace "your app ID" and "your app key" with the app ID and key you created at the [Buddy Dev Dashboard](http://buddyplatform.com):
+
+    public MyCoolApp()
+    {
+        // Don't forget to get your app ID and key from http://buddyplatform.com!
+        Buddy.Init("your app ID", "your app key");
+     }
 
 ### User Flow
 
@@ -82,16 +82,14 @@ Each SDK provides general wrappers that make REST calls to Buddy.
 
 #### GET
 
-    // GET the paged results from application-level metadata based on the "someData_" key prefix
-    var _data = await Buddy.GetAsync<PagedResult<Metadata>>("/metadata/app", new { "keyPrefix": "someData_" } );
+    // GET all checkins within a 5000 meter radius around the point 47.1, -122.3
+    var result = await Buddy.GetAsync<PagedResult<Checkin>>("/checkins", new { locationRange = "47.1,-122.3,5000" } );
 
 #### POST
 
-    var result = await Buddy.PostAsync<NotificationResult>("/notifications", new {
-					        recipients = new string[] { Recipient },
-					        title =  String.Format("Message from {0}", user.FirstName ?? user.Username), 
-					        message = MessageBody.Text
-					        
+    var result = await Buddy.PostAsync<Checkin>("/checkins", new {
+					        location = new BuddyGeoLocation(47.1, -122.3),
+					        comment =  "This place was awesome!"
 					    });
 	// POST results return similar responses to GET, use the result to check for success
 
@@ -111,7 +109,7 @@ Here we demonstrate uploading a picture. For all binary files (e.g. blobs and vi
 
     // Create a new BuddyFile with the picture we want to upload
     var result = await Buddy.PostAsync<Picture> ("/pictures", new {
-                            data = new BuddyFile (_chosenImage.AsPNG().AsStream(), "data", "image/png"),
+                            data = new BuddyFile (chosenImage.AsPNG().AsStream(), "data", "image/png"),
                         });
 
 #### Download A File
@@ -119,16 +117,12 @@ Here we demonstrate uploading a picture. For all binary files (e.g. blobs and vi
 Our download example uses pictures.
 
     // Gets the photo bits, resized to 200x200
-    var loadTask = await Buddy.GetAsync<BuddyFile>("/pictures/" + id + "/file", new {size=200});
+    var result = await Buddy.GetAsync<BuddyFile>("/pictures/" + id + "/file", new {size=200});
 
-    if (loadTask.IsSuccess && loadTask.Value != null) {
+    if (result.IsSuccess && result.Value != null) {
         
-        // Load the image data from loadTask.Value.Data
+        // Load the image data from result.Value.Data
     }
-
-### <Remaining SDK-specific Instructions>
-
-<Any further recommendations or instructions for our users go here. This is where you can provide suggestions, best practices, and sample use-cases for the specific SDK.>
 
 ## Contributing Back: Pull Requests
 

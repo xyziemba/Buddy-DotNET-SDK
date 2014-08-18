@@ -19,9 +19,9 @@ namespace PhoneApp5
         public static PhoneApplicationFrame RootFrame { get; private set; }
 
 
-	    // TODO: Go to http://dev.buddyplatform.com to get an app ID and app key.
-        public const string AppId = "bbbbbc.rcdbvlNmjKbj";
-        public const string AppKey = "BDE88F15-D1DA-4DD2-BA8B-566B9F33385E";
+	    // TODO: Go to http://buddyplatform.com to get an app ID and app key.
+        public const string AppId = "\Your App ID";
+        public const string AppKey = "\Your App Key";
         public const string PushChannelName = "SamplePushChannel";
 
         /// <summary>
