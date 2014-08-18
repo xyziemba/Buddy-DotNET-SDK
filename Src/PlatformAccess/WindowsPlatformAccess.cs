@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
@@ -11,6 +12,8 @@ using Windows.ApplicationModel.Core;
 using Windows.ApplicationModel.Store;
 using Windows.Devices.Enumeration.Pnp;
 using Windows.Networking.PushNotifications;
+using Windows.Security.Cryptography;
+using Windows.Security.Cryptography.Core;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System.Profile;
@@ -287,12 +290,19 @@ namespace BuddySDK
                 }
                 args.Handled = a.IsHandled;
             };
-
         }
 
+        public static string SignString(string key, string message)
+        {
+            MacAlgorithmProvider macAlgorithmProvider = MacAlgorithmProvider.OpenAlgorithm("HMAC_SHA256");
+            var binaryMessage = CryptographicBuffer.ConvertStringToBinary(message, BinaryStringEncoding.Utf8);
+            var binaryKeyMaterial = CryptographicBuffer.ConvertStringToBinary(key, BinaryStringEncoding.Utf8);
+            var hmacKey = macAlgorithmProvider.CreateKey(binaryKeyMaterial);
+            var binarySignedMessage = CryptographicEngine.Sign(hmacKey, binaryMessage);
+            var signedMessage = CryptographicBuffer.EncodeToHexString(binarySignedMessage);
+            return signedMessage;
+        }
     }
-
-
 
     // Copyright (c) Attack Pattern LLC.  All rights reserved.
     // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. 
@@ -424,14 +434,18 @@ namespace BuddySDK
 #else
 
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 
+namespace BuddySDK
+{
 internal static class DotNetDeltas
 {
-
     public static T GetCustomAttribute<T>(this System.Reflection.PropertyInfo pi) where T : System.Attribute
     {
         return System.Reflection.CustomAttributeExtensions.GetCustomAttribute<T>(pi);
     }
+
     public static T GetCustomAttribute<T>(this System.Type t) where T : System.Attribute
     {
         return System.Reflection.CustomAttributeExtensions.GetCustomAttribute<T>(t);
@@ -448,9 +462,9 @@ internal static class DotNetDeltas
     }
 
     public static bool IsInstanceOfType(this System.Type t, object obj)
-        {
-            return t.IsInstanceOfType(obj);
-        }
+    {
+        return t.IsInstanceOfType(obj);
+    }
 
     public static void Sleep(int ms)
     {
@@ -501,8 +515,16 @@ internal static class DotNetDeltas
             }
 
         };
-
     }
+
+    public static string SignString(string key, string stringToSign)
+    {
+        using (var hasher = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
+        {
+            return BuddyUtils.ToHex(hasher.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
+        }
+    }
+}
 }
 
 #endif

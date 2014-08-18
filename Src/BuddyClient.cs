@@ -327,7 +327,7 @@ namespace BuddySDK
         private string GenerateServerSig()
         {
             string stringToSign = string.Format("{0}\n", AppKey);
-            return BuddyUtils.SignString(sharedSecret,stringToSign);
+            return PlatformAccess.Current.SignString(sharedSecret,stringToSign);
         }
 
         private async Task<string> GetDeviceToken()
