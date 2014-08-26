@@ -64,7 +64,7 @@ namespace BuddySDK.Models
         }
 
 
-        [Newtonsoft.Json.JsonProperty("send")]
+        [Newtonsoft.Json.JsonProperty("sent")]
         public DateTime Sent
         {
             get;
