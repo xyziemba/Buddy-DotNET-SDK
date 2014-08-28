@@ -3,6 +3,8 @@ These release notes are for the Buddy Platform .NET SDK.
 
 Please refer to [buddyplatform.com/docs](https://buddyplatform.com/docs) for more details on the .NET SDK.
 
+**NOTE**: The .NET SDK has recently been updated! Please see the [.NET 3.0 Migration](http://buddyplatform.com/docs/.NET%20SDK%203.0%20Migration) page for a quickstart guide.
+
 ## Introduction
 
 We realized most developers end up writing the same code over and over again: user management, photo management, geolocation, checkins, metadata, and other common features. Buddy enables developers to build cloud-connected apps without having to write, test, manage or scale server-side code and infrastructure.
