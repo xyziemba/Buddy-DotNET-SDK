@@ -110,10 +110,7 @@ namespace BuddySDK.Models
         public string ProfilePictureUrl
         {
             get;
-            private set;
+            set;
         }
-
-
-
     }
 }

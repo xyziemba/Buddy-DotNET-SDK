@@ -146,7 +146,7 @@ namespace BuddySDK
             }
         }
 
-        protected override Assembly EntryAssembly
+        internal override Assembly EntryAssembly
         {
             get {
                 return Application.Current.GetType().GetTypeInfo().Assembly;
@@ -491,7 +491,7 @@ internal static class DotNetDeltas
         }
     }
 
-    public class ExceptionEventArgs
+    public class ExceptionEventArgs : System.EventArgs
     {
         public System.Exception Exception { get; set; }
         public string Message { get; set; }
@@ -502,7 +502,12 @@ internal static class DotNetDeltas
 
     static DotNetDeltas()
     {
-        System.AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+#if WINDOWS_PHONE_7x
+        System.Windows.Application.Current.
+#else
+        System.AppDomain.CurrentDomain.
+#endif        
+        UnhandledException += (s, args) =>
         {
             var a = new ExceptionEventArgs
             {

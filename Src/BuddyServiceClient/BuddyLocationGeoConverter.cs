@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace BuddySDK.BuddyServiceClient
 {
-    internal class BuddyLocationGeoConverter : JsonConverter
+    public class BuddyLocationGeoConverter : JsonConverter
     {
-
         public override bool CanConvert(Type objectType)
         {
             return objectType == typeof(string);

@@ -22,7 +22,7 @@ namespace BuddySDK
             internal set;
         }
 
-        internal BuddyResultBase() {
+        public BuddyResultBase() {
 
         }
 
@@ -41,7 +41,7 @@ namespace BuddySDK
             internal set;
         }
 
-        internal BuddyResult() {
+        public BuddyResult() : base() {
 
         }
 

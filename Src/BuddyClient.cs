@@ -14,9 +14,118 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using BuddySDK.Models;
 
-
 namespace BuddySDK
 {
+    public class DeviceRegistration
+    {
+        public string AccessToken { get; set; }
+        public string ServiceRoot { get; set; }
+        public string ServerSignature { get; set; }
+    }
+
+    public class AppSettings
+    {
+        public string AppID { get; set; }
+        public string AppKey { get; set; }
+
+        public string ServiceUrl { get; set; }
+        public string DeviceToken { get; set; }
+        public DateTime? DeviceTokenExpires { get; set; }
+
+        public string UserToken { get; set; }
+        public DateTime? UserTokenExpires { get; set; }
+        public string UserID { get; set; }
+        public string LastUserID { get; set; }
+
+        public string DevicePushToken { get; set; }
+
+        public BuddyOptions Options { get; set; }
+
+        private AppSettings() { }
+
+        public AppSettings(string appId, string appKey, BuddyOptions options)
+        {
+            AppID = appId;
+            AppKey = appKey;
+            Options = options;
+
+            if (appId != null)
+            {
+                Load();
+            }
+        }
+
+        public void Clear()
+        {
+            if (AppID != null)
+            {
+                PlatformAccess.Current.ClearUserSetting(GetSettingsKey());
+                ServiceUrl = null;
+                DeviceToken = null;
+                DeviceTokenExpires = null;
+                LastUserID = null;
+                ClearUser();
+            }
+        }
+
+        public void ClearUser()
+        {
+            if (AppID != null)
+            {
+                UserToken = null;
+                UserTokenExpires = null;
+                UserID = null;
+                Save();
+            }
+        }
+
+        public void Save()
+        {
+            if (AppID == null)
+            {
+                return;
+            }
+
+            var json = JsonConvert.SerializeObject(this);
+            PlatformAccess.Current.SetUserSetting(GetSettingsKey(), json);
+        }
+
+        private string GetSettingsKey()
+        {
+            return AppID + Options.InstanceName;
+        }
+
+        public void Load()
+        {
+            if (AppID == null)
+                return;
+
+            var json = PlatformAccess.Current.GetUserSetting(GetSettingsKey());
+
+            if (json == null)
+                return;
+
+            try
+            {
+                var settings = JsonConvert.DeserializeObject<AppSettings>(json, new JsonSerializerSettings() {  ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor });
+
+                // copy over the properties
+                //
+                foreach (var prop in settings.GetType().GetProperties())
+                {
+                    if (prop.Name != "Options")
+                    {
+                        prop.SetValue(this, prop.GetValue(settings));
+                    }
+                }
+            }
+            catch
+            {
+                // we don't want to have an app not be able to start because settings got corrupted
+            }
+        }
+    }
+
     public class BuddyOptions
     {
         public BuddyClientFlags Flags { get; set; }
@@ -61,98 +170,7 @@ namespace BuddySDK
         private User _user;
         private static bool _crashReportingSet = false;
      
-        private class AppSettings
-        {
-            public string AppID {get;set;}
-            public string AppKey {get;set;}
-
-            public string ServiceUrl { get; set; }
-            public string DeviceToken { get; set; }
-            public DateTime? DeviceTokenExpires { get; set; }
-
-            public string UserToken { get; set; }
-            public DateTime? UserTokenExpires { get; set; }
-            public string UserID {get;set;}
-            public string LastUserID {get;set;}
-
-            public string DevicePushToken { get; set; }
-            
-            public BuddyOptions Options { get; set; }
-
-            public AppSettings() {
-
-            }
-
-            public AppSettings(string appId, string appKey, BuddyOptions options) {
-                AppID = appId;
-                AppKey = appKey;
-                Options = options;
-
-                if (appId != null) {
-                    Load();
-                }
-            }
-
-            public void Clear() {
-                if (AppID != null) {
-                    PlatformAccess.Current.ClearUserSetting (GetSettingsKey());
-                    ServiceUrl = null;
-                    DeviceToken = null;
-                    DeviceTokenExpires = null;
-                    LastUserID = null;
-                    ClearUser ();
-                }
-            }
-
-            public void ClearUser() {
-                if (AppID != null) {
-                    UserToken = null;
-                    UserTokenExpires = null;
-                    UserID = null;
-                    Save ();
-                }
-            }
-
-            public void Save() {
-                if (AppID == null) {
-                    return;
-                }
-
-                var json = JsonConvert.SerializeObject (this);
-                PlatformAccess.Current.SetUserSetting (GetSettingsKey(), json);
-            }
-
-            private string GetSettingsKey()
-            {
-                return AppID + Options.InstanceName;
-            }
-
-            public void Load() {
-                if (AppID == null)
-                    return;
-
-                var json = PlatformAccess.Current.GetUserSetting (GetSettingsKey());
-
-                if (json == null)
-                    return;
-
-                try {
-                    var settings = JsonConvert.DeserializeObject<AppSettings> (json);
-
-                    // copy over the properties
-                    //
-                    foreach (var prop in settings.GetType().GetProperties()) {
-                        if (prop.Name != "Options") {
-                            prop.SetValue(this, prop.GetValue(settings));
-                        }
-                    }
-                }
-                catch {
-                    // we don't want to have an app not be able to start because settings got corrupted
-                }
-            }
-        }
-
+ 
 
         /// <summary>
         /// The service we use to call the Buddy backend.
@@ -263,15 +281,15 @@ namespace BuddySDK
                     {
                         _appSettings.DevicePushToken = t.Result;
 
-                        // if we have a device token, send up the new push token.
-                        if (_appSettings.DeviceToken != null)
+                    // if we have a device token, send up the new push token.
+                    if (_appSettings.DeviceToken != null)
+                    {
+                        this.UpdateDeviceAsync(_appSettings.DevicePushToken).ContinueWith((t2) =>
                         {
-                            this.UpdateDeviceAsync(_appSettings.DevicePushToken).ContinueWith((t2) =>
-                            {
-                                _appSettings.Save();
-                            });
-                        }
+                            _appSettings.Save();
+                        });
                     }
+                }
                 });
 
             };
@@ -287,12 +305,7 @@ namespace BuddySDK
             
         }
 
-        internal class DeviceRegistration
-        {
-            public string AccessToken { get; set; }
-            public string ServiceRoot { get; set; }
-            public string ServerSignature { get; set; }
-        }
+
         
         internal async Task<string> GetAccessToken() {
 
@@ -450,10 +463,22 @@ namespace BuddySDK
             if (_appSettings.UserToken == null) {
                 _user = null;
                 OnAuthorizationFailure (null);
-                return Task.FromResult (_user);
+                return
+#if WINDOWS_PHONE_7x
+                TaskEx
+#else
+                Task
+#endif
+                .FromResult(_user);
             }
             else if (_user != null && !reload) {
-                return Task.FromResult (_user);
+                return
+#if WINDOWS_PHONE_7x
+                TaskEx
+#else
+                Task
+#endif
+                .FromResult(_user);
             } else {
 
                 var t = GetAsync<User> ("/users/me");
