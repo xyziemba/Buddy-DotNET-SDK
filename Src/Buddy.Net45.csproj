@@ -139,6 +139,11 @@
     <Compile Include="BuddyServiceClient\BuddyServiceClientBase.cs" />
     <Compile Include="BuddyServiceClient\BuddyServiceClientHttp.cs" />
     <Compile Include="BuddyServiceException.cs" />
+    <Compile Include="Models\Game.cs" />
+    <Compile Include="Models\GamePlayer.cs" />
+    <Compile Include="Models\GameScore.cs" />
+    <Compile Include="Models\GameScoreboard.cs" />
+    <Compile Include="Models\GameSession.cs" />
     <Compile Include="Models\Identity.cs" />
     <Compile Include="Models\MessageType.cs" />
     <Compile Include="Models\PagedResult.cs" />
