@@ -410,8 +410,6 @@ namespace BuddySDK
             return result.IsSuccess;
         }
 
-      
-
         private class AuthenticatedUser  {
            
             public static User FromSettings(AppSettings settings) {
@@ -423,7 +421,6 @@ namespace BuddySDK
                 return null;
             }
         }
-
 
         private User GetUser() {
             if (!_userInitialized) {
@@ -567,7 +564,6 @@ namespace BuddySDK
             }
 
         }
-
     
         internal async Task<BuddyResult<T>> HandleServiceResult<T>( BuddyCallResult<T> serviceResult, bool allowThrow = false){
             var result = new BuddyResult<T> ();
@@ -659,7 +655,6 @@ namespace BuddySDK
             return tcs.Task;
         }
      
-
         private void ClearCredentials(bool clearUser = true, bool clearDevice = true) {
 
             if (clearDevice) {
@@ -736,7 +731,6 @@ namespace BuddySDK
             }
         }
 
-
         private async Task CheckConnectivity(TimeSpan waitTime) {
             var r = await GetAsync<string>( "/service/ping",null);
 
@@ -753,7 +747,6 @@ namespace BuddySDK
                 await CheckConnectivity(waitTime);
             }
         }
-
 
         protected virtual async Task OnConnectivityChanged(ConnectivityLevel level) {
             using (await new AsyncLock().LockAsync())
