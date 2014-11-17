@@ -1,7 +1,7 @@
 # Buddy .NET SDK
 These release notes are for the Buddy Platform .NET SDK.
 
-Please refer to [buddyplatform.com/docs](https://buddyplatform.com/docs) for more details on the .NET SDK.
+Please refer to [buddyplatform.com/docs](https://buddyplatform.com/docs#NETSDK) for more details on the .NET SDK.
 
 ## Introduction
 
@@ -63,7 +63,7 @@ The `Init` method should be called once at the start of your app; we recommend p
 The Buddy .NET SDK handles user creation and login.
 
 #### Create A User
-    
+
     // We recommend awaiting user creation, login, and logout
     await Buddy.CreateUserAsync(username, password);
 
@@ -80,18 +80,22 @@ The Buddy .NET SDK handles user creation and login.
 
 Each SDK provides general wrappers that make REST calls to Buddy.
 
+#### POST
+
+In this example we'll create a checkin. Take a look at the [create checkin REST documentation](https://buddyplatform.com/docs/Checkins#CreateCheckin) then:
+
+    var result = await Buddy.PostAsync<Checkin>("/checkins", new {
+                            location = new BuddyGeoLocation(47.1, -122.3),
+                            comment =  "This place was awesome!"
+                        });
+    // POST results return similar responses to GET, use the result to check for success
+
 #### GET
+
+We now can call GET to [search for the checkin](https://buddyplatform.com/docs/Checkins#SearchCheckins) we just created!
 
     // GET all checkins within a 5000 meter radius around the point 47.1, -122.3
     var result = await Buddy.GetAsync<PagedResult<Checkin>>("/checkins", new { locationRange = "47.1,-122.3,5000" } );
-
-#### POST
-
-    var result = await Buddy.PostAsync<Checkin>("/checkins", new {
-					        location = new BuddyGeoLocation(47.1, -122.3),
-					        comment =  "This place was awesome!"
-					    });
-	// POST results return similar responses to GET, use the result to check for success
 
 #### PUT/PATCH/DELETE
 
@@ -105,7 +109,7 @@ Buddy offers support for binary files. The .NET SDK works with files through our
 
 #### Upload A File
 
-Here we demonstrate uploading a picture. For all binary files (e.g. blobs and videos), the pattern is the same, but with a different path and different parameters.
+Here we demonstrate uploading a picture. For all binary files (e.g. blobs and videos), the pattern is the same, but with a different path and different parameters. For full documentation see our [Media and Files](https://buddyplatform.com/docs/Media%20and%20Files) documentation page.
 
     // Create a new BuddyFile with the picture we want to upload
     var result = await Buddy.PostAsync<Picture> ("/pictures", new {
@@ -150,4 +154,3 @@ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
-
