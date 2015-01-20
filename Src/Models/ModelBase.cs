@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -100,13 +100,13 @@ namespace BuddySDK.Models
         {
             public long? elaspedTimeInMs { get; set; }
         }
-        public Task<BuddyResult<TimeSpan?>> FinishAsync()
+        public Task<BuddyResult<TimeSpan?>> FinishAsync(object parameters = null)
         {
             if (string.IsNullOrEmpty(ID) || _client == null)
             {
                 throw new InvalidOperationException("Can't call finish on a metric that's missing an ID.");
             }
-            var r = _client.DeleteAsync<CompleteMetricResult>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(ID)), null);
+            var r = _client.DeleteAsync<CompleteMetricResult>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(ID)), parameters);
             return r.WrapResult<CompleteMetricResult, TimeSpan?>((r1) =>
             {
 
