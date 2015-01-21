@@ -9,7 +9,8 @@ namespace BuddySDK
 {
     static class BuddyUtils
     {
-        internal static Task<T2> WrapTask<T1, T2>(this Task<T1> mainTask, Func<Task<T1>, T2> mapper)
+        internal static Task<T2> WrapTask<T1, T2>(this Task<T1> mainTask, Func<Task<T1>, T2> mapper) where T1 : BuddyResultBase
+                                                                                                     where T2 : BuddyResultBase, new()
         {
             TaskCompletionSource<T2> tcs = new TaskCompletionSource<T2>();
 
@@ -19,10 +20,24 @@ namespace BuddySDK
                 {
                     tcs.SetException(t1.Exception);
                 }
+                else if(t1.Result.Error != null)
+                {
+                    tcs.SetResult(new T2 { 
+                        Error = t1.Result.Error
+                    });
+                }
                 else
                 {
-                    var t2 = mapper(t1);
-                    tcs.SetResult(t2);
+                    try
+                    {
+
+                        var t2 = mapper(t1);
+                        tcs.SetResult(t2);
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
+                    }
                 }
             });
 
@@ -55,7 +70,6 @@ namespace BuddySDK
 
             return WrapTask<BuddyResult<T1>, BuddyResult<T2>>(mainTask, (t1) =>
             {
-
                 return converter(t1.Result,  mapper(t1.Result));
             });
         }
