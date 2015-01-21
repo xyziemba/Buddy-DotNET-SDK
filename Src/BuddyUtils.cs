@@ -10,7 +10,7 @@ namespace BuddySDK
     static class BuddyUtils
     {
         internal static Task<T2> WrapTask<T1, T2>(this Task<T1> mainTask, Func<Task<T1>, T2> mapper) where T1 : BuddyResultBase
-                                                                                                     where T2 : BuddyResultBase, new()
+                                                                                                     where T2 : BuddyResultBase
         {
             TaskCompletionSource<T2> tcs = new TaskCompletionSource<T2>();
 
@@ -22,9 +22,11 @@ namespace BuddySDK
                 }
                 else if(t1.Result.Error != null)
                 {
-                    tcs.SetResult(new T2 { 
-                        Error = t1.Result.Error
-                    });
+                    var t2 = Activator.CreateInstance<T2>();
+                    t2.Error = t1.Result.Error;
+                    t2.RequestID = t1.Result.RequestID;
+
+                    tcs.SetResult(t2);
                 }
                 else
                 {

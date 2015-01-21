@@ -41,7 +41,7 @@ namespace BuddySDK
             internal set;
         }
 
-        public BuddyResult() {
+        internal BuddyResult() {
 
         }
 
