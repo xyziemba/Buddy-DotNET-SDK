@@ -109,18 +109,16 @@ namespace BuddySDK.Models
             var r = _client.DeleteAsync<CompleteMetricResult>(String.Format(CultureInfo.InvariantCulture, "/metrics/events/{0}", Uri.EscapeDataString(ID)), parameters);
             return r.WrapResult<CompleteMetricResult, TimeSpan?>((r1) =>
             {
-
                 var cmr = r1.Value;
 
                 TimeSpan? elapsedTime = null;
 
-                if (cmr.elaspedTimeInMs != null)
+                if (cmr != null && cmr.elaspedTimeInMs != null)
                 {
                     elapsedTime = TimeSpan.FromMilliseconds(cmr.elaspedTimeInMs.Value);
                 }
 
                 return elapsedTime;
-
             });
         }
     }

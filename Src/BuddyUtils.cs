@@ -20,19 +20,10 @@ namespace BuddySDK
                 {
                     tcs.SetException(t1.Exception);
                 }
-                else if(t1.Result.Error != null)
-                {
-                    var t2 = Activator.CreateInstance<T2>();
-                    t2.Error = t1.Result.Error;
-                    t2.RequestID = t1.Result.RequestID;
-
-                    tcs.SetResult(t2);
-                }
                 else
                 {
                     try
                     {
-
                         var t2 = mapper(t1);
                         tcs.SetResult(t2);
                     }
