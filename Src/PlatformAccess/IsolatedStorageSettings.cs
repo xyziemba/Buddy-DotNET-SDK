@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,7 +12,6 @@ namespace BuddySDK
     internal abstract class IsolatedStorageSettings
     {
         protected abstract IsolatedStorageFile GetIsolatedStorageFile();
-
 
         private static string ExecutionBinDir
         {
@@ -72,12 +71,15 @@ namespace BuddySDK
             {
                 using (fs)
                 {
-                    using (var sr = new StreamReader(fs))
                     {
-                        existing = sr.ReadToEnd();
+                        using (var sr = new StreamReader(fs))
+                        {
+                            existing = sr.ReadToEnd();
+                        }
                     }
                 }
             }
+            
 
             var d = new Dictionary<string, string>();
             var parts = Regex.Match(existing, "(?<key>[\\w\\.]*)=(?<value>.*?);");
@@ -105,11 +107,14 @@ namespace BuddySDK
 
             using (var fs = GetFileStream(true))
             {
-                using (var sw = new StreamWriter(fs))
                 {
-                    sw.WriteLine(sb.ToString());
+                    using (var sw = new StreamWriter(fs))
+                    {
+                        sw.WriteLine(sb.ToString());
+                    }
                 }
             }
+            
         }
 
         public void SetUserSetting(string key, string value, DateTime? expires = default(DateTime?))

@@ -156,6 +156,7 @@ namespace BuddySDK
 
         public virtual void SetPushToken(string pushToken)
         {
+
             //because the MPNS channel may be updated before the initial call to POST /devices, this was getting nulled out non-deterministically from BuddyClient:240 before we could attach it to the device
             if (PushToken != pushToken && pushToken != null)
             {

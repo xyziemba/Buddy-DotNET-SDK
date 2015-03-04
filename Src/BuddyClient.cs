@@ -163,7 +163,7 @@ namespace BuddySDK
         private static string _WebServiceUrl;
         protected static string WebServiceUrl {
             get {
-                return _WebServiceUrl ?? "https://api.buddyplatform.com/";
+                return _WebServiceUrl ?? "https://api.buddyplatform.com";
             }
             set {
                 _WebServiceUrl = value;

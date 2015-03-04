@@ -27,7 +27,6 @@ namespace PhoneApp5
         public  MainPage()
         {
             InitializeComponent();
-            BuddyPushSetup();
             
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
@@ -35,40 +34,7 @@ namespace PhoneApp5
 
 
 
-        private async void BuddyPushSetup()
-        {
-            Microsoft.Phone.Notification.HttpNotificationChannel channel;
-            channel = Microsoft.Phone.Notification.HttpNotificationChannel.Find(App.PushChannelName);
-            if (channel == null)
-            {
-                channel = new Microsoft.Phone.Notification.HttpNotificationChannel(App.PushChannelName);
-                channel.Open();
-            }
-            channel.ChannelUriUpdated += (object sender, NotificationChannelUriEventArgs args) =>
-            {
-                PlatformAccess.Current.SetPushToken(channel.ChannelUri.AbsoluteUri);
-            };
-            channel.ErrorOccurred += (object sender, NotificationChannelErrorEventArgs args) =>
-            {
-                MessageBox.Show(args.Message);
-            };
-            if (!channel.IsShellTileBound)
-            {
-                channel.BindToShellTile();
-            }
-            if (!channel.IsShellToastBound)
-            {
-                channel.BindToShellToast();
-            }
-
-            channel.ShellToastNotificationReceived += (object sender, NotificationEventArgs args) => {
-                string message = null;
-                if (args.Collection.TryGetValue("wp:Text1", out message))
-                {
-                    Dispatcher.BeginInvoke(() => MessageBox.Show(message.ToString()));
-                }
-            };
-        }
+        
 
         
 
