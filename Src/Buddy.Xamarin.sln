@@ -45,7 +45,4 @@ Global
 		{6CDE8A47-1F4D-489D-B06B-7C334C76886A}.Staging|Any CPU.ActiveCfg = Debug|Any CPU
 		{6CDE8A47-1F4D-489D-B06B-7C334C76886A}.Staging|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Buddy.iOS.csproj
-	EndGlobalSection
 EndGlobal

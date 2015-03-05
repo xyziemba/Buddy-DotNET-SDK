@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 
 
 #if __IOS__
@@ -7,11 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MonoTouch.CoreLocation;
-using MonoTouch.CoreFoundation;
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
-using MonoTouch.SystemConfiguration;
+using CoreLocation;
+using CoreFoundation;
+using UIKit;
+using Foundation;
+using SystemConfiguration;
 
 
 namespace BuddySDK
@@ -128,7 +128,7 @@ namespace BuddySDK
         {
             get
             {
-                return MonoTouch.ObjCRuntime.Runtime.Arch == MonoTouch.ObjCRuntime.Arch.SIMULATOR;
+                return ObjCRuntime.Runtime.Arch == ObjCRuntime.Arch.SIMULATOR;
             }
         }
 
@@ -170,13 +170,8 @@ namespace BuddySDK
 
         protected override void InvokeOnUiThreadCore(Action a)
         {
-
-            NSAction nsa = () =>
-            {
-                a();
-            };
-
-            invoker.BeginInvokeOnMainThread(nsa);
+            //NSAction has been replaced with standard action
+            invoker.BeginInvokeOnMainThread(a);
 
         }
 
@@ -255,7 +250,7 @@ namespace BuddySDK
                 if (adHocWiFiNetworkReachability == null)
                 {
                     adHocWiFiNetworkReachability = new NetworkReachability(new IPAddress(new byte[] { 169, 254, 0, 0 }));
-                    adHocWiFiNetworkReachability.SetCallback(OnChange);
+                    adHocWiFiNetworkReachability.SetNotification(OnChange);
                     adHocWiFiNetworkReachability.Schedule(CFRunLoop.Current, CFRunLoop.ModeDefault);
                 }
 
@@ -271,7 +266,7 @@ namespace BuddySDK
                 if (defaultRouteReachability == null)
                 {
                     defaultRouteReachability = new NetworkReachability(new IPAddress(0));
-                    defaultRouteReachability.SetCallback(OnChange);
+                    defaultRouteReachability.SetNotification(OnChange);
                     defaultRouteReachability.Schedule(CFRunLoop.Current, CFRunLoop.ModeDefault);
                 }
                 if (!defaultRouteReachability.TryGetFlags(out flags))
@@ -293,7 +288,7 @@ namespace BuddySDK
                     // this only happens when you create NetworkReachability from a hostname
                     reachable = remoteHostReachability.TryGetFlags(out flags);
 
-                    remoteHostReachability.SetCallback(OnChange);
+                    remoteHostReachability.SetNotification(OnChange);
                     remoteHostReachability.Schedule(CFRunLoop.Current, CFRunLoop.ModeDefault);
                 }
                 else
@@ -365,7 +360,7 @@ namespace BuddySDK
     {
 
 
-        public static BuddyGeoLocation ToBuddyGeoLocation(this MonoTouch.CoreLocation.CLLocation loc)
+        public static BuddyGeoLocation ToBuddyGeoLocation(this CoreLocation.CLLocation loc)
         {
             return new BuddyGeoLocation(loc.Coordinate.Latitude, loc.Coordinate.Longitude);
         }
