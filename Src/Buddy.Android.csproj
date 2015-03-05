@@ -14,6 +14,7 @@
     <AssemblyName>Buddy</AssemblyName>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
+    <AndroidUseLatestPlatformSdk>False</AndroidUseLatestPlatformSdk>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -46,7 +47,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="Mono.Android" />
     <Reference Include="Newtonsoft.Json">
-      <HintPath>Components\json.net-4.5.11\lib\android\Newtonsoft.Json.dll</HintPath>
+      <HintPath>packages\Newtonsoft.Json.6.0.8\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup />
@@ -114,5 +115,8 @@
       <Version>4.5.11</Version>
       <Visible>False</Visible>
     </XamarinComponentReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.Buddy.Android.config" />
   </ItemGroup>
 </Project>

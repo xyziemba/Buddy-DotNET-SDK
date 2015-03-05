@@ -1,4 +1,4 @@
-﻿
+
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -10,12 +10,12 @@ using System.Runtime.InteropServices;
  
 [assembly: AssemblyCompany("Buddy Platform Inc.")]
 [assembly: AssemblyProduct("Buddy Platform Client SDK")]
-[assembly: AssemblyCopyright("Copyright © 2014")]
+[assembly: AssemblyCopyright("Copyright © 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("3.0.1.0")]
-[assembly: AssemblyFileVersion("3.0.1.0")]
+[assembly: AssemblyVersion("3.1.0.0")]
+[assembly: AssemblyFileVersion("3.1.0.0")]
 
 [assembly: InternalsVisibleTo("BuddySDK.ClientTest")]
 [assembly: InternalsVisibleTo("BuddyWebserviceTestProject")]

@@ -1,4 +1,4 @@
-﻿using BuddySDK;
+using BuddySDK;
 using System;
 using System.Collections.Generic;
 using System.IO;

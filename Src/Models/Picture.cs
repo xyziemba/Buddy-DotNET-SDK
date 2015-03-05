@@ -1,4 +1,4 @@
-﻿using BuddySDK.BuddyServiceClient;
+using BuddySDK.BuddyServiceClient;
 using Newtonsoft.Json;
 using System.IO;
 using System.Threading.Tasks;
