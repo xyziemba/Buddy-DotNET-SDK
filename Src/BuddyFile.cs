@@ -14,21 +14,41 @@ namespace BuddySDK
             {
                 if (Data != null && _bytes == null)
                 {
-                    _bytes = new byte[Data.Length];
-                    long pos = Data.Position;
+                    long pos = 0;
 
                     if (Data.CanSeek) {
-                        Data.Seek (0, SeekOrigin.Begin);
+                        pos = Data.Position;
+                        Data.Seek(0, SeekOrigin.Begin);
                     }
-                    Data.Read(_bytes, 0, _bytes.Length);
+
+                    GetBytesFromStream();
+                   
                     if (Data.CanSeek) {
                         Data.Seek (pos, SeekOrigin.Begin);
                     }
-
                 }
+
                 return _bytes;
             }
         }
+
+        private void GetBytesFromStream()
+        {
+            if (Data is MemoryStream)
+            {
+                _bytes = ((MemoryStream)Data).ToArray();
+            }
+            else
+            {
+                using (var ms = new MemoryStream())
+                {
+                    Data.CopyTo(ms);
+
+                    _bytes = ms.ToArray();
+                }
+            }
+        }
+
         public string Name {get; private set;}
 
         public string ContentType {get; private set;}

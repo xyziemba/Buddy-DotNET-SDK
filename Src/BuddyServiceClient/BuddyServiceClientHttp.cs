@@ -603,8 +603,7 @@ namespace BuddySDK.BuddyServiceClient
 
             wr.ContentType = "multipart/form-data; boundary=" + boundary;
 
-            var partBoundary = "\r\n--" + boundary + "\r\n";
-            var boundarybytes = Encoding.UTF8.GetBytes(partBoundary);
+            var boundaryWritten = false;
 
             string formdataTemplate = "Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}";
             foreach (var kvp in nvc)
@@ -617,7 +616,7 @@ namespace BuddySDK.BuddyServiceClient
                     continue;
                 }
 
-                requestStream.Write(boundarybytes, 0, boundarybytes.Length);
+                boundaryWritten = WriteBoundary(boundaryWritten, boundary, requestStream);
 
                 var globalizedString = GetGlobalizedString(kvp.Value);
 
@@ -626,24 +625,34 @@ namespace BuddySDK.BuddyServiceClient
                 requestStream.Write(formitembytes, 0, formitembytes.Length);
             }
 
-            requestStream.Write(boundarybytes, 0, boundarybytes.Length);
-
             for (var i = files.Count-1; i >=0; i--)
             {
                 var file = files[i].Item2;
                 string headerTemplate = "Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\r\nContent-Type: {2}\r\n\r\n";
                 string header = string.Format(CultureInfo.InvariantCulture, headerTemplate, files[i].Item1, file.Name, file.ContentType);
                 byte[] headerbytes = System.Text.Encoding.UTF8.GetBytes(header);
+                boundaryWritten = WriteBoundary(boundaryWritten, boundary, requestStream);
                 requestStream.Write(headerbytes, 0, headerbytes.Length);
-                requestStream.Write(file.Bytes, 0, (int)file.Data.Length);
-                requestStream.Write(boundarybytes, 0, boundarybytes.Length);
-            }
+                requestStream.Write(file.Bytes, 0, (int)file.Bytes.Length);
+             }
 
             byte[] trailer = System.Text.Encoding.UTF8.GetBytes("\r\n--" + boundary + "--\r\n");
             requestStream.Write(trailer, 0, trailer.Length);
-
-           
         }
-       
+
+        private static bool WriteBoundary(bool boundaryAlreadyWritten, string boundary, Stream stream)
+        {
+            if (boundaryAlreadyWritten)
+            {
+                var crlf = Encoding.UTF8.GetBytes("\r\n");
+                stream.Write(crlf, 0, crlf.Length);
+            }
+
+            var partBoundary = "--" + boundary + "\r\n";
+            var partBoundaryBytes = Encoding.UTF8.GetBytes(partBoundary);
+            stream.Write(partBoundaryBytes, 0, partBoundaryBytes.Length);
+
+            return true;
+        }
      }
 }
