@@ -32,6 +32,8 @@ namespace BuddySDK
 
         event EventHandler AuthorizationLevelChanged;
 
+		event EventHandler<ConnectivityLevelChangedArgs> ConnectivityLevelChanged;
+
         Task<BuddyResult<Metric>> RecordMetricAsync(string key, IDictionary<string, object> value, TimeSpan? timeout, DateTime? timeStamp);
     }
 }

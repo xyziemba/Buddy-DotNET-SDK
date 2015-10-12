@@ -79,7 +79,7 @@ namespace BuddySDK
 		}
 
         public override bool SupportsFlags(BuddyClientFlags flags) {
-            return (flags & (BuddyClientFlags.AutoCrashReport)) == flags;
+			return (flags & (BuddyClientFlags.AutoCrashReport | BuddyClientFlags.AllowReinitialize)) == flags;
         }
 
         public override bool IsEmulator {

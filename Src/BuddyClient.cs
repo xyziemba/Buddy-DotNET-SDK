@@ -251,30 +251,9 @@ namespace BuddySDK
             if (options.Flags.HasFlag (BuddyClientFlags.AutoCrashReport)) {
                 InitCrashReporting ();
             }
-
-
-            PlatformAccess.Current.SetPushToken(_appSettings.DevicePushToken);
-            PlatformAccess.Current.PushTokenChanged += (sender, args) =>
-            {
-                // update the token.
-                PlatformAccess.Current.GetPushTokenAsync().ContinueWith((t) =>
-                {
-                    if (t.Result != _appSettings.DevicePushToken)
-                    {
-                        _appSettings.DevicePushToken = t.Result;
-
-                        // if we have a device token, send up the new push token.
-                        if (_appSettings.DeviceToken != null)
-                        {
-                            this.UpdateDeviceAsync(_appSettings.DevicePushToken).ContinueWith((t2) =>
-                            {
-                                _appSettings.Save();
-                            });
-                        }
-                    }
-                });
-
-            };
+				
+			PlatformAccess.Current.SetPushToken (_appSettings.DevicePushToken);
+			PlatformAccess.Current.PushTokenChanged += this.PushTokenChanged;
 
             PlatformAccess.Current.NotificationReceived += (s, na) => {
                 string id = na.ID;
@@ -283,9 +262,30 @@ namespace BuddySDK
                         "/notifications/received/" + id,
                         null);
                 }
-            };
-            
+            };        
         }
+
+		private void PushTokenChanged(object sender, EventArgs args)
+		{
+			PlatformAccess.Current.GetPushTokenAsync().ContinueWith(t =>
+				{
+					if (t.Result != null && t.Result != _appSettings.DevicePushToken)
+					{
+						// if we have a device token, send up the new push token.
+						if (_appSettings.DeviceToken != null)
+						{
+							this.UpdateDeviceAsync(t.Result).ContinueWith(t2 =>
+								{
+									if (t2.Result)
+									{
+										_appSettings.DevicePushToken = t.Result;
+										_appSettings.Save();
+									}
+								});
+						}
+					}
+				});
+		}
 
         internal class DeviceRegistration
         {
@@ -363,11 +363,15 @@ namespace BuddySDK
                                 return;
                             }
                         }
+
                         if (r2.Value.ServiceRoot != null)
                         {
                             _service.ServiceRoot = r2.Value.ServiceRoot;
                             _appSettings.ServiceUrl = r2.Value.ServiceRoot;
                         }
+
+						// If an updated push token wasn't sent due to timing issues, send it now
+						this.PushTokenChanged(this, EventArgs.Empty);
                     }
                     else if (!r2.IsSuccess){
                         ClearCredentials();
@@ -378,9 +382,7 @@ namespace BuddySDK
             if (!dr.IsSuccess) {
                 return null;
             }
-
-            
-
+				
             return dr.Value.AccessToken;
         }
                

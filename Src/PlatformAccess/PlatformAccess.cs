@@ -144,28 +144,29 @@ namespace BuddySDK
 
         public virtual Task<string> GetPushTokenAsync()
         {
-            if (PushToken == null)
-            {
-                PushToken = GetUserSetting("__PushToken");
-            }
+			if (PushToken == null)
+			{
+				PushToken = GetUserSetting("__PushToken");
+			}
 
-            return Task.FromResult(PushToken);
+			return Task.FromResult(PushToken);
         }
 
         public event EventHandler PushTokenChanged;
 
         public virtual void SetPushToken(string pushToken)
         {
-
             //because the MPNS channel may be updated before the initial call to POST /devices, this was getting nulled out non-deterministically from BuddyClient:240 before we could attach it to the device
-            if (PushToken != pushToken && pushToken != null)
-            {
-                SetUserSetting("__PushToken", pushToken);
-                if (PushTokenChanged != null)
-                {
-                    PushTokenChanged(this, EventArgs.Empty);
-                }
-            }
+			if (pushToken != null) {
+				if (PushToken != pushToken) {
+					SetUserSetting ("__PushToken", pushToken);
+					PushToken = null;
+				}
+
+				if (PushTokenChanged != null) {
+					PushTokenChanged (this, EventArgs.Empty);
+				}
+			}
         }
 
 
