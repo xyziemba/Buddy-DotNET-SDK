@@ -584,10 +584,10 @@ namespace BuddySDK
 
                 }
                 TaskCompletionSource<bool> uiPromise = new TaskCompletionSource<bool> ();
-                PlatformAccess.Current.InvokeOnUiThread (() => {
+                PlatformAccess.Current.InvokeOnUiThread (async () => {
 
                     var r = false;
-                    if (OnServiceException (this, buddyException)) {
+                    if (await OnServiceException (this, buddyException)) {
                         r = true;
                     }
                     uiPromise.TrySetResult (r);
@@ -731,24 +731,38 @@ namespace BuddySDK
             }
         }
 
-        private async Task CheckConnectivity(TimeSpan waitTime) {
-            var r = await GetAsync<string>( "/service/ping",null);
+        private async Task CheckConnectivity(int retryCount = 1)
+        {
+            var r = await GetAsync<string>("/service/ping", null);
 
             if (r != null && r.IsSuccess)
             {
-                await OnConnectivityChanged (ConnectivityLevel.Connected);
+                await OnConnectivityChanged(PlatformAccess.Current.ConnectionType);
             }
             else
             {
-                // wait a bit and try again
-                //
-                
-                DotNetDeltas.Sleep((int)waitTime.TotalMilliseconds);
-                await CheckConnectivity(waitTime);
+                var waitTimeInMilliseconds = getNextWaitTime(retryCount);
+
+                DotNetDeltas.Sleep(waitTimeInMilliseconds);
+
+                await CheckConnectivity(++retryCount);
             }
         }
 
-        protected virtual async Task OnConnectivityChanged(ConnectivityLevel level) {
+        private const int retryCapInMilliseconds = 30 * 1000;
+        private const int retryBaseInMilliseconds = 500;
+
+        private int getNextWaitTime(int retryCount)
+        {
+            // http://www.awsarchitectureblog.com/2015/03/backoff.html
+            var waitTimeInMilliseconds = new Random().Next((int)Math.Min(retryCapInMilliseconds, retryBaseInMilliseconds *
+                                                    Math.Pow(2, Math.Min(retryCount, 32))));
+
+            return waitTimeInMilliseconds;
+        }
+
+        protected virtual async Task OnConnectivityChanged(ConnectivityLevel level)
+        {
             using (await new AsyncLock().LockAsync())
             {
                 if (level == _connectivity)
@@ -759,34 +773,29 @@ namespace BuddySDK
                 if (ConnectivityLevelChanged != null)
                 {
                     ConnectivityLevelChanged(this, new ConnectivityLevelChangedArgs
-                        {
-                            ConnectivityLevel = level
-                        });
+                    {
+                        ConnectivityLevel = level
+                    });
                 }
 
                 _connectivity = level;
 
                 switch (level)
                 {
-                case ConnectivityLevel.None:
-                    await CheckConnectivity(TimeSpan.FromSeconds(1));
-                    break;
+                    case ConnectivityLevel.None:
+                        await CheckConnectivity();
+                        break;
                 }
             }
         }
       
-        protected bool OnServiceException(BuddyClient client, BuddyServiceException buddyException) {
+        protected async Task<bool> OnServiceException(BuddyClient client, BuddyServiceException buddyException) {
 
-
-            // first see if it's an auth failure.
-            //
             if (buddyException is BuddyUnauthorizedException) {
                 client.OnAuthorizationFailure ((BuddyUnauthorizedException)buddyException);
                 return false;
             } else if (buddyException is BuddyNoInternetException) {
-                #pragma warning disable 4014
-                    OnConnectivityChanged (ConnectivityLevel.None); // We don't care about async here.
-                #pragma warning restore 4014
+                await OnConnectivityChanged (ConnectivityLevel.None);
                 return false;
             }
 
