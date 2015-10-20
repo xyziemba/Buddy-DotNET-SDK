@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BuddySDK.BuddyServiceClient
 {
@@ -143,66 +144,77 @@ namespace BuddySDK.BuddyServiceClient
 
             BuddySDK.PlatformAccess.Current.ShowActivity = false;
         }
-       
-        protected override void CallMethodAsync<T>(string verb, string path, object parameters, Action<BuddyCallResult<T>> callback)
+
+        protected override Task<BuddyCallResult<T>> CallMethodAsyncCore<T>(
+             string verb,
+             string path,
+             object parameters)
         {
+            // TODO: Refactor to use async/await instead of
+            // TCS/callbacks.
+            var tcs = new TaskCompletionSource<BuddyCallResult<T>>();
+
             DateTime start = DateTime.Now;
 
-            StartRequest ();
+            StartRequest();
 
             Action<Exception, BuddyCallResult<T>> finishMethodCall = (ex, bcr) =>
             {
                 EndRequest();
-                if (ex == null) {
-                    callback(bcr);
+                if (ex == null)
+                {
+                    tcs.TrySetResult(bcr);
                     return;
                 }
-               
+
                 WebException webEx = ex as WebException;
                 HttpWebResponse response = null;
                 var err = "UnknownServiceError";
 
                 bcr.Message = ex.ToString();
-                if (webEx != null )
+                if (webEx != null)
                 {
                     err = "InternetConnectionError";
 
-                    if (webEx.Response != null) {
+                    if (webEx.Response != null)
+                    {
                         response = (HttpWebResponse)webEx.Response;
                         bcr.Message = response.StatusDescription;
 
                         bcr.StatusCode = (int)response.StatusCode;
-                        if (bcr.StatusCode >= 400) {
+                        if (bcr.StatusCode >= 400)
+                        {
                             err = "UnknownServiceError";
                         }
                     }
-                    else {
+                    else
+                    {
                         bcr.Message = webEx.Status.ToString();
                     }
 
                 }
-               
+
                 bcr.Error = err;
-                LogResponse(verb + " " + path, bcr.Message,DateTime.Now.Subtract(start), response);
+                LogResponse(verb + " " + path, bcr.Message, DateTime.Now.Subtract(start), response);
 
 
                 OnServiceException(ex);
-                callback(bcr);
+                tcs.TrySetResult(bcr);
             };
 
-            var d = ParametersToDictionary (parameters);
+            var d = ParametersToDictionary(parameters);
             MakeRequest<T>(verb, path, d, async (ex, response) =>
             {
                 var bcr = new BuddyCallResult<T>();
-                
+
                 var isFile = typeof(BuddyFile).Equals(typeof(T));
 
-               
+
                 if (response == null && ex != null && ex is WebException)
                 {
                     response = (HttpWebResponse)((WebException)ex).Response;
                 }
-                
+
                 if ((response == null) && ex != null)
                 {
                     finishMethodCall(ex, bcr);
@@ -216,7 +228,7 @@ namespace BuddySDK.BuddyServiceClient
                         string body = null;
                         try
                         {
-                            using (var responseStream =  response.GetResponseStream())
+                            using (var responseStream = response.GetResponseStream())
                             {
                                 body = await new StreamReader(responseStream).ReadToEndAsync();
                             }
@@ -233,12 +245,13 @@ namespace BuddySDK.BuddyServiceClient
                         try
                         {
                             var envelope = JsonConvert.DeserializeObject<JsonEnvelope<T>>(body, new JsonSerializerSettings
-                                {
-                                    DateTimeZoneHandling = DateTimeZoneHandling.Local
-                                });
+                            {
+                                DateTimeZoneHandling = DateTimeZoneHandling.Local
+                            });
 
-                            if (envelope == null) {
-                                    // fall through
+                            if (envelope == null)
+                            {
+                                // fall through
                             }
                             else if (envelope.error != null)
                             {
@@ -249,7 +262,8 @@ namespace BuddySDK.BuddyServiceClient
                             else
                             {
                                 // special case dictionary.
-                                if (typeof(IDictionary<string,object>).IsAssignableFrom(typeof(T))) {
+                                if (typeof(IDictionary<string, object>).IsAssignableFrom(typeof(T)))
+                                {
                                     object obj = envelope.result;
                                     IDictionary<string, object> d2 = (IDictionary<string, object>)obj;
                                     obj = (obj == null) ? new Dictionary<string, object>(DotNetDeltas.InvariantComparer(true)) : new Dictionary<string, object>(d2, DotNetDeltas.InvariantComparer(true));
@@ -270,12 +284,14 @@ namespace BuddySDK.BuddyServiceClient
                             bcr.Message = "Couldn't parse JSON: \r\n" + body;
                         }
                     }
-                    else {
+                    else
+                    {
 
-                       
+
                         bcr = new BuddyCallResult<T>();
 
-                        if (bcr.StatusCode < 400) {
+                        if (bcr.StatusCode < 400)
+                        {
                             var file = new BuddyFile(response.GetResponseStream(), null, response.ContentType);
                             bcr.Result = (T)(object)file;
                         }
@@ -293,10 +309,10 @@ namespace BuddySDK.BuddyServiceClient
                     }
 
                 }
-                  
+
             });
 
-
+            return tcs.Task;
         }
 
         private const int EncodeChunk = 32000;
