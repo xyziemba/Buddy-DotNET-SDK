@@ -4,7 +4,7 @@
 // actions made in the UI designer. If it is removed, they will be lost.
 // Manual changes to this file may not be handled correctly.
 //
-using MonoTouch.Foundation;
+using Foundation;
 using System.CodeDom.Compiler;
 
 namespace BuddySquare.iOS
@@ -13,13 +13,13 @@ namespace BuddySquare.iOS
 	partial class HomeScreenViewController
 	{
 		[Outlet]
-		MonoTouch.UIKit.UITableView checkinTable { get; set; }
+		UIKit.UITableView checkinTable { get; set; }
 
 		[Outlet]
-		MonoTouch.UIKit.UILabel lblUserCheckins { get; set; }
+		UIKit.UILabel lblUserCheckins { get; set; }
 
 		[Outlet]
-		MonoTouch.MapKit.MKMapView mapView { get; set; }
+		MapKit.MKMapView mapView { get; set; }
 		
 		void ReleaseDesignerOutlets ()
 		{
