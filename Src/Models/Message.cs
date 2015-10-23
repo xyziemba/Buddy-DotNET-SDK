@@ -78,7 +78,7 @@ namespace BuddySDK.Models
             set;
         }
 
-        [Newtonsoft.Json.JsonProperty("messageType")]
+        [Newtonsoft.Json.JsonProperty("type")]
         public BuddySDK.Models.Message.MessageType Type
         {
             get;
