@@ -33,8 +33,8 @@ namespace BuddySquare.iOS
         }
 
 		// TODO: Go to http://dev.buddyplatform.com to get an app ID and app key.
-		private const String APP_ID = "bbbbbc.hKpFwzglHBrK";
-		private const String APP_KEY = "616bf446-f005-fe9a-9fd4-e62ba8913bf5"; 
+		private const String APP_ID = "\Your App ID";
+		private const String APP_KEY = "\Your App Key"; 
 
         public override bool WillFinishLaunching (UIApplication application, NSDictionary launchOptions)
         {
