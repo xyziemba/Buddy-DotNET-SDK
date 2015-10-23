@@ -18,54 +18,48 @@ using Android.Provider;
 namespace BuddySDK
 {
 
-    internal partial class BuddyClient {
+	internal partial class BuddyClient {
 
-        public void RecordNotificationReceived<T>(T args) {
-            var message = args as Intent;
-            var id = message.GetStringExtra(PlatformAccess.BuddyPushKey);
-            if (!String.IsNullOrEmpty(id)) {
-                PlatformAccess.Current.OnNotificationReceived(id);
-            }
-        }
+		public void RecordNotificationReceived<T>(T args) {
+			var message = args as Intent;
+			var id = message.GetStringExtra(PlatformAccess.BuddyPushKey);
+			if (!String.IsNullOrEmpty(id)) {
+				PlatformAccess.Current.OnNotificationReceived(id);
+			}
+		}
+	}
 
-      
-    }
+	public partial class Buddy {
+		public static void RecordNotificationReceived(Intent message) {
 
-
-    public partial class Buddy {
-        public static void RecordNotificationReceived(Intent message) {
-
-            CurrentInstance.RecordNotificationReceived (message);
-        }
+			CurrentInstance.RecordNotificationReceived (message);
+		}
 
 
-    }
+	}
 
+	public abstract partial class PlatformAccess {
 
-    public abstract partial class PlatformAccess {
+		public const BuddyClientFlags DefaultFlags = BuddyClientFlags.AutoCrashReport;
 
-
-        public const BuddyClientFlags DefaultFlags = BuddyClientFlags.AutoCrashReport;
-
-        static PlatformAccess CreatePlatformAccess()
-        {
-            return new AndroidPlatformAccess();
-        }
-    }
-
+		static PlatformAccess CreatePlatformAccess()
+		{
+			return new AndroidPlatformAccess();
+		}
+	}
    
-    internal class AndroidPlatformAccess : PlatformAccess
-    {
-        public override string Platform {
+	internal class AndroidPlatformAccess : PlatformAccess
+	{
+		public override string Platform {
 			get { return "Android"; }
 		}
 
-        public override string Model {
+		public override string Model {
 			// TODO: verify this delimiter is a good one for analytics, and that it doesn't stomp on known Manufacturers and\or Models
 			get { return Build.Manufacturer + " : " + Build.Model; }
 		}
 
-        public override string DeviceUniqueId {
+		public override string DeviceUniqueId {
 			get {
 				// TODO: verify this is sufficient.  See http://developer.samsung.com/android/technical-docs/How-to-retrieve-the-Device-Unique-ID-from-android-device
 				// and http://android-developers.blogspot.com/2011/03/identifying-app-installations.html
@@ -74,28 +68,28 @@ namespace BuddySDK
 			}
 		}
 
-        public override string OSVersion {
+		public override string OSVersion {
 			get { return ((int) Build.VERSION.SdkInt).ToString(); }
 		}
 
-        public override bool SupportsFlags(BuddyClientFlags flags) {
+		public override bool SupportsFlags(BuddyClientFlags flags) {
 			return (flags & (BuddyClientFlags.AutoCrashReport | BuddyClientFlags.AllowReinitialize)) == flags;
-        }
+		}
 
-        public override bool IsEmulator {
+		public override bool IsEmulator {
 			get {
 				// The other recommended method is "goldfish".Equals (Android.OS.Build.Hardware.ToLowerInvariant());
 				return Android.OS.Build.Fingerprint.StartsWith("generic");
 			}
 		}
 
-        public override string ApplicationID {
+		public override string ApplicationID {
 			get { 
 				return Application.Context.PackageName;
 			}
 		}
 
-        public override string AppVersion {
+		public override string AppVersion {
 			get {
 				var context = Application.Context;
 				 
@@ -105,22 +99,22 @@ namespace BuddySDK
 			}
 		}
 
-        public override ConnectivityLevel ConnectionType {
+		public override ConnectivityLevel ConnectionType {
 			get {
 				var cs = (ConnectivityManager) Android.App.Application.Context.GetSystemService (Context.ConnectivityService);
 
 				if (!cs.ActiveNetworkInfo.IsConnected)
-                    return ConnectivityLevel.None;
+					return ConnectivityLevel.None;
 
-                if (cs.ActiveNetworkInfo.Subtype == ConnectivityType.Wifi)
-                    return ConnectivityLevel.WiFi;
-                else
-                    return ConnectivityLevel.Carrier;
+				if (cs.ActiveNetworkInfo.Subtype == ConnectivityType.Wifi)
+					return ConnectivityLevel.WiFi;
+				else
+					return ConnectivityLevel.Carrier;
 			}
 		}
 
-        public override string GetConfigSetting(string key)
-        {
+		public override string GetConfigSetting(string key)
+		{
 			var context = Application.Context;
 
 			var appInfo = context.PackageManager.GetApplicationInfo (context.PackageName, 
@@ -131,7 +125,7 @@ namespace BuddySDK
 			var value = metaData != null && metaData.ContainsKey(key) ? metaData.GetString (key) : null;
 
 			return value;
-        }
+		}
 
 		private Android.Content.ISharedPreferences GetPreferences()
 		{
@@ -148,15 +142,15 @@ namespace BuddySDK
 
 			var editor = preferences.Edit ();
 
-            string encodedValue = PlatformAccess.EncodeUserSetting (value, expires);
+			string encodedValue = PlatformAccess.EncodeUserSetting (value, expires);
 
 			editor.PutString (key, encodedValue);
 
 			editor.Commit ();
-        }
+		}
 
-        public override string GetUserSetting(string key)
-        {
+		public override string GetUserSetting(string key)
+		{
 			var preferences = GetPreferences ();
 
 			object val = null;
@@ -166,7 +160,7 @@ namespace BuddySDK
 				return null;
 			}
 
-            var value = PlatformAccess.DecodeUserSetting ((string) val);
+			var value = PlatformAccess.DecodeUserSetting ((string) val);
 
 			if (value == null) {
 				ClearUserSetting (key);
@@ -176,7 +170,7 @@ namespace BuddySDK
 		}
 
 		public override void ClearUserSetting(string key)
-        {
+		{
 			var preferences = GetPreferences ();
 
 			var editor = preferences.Edit ();
@@ -184,9 +178,9 @@ namespace BuddySDK
 			editor.Remove (key);
 
 			editor.Commit ();
-        }
+		}
 
-        protected override void InvokeOnUiThreadCore(Action a)
+		protected override void InvokeOnUiThreadCore(Action a)
 		{
 			// SynchronizationContext can't be cached
 			if (System.Threading.SynchronizationContext.Current != null)
@@ -197,7 +191,7 @@ namespace BuddySDK
 			{
 				a ();
 			}
-        }       
-    }
+		}
+	}
 }
 #endif

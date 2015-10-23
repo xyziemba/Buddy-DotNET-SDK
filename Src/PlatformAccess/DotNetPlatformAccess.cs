@@ -167,10 +167,6 @@ namespace BuddySDK
             }
         }
     }
-
-
-     // default
- 
 }
 
 #endif
