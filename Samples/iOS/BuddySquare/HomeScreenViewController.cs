@@ -18,7 +18,7 @@ namespace BuddySquare.iOS
         {
             this.Title = "BuddySquare!";
         }
-			
+
         CheckinDataSource _dataSource;
 
         void AddPullToRefresh ()
@@ -36,7 +36,7 @@ namespace BuddySquare.iOS
             checkinTable.AddSubview (rc);
         }
 
-		private Metric _timedMetric;
+        private Metric _timedMetric;
 
         public override void ViewDidLoad ()
         {
@@ -52,11 +52,11 @@ namespace BuddySquare.iOS
                 this.NavigationController.PushViewController(addController,true);
                 _dataSource.Clear();
 
-				var result = await Buddy.RecordMetricAsync("adding_checkin", null, TimeSpan.FromDays(1));
+                var result = await Buddy.RecordMetricAsync("adding_checkin", null, TimeSpan.FromDays(1));
 
-				if (result.IsSuccess) {		
-					_timedMetric = result.Value;		
-				}              
+                if (result.IsSuccess) {
+                    _timedMetric = result.Value;
+                }
             };
 
             this.NavigationItem.RightBarButtonItem = addButton;
@@ -86,10 +86,10 @@ namespace BuddySquare.iOS
             var user = await Buddy.GetCurrentUserAsync ();
             HandleCurrentUserChanged (null, new CurrentUserChangedEventArgs (user, null));
 
-			if (_timedMetric) {
-				await _timedMetric.FinishAsync ();
-				_timedMetric = null;
-			}
+            if (_timedMetric) {
+                await _timedMetric.FinishAsync ();
+                _timedMetric = null;
+            }
 
             await UpdateData ();
         }
@@ -98,28 +98,28 @@ namespace BuddySquare.iOS
         {
             var user = e.NewUser ?? await Buddy.GetCurrentUserAsync();
 
-			PlatformAccess.Current.InvokeOnUiThread (() => {
-				if (user != null) {
-					lblUserCheckins.Text = String.Format ("{0}'s Checkins:", user.FirstName ?? user.Username);
-					lblUserCheckins.Hidden = false;
-				} else {
-					lblUserCheckins.Hidden = true;
-				}
-				_dataSource.Clear ();
-				checkinTable.ReloadData ();
-			});
+            PlatformAccess.Current.InvokeOnUiThread (() => {
+                if (user != null) {
+                    lblUserCheckins.Text = String.Format ("{0}'s Checkins:", user.FirstName ?? user.Username);
+                    lblUserCheckins.Hidden = false;
+                } else {
+                    lblUserCheckins.Hidden = true;
+                }
+                _dataSource.Clear ();
+                checkinTable.ReloadData ();
+            });
         }
 
         public override void ViewWillDisappear (bool animated)
         {
             base.ViewWillDisappear (animated);
         }
-			
+
         private void OnCheckinSelected (CheckinItem ci)
         {
             var span = new MKCoordinateSpan(Utils.MilesToLatitudeDegrees(2), Utils.MilesToLongitudeDegrees(2, ci.Checkin.Location.Latitude));
 
-			mapView.SetRegion(new MKCoordinateRegion(ci.Checkin.Location.ToCLLocation().Coordinate, span), true);
+            mapView.SetRegion(new MKCoordinateRegion(ci.Checkin.Location.ToCLLocation().Coordinate, span), true);
 
             Buddy.RecordMetricAsync ("checkin_selected");
         }
@@ -130,12 +130,12 @@ namespace BuddySquare.iOS
             if (path == null) {
                 if (_lastCheckins != null) {
                     var annotations = from c in _lastCheckins
-                                                     select c.Annotation;
+                                      select c.Annotation;
 
                     mapView.RemoveAnnotations (annotations.ToArray ());
                 }
 
-				foreach (var c in checkins) {
+                foreach (var c in checkins) {
                     mapView.AddAnnotation (c.Annotation);
                 }
 
@@ -156,8 +156,7 @@ namespace BuddySquare.iOS
                 get { 
 
                     if (_annotation == null) {
-						_annotation = new BasicMapAnnotation (Checkin.Location.Latitude, Checkin.Location.Longitude, Checkin.Comment, Checkin.Description);
-
+                        _annotation = new BasicMapAnnotation (Checkin.Location.Latitude, Checkin.Location.Longitude, Checkin.Comment, Checkin.Description);
                     }
                     return _annotation;
                 } 
@@ -181,7 +180,7 @@ namespace BuddySquare.iOS
             HomeScreenViewController _parent;
 
             public CheckinDataSource(HomeScreenViewController parent) {
-           		_parent = parent;
+                _parent = parent;
             }
 
             public void Clear() {
@@ -189,8 +188,7 @@ namespace BuddySquare.iOS
             }
 
             Task<IEnumerable<CheckinItem>> _loadingCheckins;
-
-            public  Task<IEnumerable<CheckinItem>> LoadCheckins() {
+            public Task<IEnumerable<CheckinItem>> LoadCheckins() {
                 if (_loadingCheckins != null) {
                     return _loadingCheckins;
                 }
@@ -203,10 +201,10 @@ namespace BuddySquare.iOS
                     if (t2.Result != null && t2.Result.IsSuccess) {
 
                         _checkins = from c in t2.Result.Value.PageResults
-		                            orderby c.Created descending
-		                            select new CheckinItem {
-			                            Checkin = c
-			                        };
+                                    orderby c.Created descending
+                                    select new CheckinItem {
+                                        Checkin = c
+                                    };
 
                         return _checkins;
                     }  
@@ -218,12 +216,12 @@ namespace BuddySquare.iOS
 
                 return _loadingCheckins;
             }
-			           
+
             public override void RowSelected (UITableView tableView, NSIndexPath indexPath)
             {      
                 if (_checkins == null)
                     return;
-                            
+
                 var c = _checkins.ElementAt (indexPath.Row);
 
                 _parent.OnCheckinSelected (c);
@@ -278,7 +276,7 @@ namespace BuddySquare.iOS
 
                 target.Image = photoData;
             }
-				
+
             public override UITableViewCell GetCell (UITableView tableView, NSIndexPath indexPath)
             {
                 var c = _checkins;
@@ -289,8 +287,8 @@ namespace BuddySquare.iOS
                 // if there are no cells to reuse, create a new one
                 if (cell == null)
                     cell = new UITableViewCell (UITableViewCellStyle.Subtitle, "NormalCell");
-				cell.TextLabel.Text = ci.Checkin.Comment;
-				cell.DetailTextLabel.Text = String.Format("{0} {1}", ci.Checkin.Description ?? "", ci.Checkin.Created.ToLocalTime().ToString ("g"));
+                cell.TextLabel.Text = ci.Checkin.Comment;
+                cell.DetailTextLabel.Text = String.Format("{0} {1}", ci.Checkin.Description ?? "", ci.Checkin.Created.ToLocalTime().ToString ("g"));
 
                 // if we have metadata, it's the associated photo ID
                 //
@@ -337,25 +335,25 @@ namespace BuddySquare.iOS
         }
     }
 
-	public class BasicMapAnnotation : MKAnnotation {
+    public class BasicMapAnnotation : MKAnnotation {
 
-		private CLLocationCoordinate2D _coordinate;
-		private string _title, _subtitle;
+        private CLLocationCoordinate2D _coordinate;
+        private string _title, _subtitle;
 
-		public override CLLocationCoordinate2D Coordinate { get { return _coordinate; } }
+        public override CLLocationCoordinate2D Coordinate { get { return _coordinate; } }
 
-		public override string Title { get { return this._title; } }
+        public override string Title { get { return this._title; } }
 
-		public override string Subtitle { get { return this._subtitle; } }
+        public override string Subtitle { get { return this._subtitle; } }
 
-		public BasicMapAnnotation (MKMapItem mapItem) : this(mapItem.Placemark.Coordinate.Latitude, mapItem.Placemark.Coordinate.Longitude, mapItem.Name,
-			mapItem.Placemark.SubLocality ?? "") {
+        public BasicMapAnnotation (MKMapItem mapItem) : this(mapItem.Placemark.Coordinate.Latitude, mapItem.Placemark.Coordinate.Longitude, mapItem.Name,
+            mapItem.Placemark.SubLocality ?? "") {
         }
-			
-		public BasicMapAnnotation (double latitude, double longitude, string title, string subtitle) {
-			this._coordinate = new CLLocationCoordinate2D(latitude, longitude);
-			this._title = title;
-			this._subtitle = subtitle;
-		}
+
+        public BasicMapAnnotation (double latitude, double longitude, string title, string subtitle) {
+            this._coordinate = new CLLocationCoordinate2D(latitude, longitude);
+            this._title = title;
+            this._subtitle = subtitle;
+        }
     }
 }

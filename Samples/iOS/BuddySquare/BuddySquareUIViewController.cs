@@ -47,4 +47,3 @@ namespace BuddySquare.iOS
         }
     }
 }
-

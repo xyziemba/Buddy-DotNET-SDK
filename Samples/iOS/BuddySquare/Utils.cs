@@ -26,31 +26,30 @@ namespace BuddySquare.iOS
             return (miles / radiusAtLatitude) * radiansToDegrees;
         }
     }
-		
-	public class LocationManager
-	{
-		private CLLocationManager locMgr;
 
-		public LocationManager () {
-			this.locMgr = new CLLocationManager ();
+    public class LocationManager
+    {
+        private CLLocationManager locMgr;
 
-			locMgr.RequestAlwaysAuthorization (); // works in background
-		}
+        public LocationManager () {
+            this.locMgr = new CLLocationManager ();
+            this.locMgr.RequestAlwaysAuthorization (); // works in background
+        }
 
-		public void StartLocationUpdates()
-		{
-			if (CLLocationManager.LocationServicesEnabled) {
-				
-				this.locMgr.DesiredAccuracy = 1; //set the desired accuracy, in meters
+        public void StartLocationUpdates()
+        {
+            if (CLLocationManager.LocationServicesEnabled) {
 
-				this.locMgr.LocationsUpdated += (object sender, CLLocationsUpdatedEventArgs e) => {
-					var location = e.Locations [e.Locations.Length - 1];
+                this.locMgr.DesiredAccuracy = 1; //set the desired accuracy, in meters
 
-					Buddy.LastLocation = new BuddyGeoLocation(location.Coordinate.Latitude, location.Coordinate.Longitude);
-				};
+                this.locMgr.LocationsUpdated += (object sender, CLLocationsUpdatedEventArgs e) => {
+                    var location = e.Locations [e.Locations.Length - 1];
 
-				this.locMgr.StartUpdatingLocation ();
-			}
-		}
-	}
+                    Buddy.LastLocation = new BuddyGeoLocation(location.Coordinate.Latitude, location.Coordinate.Longitude);
+                };
+
+                this.locMgr.StartUpdatingLocation ();
+            }
+        }
+    }
 }

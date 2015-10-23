@@ -13,13 +13,13 @@ namespace BuddySquare.iOS
     [Register ("AppDelegate")]
     public partial class AppDelegate : UIApplicationDelegate
     {
-		LocationManager locationManager;
+        LocationManager locationManager;
 
         public static AppDelegate Current {
             get;
             set;
         }
-			
+
         UIWindow window;
         HomeScreenViewController homeController;
         UINavigationController navController;
@@ -29,18 +29,18 @@ namespace BuddySquare.iOS
         public AppDelegate() {
             Current = this;
 
-			this.locationManager = new LocationManager ();
+            this.locationManager = new LocationManager ();
         }
 
-		// TODO: Go to http://dev.buddyplatform.com to get an app ID and app key.
-		private const String APP_ID = "\Your App ID";
-		private const String APP_KEY = "\Your App Key"; 
+        // TODO: Go to http://dev.buddyplatform.com to get an app ID and app key.
+        private const String APP_ID = "\Your App ID";
+        private const String APP_KEY = "\Your App Key"; 
 
         public override bool WillFinishLaunching (UIApplication application, NSDictionary launchOptions)
         {
-			Buddy.Init(APP_ID, APP_KEY);
+            Buddy.Init(APP_ID, APP_KEY);
 
-			this.locationManager.StartLocationUpdates ();
+            this.locationManager.StartLocationUpdates ();
 
             bool showingError = false;
 
@@ -48,7 +48,7 @@ namespace BuddySquare.iOS
 
                 if (!showingError) {
                     showingError = true;
-					                  
+
                     UIAlertView uav =  
                         new UIAlertView(title, 
                             message, 
@@ -57,7 +57,7 @@ namespace BuddySquare.iOS
                     uav.Dismissed += (sender, e) => {
 
                         showingError = false;
-                    };             
+                    };
                     uav.Show();
                     return uav;
                 }
@@ -95,7 +95,7 @@ namespace BuddySquare.iOS
                 }
 
             };
-				
+
             return true;
         }
 
@@ -112,10 +112,10 @@ namespace BuddySquare.iOS
             var lv = new LoginViewController(window.RootViewController, () => {
                 showingLoginView = false;
             });
-			
+
             window.RootViewController.PresentViewController(lv, true,null);
         }
-			
+
         internal void SetupNavController() {
 
             if (homeController != null)
@@ -128,7 +128,7 @@ namespace BuddySquare.iOS
             window.RootViewController = navController;
             window.MakeKeyAndVisible ();
         }
-       
+
         //
         // This method is invoked when the application has loaded and is ready to run. In this
         // method you should instantiate the window, load the UI into it and then make the window
