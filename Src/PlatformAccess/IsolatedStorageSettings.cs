@@ -13,15 +13,11 @@ namespace BuddySDK
     {
         protected abstract IsolatedStorageFile GetIsolatedStorageFile();
 
-        private static string ExecutionBinDir
-        {
-            get { return Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath); }
-        }
+        protected abstract string ExecutionBinDir { get; }
 
         protected virtual FileStream GetFileStream(bool create)
         {
             IsolatedStorageFile isoStore = null;
-
 
             try
             {
@@ -42,7 +38,6 @@ namespace BuddySDK
 
             if (isoStore != null)
             {
-
                 if (isoStore.FileExists("_buddy") || create)
                 {
                     return isoStore.OpenFile("_buddy", FileMode.OpenOrCreate);

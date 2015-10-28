@@ -120,10 +120,14 @@ namespace BuddySDK
       
         private class DotNetIsoStore : IsolatedStorageSettings
         {
-
             protected override IsolatedStorageFile GetIsolatedStorageFile()
             {
                 return IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
+            }
+
+            protected override string ExecutionBinDir
+            {
+                get { return Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath); }
             }
         }
 
@@ -163,10 +167,6 @@ namespace BuddySDK
             }
         }
     }
-
-
-     // default
- 
 }
 
 #endif

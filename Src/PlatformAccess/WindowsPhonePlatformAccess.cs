@@ -159,6 +159,8 @@ namespace BuddySDK
             {
                 return IsolatedStorageFile.GetUserStoreForApplication();
             }
+
+            protected override string ExecutionBinDir { get { return null; } }
         }
 
         private IsolatedStorageSettings _settings = new WindowsPhoneIsoStore();
@@ -187,7 +189,7 @@ namespace BuddySDK
 
         public override bool SupportsFlags(BuddyClientFlags flags)
         {
-            return (flags & (BuddyClientFlags.AutoCrashReport)) == flags;
+            return (flags & (BuddyClientFlags.AutoCrashReport | BuddyClientFlags.AllowReinitialize)) == flags;
         }
     }
 }

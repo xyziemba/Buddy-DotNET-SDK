@@ -155,7 +155,7 @@ namespace BuddySDK
 
         public override bool SupportsFlags(BuddyClientFlags flags)
         {
-            return (flags & (BuddyClientFlags.AutoCrashReport)) == flags;
+	        return (flags & (BuddyClientFlags.AutoCrashReport | BuddyClientFlags.AllowReinitialize)) == flags;
         }
 
         private void EnsureSettings(string key)

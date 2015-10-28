@@ -14,8 +14,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("3.1.0.0")]
-[assembly: AssemblyFileVersion("3.1.0.0")]
+[assembly: AssemblyVersion("3.1.0.4")]
+[assembly: AssemblyFileVersion("3.1.0.4")]
 
 [assembly: InternalsVisibleTo("BuddySDK.ClientTest")]
 [assembly: InternalsVisibleTo("BuddyWebserviceTestProject")]
