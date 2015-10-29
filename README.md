@@ -91,8 +91,7 @@ The Buddy .NET SDK handles user creation, login, and logout. Here are some examp
 
 #### Create A User
     
-    // We recommend awaiting user creation, login, and logout
-    // See https://msdn.microsoft.com/en-us/library/hh191443.aspx for more details
+    // We recommend awaiting Buddy calls; see https://msdn.microsoft.com/en-us/library/hh191443.aspx for more details.
     await Buddy.CreateUserAsync(username, password);
 
 #### User Login
@@ -104,7 +103,7 @@ The Buddy .NET SDK handles user creation, login, and logout. Here are some examp
 
     await Buddy.LogoutUserAsync();
 
-#### User Authorization callback
+#### User Authorization event handler
 
 You can add an event handler to `AuthorizationNeedsUserLogin` that gets called whenever a Buddy call is made that requires a logged-in user. That way, you won't have to manage user login state. Here's an example:
 
