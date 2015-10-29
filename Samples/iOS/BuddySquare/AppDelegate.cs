@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MonoTouch.Foundation;
-using MonoTouch.UIKit;
 using BuddySDK;
+using Foundation;
+using UIKit;
 
 namespace BuddySquare.iOS
 {
@@ -13,12 +13,13 @@ namespace BuddySquare.iOS
     [Register ("AppDelegate")]
     public partial class AppDelegate : UIApplicationDelegate
     {
+        LocationManager locationManager;
+
         public static AppDelegate Current {
             get;
             set;
         }
 
-        // class-level declarations
         UIWindow window;
         HomeScreenViewController homeController;
         UINavigationController navController;
@@ -27,15 +28,19 @@ namespace BuddySquare.iOS
 
         public AppDelegate() {
             Current = this;
+
+            this.locationManager = new LocationManager ();
         }
 
-		// TODO: Go to http://dev.buddyplatform.com to get an app ID and app key.
-		private const String APP_ID = "\Your App ID";
-		private const String APP_KEY = "\Your App Key"; 
+        // TODO: Go to http://dev.buddyplatform.com to get an app ID and app key.
+        private const String APP_ID = "\Your App ID";
+        private const String APP_KEY = "\Your App Key"; 
 
         public override bool WillFinishLaunching (UIApplication application, NSDictionary launchOptions)
         {
-			Buddy.Init(APP_ID, APP_KEY);
+            Buddy.Init(APP_ID, APP_KEY);
+
+            this.locationManager.StartLocationUpdates ();
 
             bool showingError = false;
 
@@ -44,7 +49,6 @@ namespace BuddySquare.iOS
                 if (!showingError) {
                     showingError = true;
 
-                   
                     UIAlertView uav =  
                         new UIAlertView(title, 
                             message, 
@@ -53,26 +57,23 @@ namespace BuddySquare.iOS
                     uav.Dismissed += (sender, e) => {
 
                         showingError = false;
-                    };             
+                    };
                     uav.Show();
                     return uav;
                 }
+
                 return null;
             };
-                                            
-
+ 
             Buddy.ServiceException += (client, args) => {
-
 
                 showDialog("Buddy Error", String.Format("{0}\r\n{1}", args.Exception.Error, args.Exception.Message));
 
                 args.ShouldThrow = false;
-
             };
            
             Buddy.AuthorizationNeedsUserLogin += HandleAuthorizationFailure;
 
-           
             Buddy.CurrentUserChanged += async(sender, e) => {
                 if (e.NewUser != null) {
                     await Buddy.GetCurrentUserAsync();
@@ -83,7 +84,6 @@ namespace BuddySquare.iOS
            UIAlertView connectivityAlert = null;
            Buddy.ConnectivityLevelChanged += (sender, e) => {
 
-               
                 if (e.ConnectivityLevel == ConnectivityLevel.None) {
 
                     connectivityAlert = showDialog("Network", "No Connection Available");
@@ -101,24 +101,20 @@ namespace BuddySquare.iOS
 
         void HandleAuthorizationFailure (object sender, EventArgs e)
         {
+            if (showingLoginView) {
+                return;
+            }
 
-                if (showingLoginView) {
-                    return;
-                }
+            // create a login view.
+            // 
+            showingLoginView = true;
 
-                // create a login view.
-                // 
-                showingLoginView = true;
+            var lv = new LoginViewController(window.RootViewController, () => {
+                showingLoginView = false;
+            });
 
-                var lv = new LoginViewController(window.RootViewController, () => {
-                    showingLoginView = false;
-                }
-                );
-
-                
-                window.RootViewController.PresentViewController(lv, true,null);
+            window.RootViewController.PresentViewController(lv, true,null);
         }
-
 
         internal void SetupNavController() {
 
@@ -133,7 +129,6 @@ namespace BuddySquare.iOS
             window.MakeKeyAndVisible ();
         }
 
-       
         //
         // This method is invoked when the application has loaded and is ready to run. In this
         // method you should instantiate the window, load the UI into it and then make the window
@@ -151,9 +146,7 @@ namespace BuddySquare.iOS
             window.RootViewController = loadingController;
             window.MakeKeyAndVisible ();
 
-
             return true;
         }
     }
 }
-

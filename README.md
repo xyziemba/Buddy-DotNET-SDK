@@ -1,22 +1,16 @@
 # Buddy .NET SDK
 These release notes are for the Buddy Platform .NET SDK.
 
-Please refer to [buddyplatform.com/docs](https://buddyplatform.com/docs) for more details on the .NET SDK.
+The Buddy .NET SDK helps you get up and running in seconds.  
 
-**NOTE**: The .NET SDK has recently been updated! Please see the [.NET 3.0 Migration](http://buddyplatform.com/docs/.NET%20SDK%203.0%20Migration) page for a quickstart guide.
-
-## Introduction
-
-We realized most developers end up writing the same code over and over again: user management, photo management, geolocation, checkins, metadata, and other common features. Buddy enables developers to build cloud-connected apps without having to write, test, manage or scale server-side code and infrastructure.
-
-Buddy's scenario-focused APIs let you spend more time building your application and less time worrying about backend infrastructure.
-
-The .NET SDK handles the following functionality:
+For the most part, the Buddy .NET SDK takes care of all the housekeeping of making requests against the Buddy REST API:
 
 * Building and formatting requests
 * Managing authentication
 * Parsing responses
 * Loading and saving credentials
+
+With that handled, all you have to do is initialize the SDK and start making some calls!
 
 ## Getting Started
 
@@ -26,14 +20,41 @@ Application IDs and keys are obtained at the Buddy Developer Dashboard at [buddy
 
 Full documentation for Buddy's services are available at [buddyplatform.com/docs](https://buddyplatform.com/docs).
 
-#### Visual Studio - NuGet
+### Prerequisites
 
-We recommend using NuGet to include the SDK in your project. To include the Buddy .NET SDK in your project:
-* Right-click on your project in Visual Studio and select the "Manage NuGet Packages..." menu item
-* Type "BuddyPlatformSdk" into the edit box in the upper-right-hand corner of the "Manage NuGet Packages" window
-* Click "Install"
+* Visual Studio 2013 or greater
+* Xamarin Studio 5.9.7 or greater (iOS and Android)
 
-##### Add A Reference
+The Buddy .NET SDK can be accessed via [NuGet](http://nuget.org/). NuGet version of at least 2.8.6 is required to install the Buddy SDK and sample apps.
+
+### Getting Started
+
+The Buddy .NET SDK is distributed via NuGet. Source code for the SDK can be cloned from [GitHub](https://github.com/buddyplatform).
+
+#### Install with NuGet
+
+We recommend using NuGet to include the SDK in your project. It's fast and makes it much easier to keep up to date with the latest SDK release.
+
+To include the Buddy .NET SDK in your project:
+* Right-click on your project in Visual Studio and select the "Manage NuGet Packages..." menu item.
+* Type "BuddyPlatformSdk" into the edit box in the upper-right-hand corner of the "Manage NuGet Packages" window.
+* Click "Install".
+
+#### Install from Source
+
+Buddy hosts our SDK source on GitHub. To access it, you need to have a GitHub account, and you will also need [Git](http://git-scm.com/download) installed. If you'd like to contribute SDK modifications or additions to Buddy, you'll want to [fork the repository](https://help.github.com/articles/fork-a-repo) so you can issue [pull requests](https://help.github.com/articles/be-social#pull-requests). See the "Contributing Back" section below for details.
+
+1) In a Terminal window run:
+
+    git clone https://github.com/BuddyPlatform/Buddy-DotNET-SDK.git
+
+This will clone the latest version of the SDK into a directory called **Buddy-DotNET-SDK**.
+
+2) Navigate to the **Buddy-DotNET-SDK** directory that was created when you cloned the Buddy GitHub repository.
+
+The .NET source is in the **Buddy-DotNET-SDK\Src** directory.
+
+##### Build the GitHub Source
 
 You must add a reference to the Buddy SDK in order to use it in your application.
 * Open your project in Visual Studio
@@ -42,31 +63,35 @@ You must add a reference to the Buddy SDK in order to use it in your application
 * In the "Select the files to reference..." dialog, find the assembly file for your project type and click "Add"
 * Click "OK" in the "Reference Manager" window
 
+Now when you build your project, Visual Studio will build the SDK.
+
 ## Using the .NET SDK
 
 Visit the [Buddy Dashboard](https://buddyplatform.com) to obtain your application ID and key.
 
 ### Initialize the SDK
 
-To reference the Buddy SDK in your source file, you need to put a 'using' keyword at the top of the file that contains the constructor:
+To reference the Buddy SDK in your source file, you need to put a 'using' keyword at the top of files that will contain code that calls Buddy:
 
     using BuddySDK;
 
-The `Init` method should be called once at the start of your app; we recommend placing it in your project's constructor. You should replace "your app ID" and "your app key" with the app ID and key you created at the [Buddy Dev Dashboard](http://buddyplatform.com):
+The `Init` method should be called once at the start of your app; we recommend placing it in your project's application constructor.
 
     public MyCoolApp()
     {
         // Don't forget to get your app ID and key from http://buddyplatform.com!
-        Buddy.Init("your app ID", "your app key");
+        Buddy.Init("YOUR_APP_ID", "YOUR_APP_KEY");
      }
+     
+Replace "YOUR_APP_ID" and "YOUR_APP_KEY" above with your Buddy app's ID and key from the [Buddy Dashboard](https://buddyplatform.com).
 
 ### User Flow
 
-The Buddy .NET SDK handles user creation and login.
+The Buddy .NET SDK handles user creation, login, and logout. Here are some example calls.
 
 #### Create A User
     
-    // We recommend awaiting user creation, login, and logout
+    // We recommend awaiting Buddy calls; see https://msdn.microsoft.com/en-us/library/hh191443.aspx for more details.
     await Buddy.CreateUserAsync(username, password);
 
 #### User Login
@@ -78,6 +103,15 @@ The Buddy .NET SDK handles user creation and login.
 
     await Buddy.LogoutUserAsync();
 
+#### User Authorization event handler
+
+You can add an event handler to `AuthorizationNeedsUserLogin` that gets called whenever a Buddy call is made that requires a logged-in user. That way, you won't have to manage user login state. Here's an example:
+
+    Buddy.AuthorizationNeedsUserLogin += async (sender, args) =>
+        {
+            await Buddy.LoginUserAsync("testuser", "testpassword");
+        };
+        
 ### REST Interface
 
 Each SDK provides general wrappers that make REST calls to Buddy.
@@ -126,6 +160,45 @@ Our download example uses pictures.
         // Load the image data from result.Value.Data
     }
 
+### Advanced Usage
+
+#### Automatically report location for each Buddy call
+
+If you set the current location in the Buddy client, each time a Buddy call is made that location will be passed in the call. Most calls that send data to Buddy have a location parameter; if a call is made that doesn't take location, the parameter will be ignored.
+
+    Buddy.LastLocation = new BuddyGeoLocation(42, -42);
+
+#### Multiple concurrent users
+
+If you need to have multiple clients (for example if you need to interact with multiple users concurrently from your app), you can capture clients created from `Buddy.init` and use those clients individually:
+
+    var client1 = Buddy.Init("App ID 1", "App Password 1");
+
+    var client2 = Buddy.Init("App ID 2", "App Password 2");
+
+    await client1.LoginUserAsync("username1", "password1");
+
+    await client2.LoginUserAsync("username2", "password2");
+    
+#### Handling connectivity
+
+You can add an event handler to `ConnectivityLevelChanged` if you would like to be notified if your device loses and regains ability to communicate to the Buddy servers for whatever reason. Here's an example that notifies the user:
+
+    Buddy.ConnectivityLevelChanged += (object sender, ConnectivityLevelChangedArgs e) =>
+    {
+        MessageBox.Show(e.ConnectivityLevel == ConnectivityLevel.None ? "No connectivty..." : "Connected!";
+    };
+
+### Sample Apps
+
+#### PushSample (Windows Phone 8)
+
+A simple app that demonstrates user login\logout and the push notification API.
+
+#### BuddySquare (Xamarin iOS)
+
+An app that demonstrates user login\logout\creation and the checkin, pictures, and metrics APIs.
+
 ## Contributing Back: Pull Requests
 
 We'd love to have your help making the Buddy SDK as good as it can be!
@@ -152,4 +225,3 @@ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
-

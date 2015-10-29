@@ -1,20 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using MonoTouch.Foundation;
-using MonoTouch.UIKit;
-using BuddySDK;
-using MonoTouch.CoreLocation;
-using MonoTouch.MapKit;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using BuddySDK;
 using BuddySDK.Models;
+using CoreLocation;
+using Foundation;
+using MapKit;
+using UIKit;
 
 namespace BuddySquare.iOS
 {
     public partial class AddCheckinViewController : UIViewController
     {
-
         UIImage _chosenImage;
         LocationsDataSource _dataSource;
 
@@ -22,27 +21,18 @@ namespace BuddySquare.iOS
         {
         }
 
-        public override void DidReceiveMemoryWarning ()
-        {
-            // Releases the view if it doesn't have a superview.
-            base.DidReceiveMemoryWarning ();
-            
-            // Release any cached data, images, etc that aren't in use.
-        }
-
         public override void ViewDidLoad ()
         {
             base.ViewDidLoad ();
             
-
             NavigationItem.LeftBarButtonItem = new UIBarButtonItem (UIBarButtonSystemItem.Cancel);
             NavigationItem.LeftBarButtonItem.Clicked += (sender, e) => {
-                this.NavigationController.PopViewControllerAnimated(true);
+                this.NavigationController.PopViewController(true);
             };
             NavigationItem.RightBarButtonItem = new UIBarButtonItem (UIBarButtonSystemItem.Done);
 
-            NavigationItem.RightBarButtonItem.Clicked += (sender, e) => {
-                SaveCheckin();
+            NavigationItem.RightBarButtonItem.Clicked += async (sender, e) => {
+                await SaveCheckin();
             };
 
             mapView.DidUpdateUserLocation += (sender, e) => {
@@ -54,9 +44,8 @@ namespace BuddySquare.iOS
 
             UITapGestureRecognizer doubletap = new UITapGestureRecognizer();
             doubletap.NumberOfTapsRequired = 1; // double tap
-            doubletap.AddTarget (this, new MonoTouch.ObjCRuntime.Selector("ImageTapped"));
+            doubletap.AddTarget (this, new ObjCRuntime.Selector("ImageTapped"));
             imageView.AddGestureRecognizer(doubletap); 
-
 
             _dataSource = new LocationsDataSource (this);
             tableLocations.Source = _dataSource;
@@ -65,11 +54,7 @@ namespace BuddySquare.iOS
                 tf.ResignFirstResponder();
                 return true;
             };
-
-
-
         }
-
 
         public override void ViewDidAppear (bool animated)
         {
@@ -80,72 +65,60 @@ namespace BuddySquare.iOS
         public override void ViewWillAppear (bool animated)
         {
             base.ViewWillAppear (animated);
-            UpdateMapLocation (mapView.UserLocation.Location.Coordinate);
+            if (mapView.UserLocation != null && mapView.UserLocation.Location != null) {
+                UpdateMapLocation (mapView.UserLocation.Location.Coordinate);
+            }
         }
 
-        IEnumerable<Tuple<Location, BasicMapAnnotation>> _annotations;
+        IEnumerable<Tuple<MKMapItem, BasicMapAnnotation>> _annotations;
 
-        private void OnLocationsUpdate(IEnumerable<Location> locations) {
-
+        private void OnLocationsUpdate(IEnumerable<MKMapItem> mapItems) {
 
             if (_annotations != null) {
                 var annotations = from c in _annotations
                                   select c.Item2;
 
-                mapView.RemoveAnnotations (annotations.ToArray<NSObject> ());
+                mapView.RemoveAnnotations (annotations.ToArray ());
                 _annotations = null;
-
             }
 
+            if (mapItems != null) {
+                _annotations = mapItems.Select (mapItem => {
+                    var a = new BasicMapAnnotation (mapItem);
 
+                    mapView.AddAnnotation (a);
 
-            if (locations != null) {
-                    var alist = new List<Tuple<Location, BasicMapAnnotation>> ();
-
-                    foreach (var c in locations) {
-
-                    var a = new BasicMapAnnotation(c.Location.ToCLLocation().Coordinate, c.Name,GetSubtitle(c));
-                            mapView.AddAnnotation (a);
-                            alist.Add(new Tuple<Location, BasicMapAnnotation>(c, a));
-                    };
-                    _annotations = alist;
+                    return Tuple.Create(mapItem, a);
+               });
             }
+
             tableLocations.ReloadData ();
         }
 
-        private static string GetSubtitle(Location l) {
-			return String.Format ("{2:0.00}km, {0}, {1}", l.City, l.Region, l.Distance / 1000.0);
-        }
-        Location _selected;
-        private void OnLocationSelected (Location ci)
-        {
-            _selected = ci;
-            var span = new MKCoordinateSpan(Utils.MilesToLatitudeDegrees(1.2), Utils.MilesToLongitudeDegrees(1.2, ci.Location.Latitude));
-            mapView.Region = new MKCoordinateRegion(ci.Location.ToCLLocation().Coordinate, span);
+        MKMapItem _selected;
+        private void OnLocationSelected (MKMapItem mi) {
+            _selected = mi;
+            var span = new MKCoordinateSpan (Utils.MilesToLatitudeDegrees (1.2), Utils.MilesToLongitudeDegrees (1.2, mi.Placemark.Coordinate.Latitude));
+            mapView.Region = new MKCoordinateRegion (mi.Placemark.Coordinate, span);
         }
 
-        [MonoTouch.Foundation.Export("ImageTapped")]
+        [Foundation.Export("ImageTapped")]
         public void ImageTapped () {
             var imagePicker = new UIImagePickerController ();
             imagePicker.SourceType = UIImagePickerControllerSourceType.PhotoLibrary | UIImagePickerControllerSourceType.SavedPhotosAlbum ;
-            //imagePicker.MediaTypes = UIImagePickerController.AvailableMediaTypes (UIImagePickerControllerSourceType.PhotoLibrary | UIImagePickerControllerSourceType.SavedPhotosAlbum);
 
             imagePicker.Canceled += (s, e) => {
 
                 NavigationController.DismissViewController(true, null);
             };
 
-         
             imagePicker.FinishedPickingMedia += (s2, e2) => {
                 UIImage originalImage = e2.Info[UIImagePickerController.OriginalImage] as UIImage;
 
-               
                 _chosenImage = originalImage;
                 imageView.Image = _chosenImage;
                 NavigationController.DismissViewController(true, null);
             };
-
-
 
             NavigationController.PresentViewController (imagePicker, true, null);
         }
@@ -158,16 +131,13 @@ namespace BuddySquare.iOS
             _dataSource.Update (coords);
         }
 
-        private async void SaveCheckin() {
-
+        private async Task SaveCheckin() {
 
             var comment = txtComment.Text;
 
-
             var loc = mapView.UserLocation.Location.ToBuddyGeoLocation ();
 
-			Action<Picture> finish = async (p) => {
-
+            Action<Picture> finish = async (p) => {
 
                 string photoID = null;
 
@@ -178,21 +148,19 @@ namespace BuddySquare.iOS
                 // add the checkin
 
                 if (_selected != null) {
-                    loc = new BuddyGeoLocation(_selected.ID);
+                    loc = _selected.Placemark.Location.ToBuddyGeoLocation();
                 }
 
                 await Buddy.PostAsync<Checkin>("/checkins", new {
-                    Comment = comment,
+                    Comment = _selected.Name,
+                    Description = comment,
                     Location = loc,
                     Tag = photoID
                 });
-                       
-               
 
-                this.NavigationController.PopViewControllerAnimated(true);
+                this.NavigationController.PopViewController(true);
 
                 PlatformAccess.Current.ShowActivity = false;
-
             };
 
             PlatformAccess.Current.ShowActivity = true;
@@ -200,7 +168,6 @@ namespace BuddySquare.iOS
             // if we have a photo save that first.
             //
             if (_chosenImage != null) {
-
 
                 var result = await Buddy.PostAsync<Picture> ("/pictures", new {
                     data = new BuddyFile (_chosenImage.AsPNG ().AsStream (), "data", "image/png"),
@@ -213,16 +180,12 @@ namespace BuddySquare.iOS
             } else {
                 finish (null);
             }
-
         }
 
         private class LocationsDataSource : UITableViewSource {
 
-
             AddCheckinViewController _parent;
-
-
-            IEnumerable<Location> _locations;
+            IEnumerable<MKMapItem> _locations;
             private CLLocationCoordinate2D? _coords;
 
             public LocationsDataSource(AddCheckinViewController parent) {
@@ -231,37 +194,48 @@ namespace BuddySquare.iOS
 
             public void Clear() {
                 _locations = null;
-
             }
 
             public void Update (CLLocationCoordinate2D coords)
             {
                 Clear ();
+
                 _coords = coords;
+
+                LoadLocations ();
             }
 
-            private async void LoadLocations() {
+            private void LoadLocations() {
 
                 if (_coords == null) {
                     return;
                 }
 
-                var r = await Buddy.GetAsync<PagedResult<Location>> ("/locations", new {
-                    locationRange = new BuddyGeoLocationRange(_coords.Value.Latitude,_coords.Value.Longitude, 3000)
-                });
+                var coordinate = new CLLocationCoordinate2D(_coords.Value.Latitude, _coords.Value.Longitude);
 
-                if (r.IsSuccess) {
-                    _locations = r.Value.PageResults;
-                    _parent.OnLocationsUpdate (_locations);                
-                }
+                var localSearch = new MKLocalSearch (new MKLocalSearchRequest () {
+                        NaturalLanguageQuery = "coffee",
+                        Region = new MKCoordinateRegion (coordinate, new MKCoordinateSpan (1.25, 1.25))
+                    });
+                
+                localSearch.Start ((response, error) => {
+                    if (response != null && error == null) {
+                        _locations = response.MapItems;
+                        _parent.OnLocationsUpdate (_locations); 
+
+                    } else {
+                        Console.WriteLine ("local search error: {0}", error);
+                    }
+                });
             }
 
-            private IEnumerable<Location> GetLocations() {
+            private IEnumerable<MKMapItem> GetLocations() {
 
                 if (_locations == null) {
                     LoadLocations ();
-                    _locations = new Location[0];
+                    _locations = new MKMapItem[0];
                 }
+
                 return _locations;
             }
 
@@ -278,9 +252,7 @@ namespace BuddySquare.iOS
                 // tableView.DeselectRow (indexPath, true); // normal iOS behaviour is to remove the blue highlight
             }
 
-
-
-            public override int RowsInSection (UITableView tableView, int section)
+            public override nint RowsInSection (UITableView tableView, nint section)
             {
                 var t = GetLocations ();
                
@@ -289,24 +261,19 @@ namespace BuddySquare.iOS
 
             public override UITableViewCell GetCell (UITableView tableView, NSIndexPath indexPath)
             {
-                var t = GetLocations ();
+                GetLocations ();
 
-                var ci = t.ElementAt (indexPath.Row);
+                var annotation = (BasicMapAnnotation)(_parent._annotations.ElementAt (indexPath.Row).Item2);
 
                 UITableViewCell cell = tableView.DequeueReusableCell ("NormalCell");
                 // if there are no cells to reuse, create a new one
                 if (cell == null)
                     cell = new UITableViewCell (UITableViewCellStyle.Subtitle, "NormalCell");
-                cell.TextLabel.Text = ci.Name;
-                cell.DetailTextLabel.Text = AddCheckinViewController.GetSubtitle (ci);
+                cell.TextLabel.Text = annotation.Title;
+                cell.DetailTextLabel.Text = annotation.Subtitle;
 
                 return cell;
-
             }
-
-           
-
+        }
     }
 }
-}
-

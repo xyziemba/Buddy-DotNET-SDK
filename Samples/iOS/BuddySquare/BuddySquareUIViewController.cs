@@ -1,5 +1,5 @@
 using System;
-using MonoTouch.UIKit;
+using UIKit;
 using BuddySDK;
 
 namespace BuddySquare.iOS
@@ -47,4 +47,3 @@ namespace BuddySquare.iOS
         }
     }
 }
-

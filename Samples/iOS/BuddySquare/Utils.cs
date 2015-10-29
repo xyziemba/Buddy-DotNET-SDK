@@ -1,4 +1,7 @@
 using System;
+using BuddySDK;
+using CoreLocation;
+using UIKit;
 
 namespace BuddySquare.iOS
 {
@@ -23,5 +26,30 @@ namespace BuddySquare.iOS
             return (miles / radiusAtLatitude) * radiansToDegrees;
         }
     }
-}
 
+    public class LocationManager
+    {
+        private CLLocationManager locMgr;
+
+        public LocationManager () {
+            this.locMgr = new CLLocationManager ();
+            this.locMgr.RequestAlwaysAuthorization (); // works in background
+        }
+
+        public void StartLocationUpdates()
+        {
+            if (CLLocationManager.LocationServicesEnabled) {
+
+                this.locMgr.DesiredAccuracy = 1; //set the desired accuracy, in meters
+
+                this.locMgr.LocationsUpdated += (object sender, CLLocationsUpdatedEventArgs e) => {
+                    var location = e.Locations [e.Locations.Length - 1];
+
+                    Buddy.LastLocation = new BuddyGeoLocation(location.Coordinate.Latitude, location.Coordinate.Longitude);
+                };
+
+                this.locMgr.StartUpdatingLocation ();
+            }
+        }
+    }
+}
