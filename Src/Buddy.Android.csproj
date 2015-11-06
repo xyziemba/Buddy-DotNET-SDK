@@ -13,6 +13,8 @@
     <AndroidResgenClass>Resource</AndroidResgenClass>
     <AssemblyName>Buddy</AssemblyName>
     <AndroidUseLatestPlatformSdk>False</AndroidUseLatestPlatformSdk>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -68,15 +70,11 @@
     <Compile Include="BuddyPermissions.cs" />
     <Compile Include="PlatformAccess\AndroidPlatformAccess.cs" />
     <Compile Include="PlatformAccess\PlatformAccess.cs" />
-    <Compile Include="PlatformAccess\WindowsPlatformAccess.cs" />
     <Compile Include="BuddyUtils.cs" />
     <Compile Include="BuddyServiceClient\IRemoteMethodProvider.cs" />
     <Compile Include="IRestProvider.cs" />
-    <Compile Include="Models\Album.cs" />
-    <Compile Include="Models\AlbumItem.cs" />
     <Compile Include="Models\Blob.cs" />
     <Compile Include="Models\Checkin.cs" />
-    <Compile Include="Models\Location.cs" />
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\MessageType.cs" />
     <Compile Include="Models\MetadataItem.cs" />
@@ -94,6 +92,10 @@
     <Compile Include="Models\PagedResult.cs" />
     <Compile Include="Models\BinaryModelBase.cs" />
     <Compile Include="Models\Video.cs" />
+    <Compile Include="PlatformAccess\IdManager.cs" />
+    <Compile Include="PlatformAccess\TaskShim.cs" />
+    <Compile Include="PlatformAccess\AsyncLazy.cs" />
+    <Compile Include="PlatformAccess\DotNetDeltas.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
