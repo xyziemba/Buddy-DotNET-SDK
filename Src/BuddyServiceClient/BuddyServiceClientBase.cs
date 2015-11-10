@@ -131,12 +131,13 @@ namespace BuddySDK.BuddyServiceClient
         public async Task<BuddyCallResult<T>> CallMethodAsync<T>(
            string verb,
            string path,
-           object parameters = null)
+           object parameters = null,
+           bool skipAuth = false)
         {
-            return await CallMethodAsyncCore<T>(verb, path, parameters).ConfigureAwait(false);
+            return await CallMethodAsyncCore<T>(verb, path, parameters, skipAuth).ConfigureAwait(false);
         }
 
-        protected abstract Task<BuddyCallResult<T>> CallMethodAsyncCore<T>(string verb, string path, object parameters);
+        protected abstract Task<BuddyCallResult<T>> CallMethodAsyncCore<T>(string verb, string path, object parameters, bool skipAuth);
 
         private string serviceRoot;
         public string ServiceRoot

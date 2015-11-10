@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -45,7 +46,6 @@ namespace BuddySDK
         private const string PatchVerb = "PATCH";
         private const string DeleteVerb = "DELETE";
 
-        private bool _gettingToken = false;
         private User _user;
         private static bool _crashReportingSet = false;
 
@@ -169,14 +169,6 @@ namespace BuddySDK
         /// </summary>
         public string AppKey { get; protected set; }
 
-        protected string AccessToken
-        {
-            get
-            {
-                return GetAccessToken ().Result;
-
-            }
-        }
 
         internal AuthenticationLevel AuthLevel {
             get;
@@ -280,34 +272,24 @@ namespace BuddySDK
             public string ServiceRoot { get; set; }
             public string ServerSignature { get; set; }
         }
-        
-        internal async Task<string> GetAccessToken() {
 
-            if (!_gettingToken)
+        private AsyncLock getAccessTokenAsyncLock = new AsyncLock();
+        internal async Task<string> GetAccessToken()
+        {
+            using (await getAccessTokenAsyncLock.LockAsync())
             {
-                try
+                if (_appSettings.UserToken != null)
                 {
-                    _gettingToken = true;
-
-                    if (_appSettings.UserToken != null) {
-                        return _appSettings.UserToken;
-                    }
-                    else if (_appSettings.DeviceToken != null) {
-                        return _appSettings.DeviceToken;
-                    }
-
-                    _appSettings.DeviceToken = await GetDeviceToken();
-                    _appSettings.Save();
+                    return _appSettings.UserToken;
+                }
+                else if (_appSettings.DeviceToken != null)
+                {
                     return _appSettings.DeviceToken;
                 }
-                finally
-                {
-                    _gettingToken = false;
-                }
-            }
-            else
-            {
-                return _appSettings.UserToken ?? _appSettings.DeviceToken;
+
+                _appSettings.DeviceToken = await GetDeviceToken();
+                _appSettings.Save();
+                return _appSettings.DeviceToken;
             }
         }
 
@@ -320,8 +302,8 @@ namespace BuddySDK
         private async Task<string> GetDeviceToken()
         {
             var pushToken = PlatformAccess.Current.GetPushToken();
-            var reg = PostAsync<DeviceRegistration> ("/devices",
-                          new
+
+            var reg = GenericRestCall<DeviceRegistration>(PostVerb, "/devices", new
                 {
                     AppId = AppId,
                     AppKey = AppKey,
@@ -333,9 +315,9 @@ namespace BuddySDK
                     PushToken = pushToken,
                     AppVersion = _appSettings.Options.AppVersion ?? PlatformAccess.Current.AppVersion,
                     Tag = _appSettings.Options.DeviceTag
-                });
+                }, false, true);
 
-            var dr = await ResultConversionHelper  <DeviceRegistration, DeviceRegistration> (
+            var dr = await ResultConversionHelper<DeviceRegistration, DeviceRegistration> (
                 reg,
                 completed: (r1, r2) => { 
                     if (r2.IsSuccess)
@@ -667,9 +649,10 @@ namespace BuddySDK
             }
         }
 
+        private readonly AsyncLock getServiceAsyncLock = new AsyncLock();
         protected virtual async Task<IRemoteMethodProvider> GetService()
         {
-            using (await new AsyncLock().LockAsync())
+            using (await getServiceAsyncLock.LockAsync())
             {
                 if (this._service != null) return this._service;
 
@@ -744,9 +727,10 @@ namespace BuddySDK
             return waitTimeInMilliseconds;
         }
 
+        private readonly AsyncLock onConnectivityChangedAsyncLock = new AsyncLock();
         protected virtual async Task OnConnectivityChanged(ConnectivityLevel level)
         {
-            using (await new AsyncLock().LockAsync())
+            using (await onConnectivityChangedAsyncLock.LockAsync())
             {
                 if (level == _connectivity)
                 {
@@ -771,47 +755,49 @@ namespace BuddySDK
                 }
             }
         }
-      
-        protected async Task<bool> OnServiceException(BuddyClient client, BuddyServiceException buddyException) {
 
-            if (buddyException is BuddyUnauthorizedException) {
-                client.OnAuthorizationFailure ((BuddyUnauthorizedException)buddyException);
+        protected async Task<bool> OnServiceException(BuddyClient client, BuddyServiceException buddyException)
+        {
+            if (buddyException is BuddyUnauthorizedException)
+            {
+                client.OnAuthorizationFailure((BuddyUnauthorizedException)buddyException);
                 return false;
-            } else if (buddyException is BuddyNoInternetException) {
-                await OnConnectivityChanged (ConnectivityLevel.None);
+            }
+            else if (buddyException is BuddyNoInternetException)
+            {
+                await client.OnConnectivityChanged(ConnectivityLevel.None);
                 return false;
             }
 
             bool result = false;
 
-            if (ServiceException != null) {
-                var args = new ServiceExceptionEventArgs (buddyException);
-                ServiceException (this, args);
+            if (ServiceException != null)
+            {
+                var args = new ServiceExceptionEventArgs(buddyException);
+                ServiceException(this, args);
                 result = args.ShouldThrow;
-            } 
+            }
             return result;
         }
 
         private int _processingAuthFailure = 0;
+        internal virtual void OnAuthorizationFailure(BuddyUnauthorizedException exception)
+        {
+            var count = Interlocked.Increment(ref _processingAuthFailure);
 
-        internal virtual void OnAuthorizationFailure(BuddyUnauthorizedException exception) {
-
-
-            var count = System.Threading.Interlocked.Increment (ref _processingAuthFailure);
-
-            if (count > 1) {
-                System.Threading.Interlocked.Decrement(ref _processingAuthFailure);
+            if (count > 1)
+            {
                 return;
             }
 
-            lock (this) {
+            bool showLoginDialog = exception == null, exceptionCaught = false;
 
-               try {
-                    bool showLoginDialog = exception == null;
-                    #pragma warning disable 4014
-                    if (exception != null) {
-                        switch (exception.Error) {
-
+            try
+            {
+                if (exception != null)
+                {
+                    switch (exception.Error)
+                    {
                         case "AuthAppCredentialsInvalid":
                         case "AuthAccessTokenInvalid":
                             ClearCredentials(false, true);
@@ -820,51 +806,57 @@ namespace BuddySDK
                             ClearCredentials(true, false);
                             showLoginDialog = true;
                             break;
-                        }
-                    }
-                    #pragma warning restore 4014
-
-                    if (showLoginDialog) {
-                        System.Threading.Interlocked.Increment (ref _processingAuthFailure);
-
-                        PlatformAccess.Current.InvokeOnUiThread (() => {
-
-                            if (this.AuthorizationNeedsUserLogin != null) {
-                                this.AuthorizationNeedsUserLogin (this, new EventArgs ());
-                            }
-                             System.Threading.Interlocked.Decrement (ref _processingAuthFailure);
-
-                        });
                     }
                 }
-                finally {
-                    System.Threading.Interlocked.Decrement (ref _processingAuthFailure);
+
+                if (showLoginDialog && this.AuthorizationNeedsUserLogin != null)
+                {
+                    PlatformAccess.Current.InvokeOnUiThread(() =>
+                    {
+                        this.AuthorizationNeedsUserLogin(this, new EventArgs());
+
+                        Interlocked.Exchange(ref _processingAuthFailure, 0);
+                    });
+                }
+            }
+            catch
+            {
+                exceptionCaught = true;
+
+                throw;
+            }
+            finally
+            {
+                if (exceptionCaught || !showLoginDialog || this.AuthorizationNeedsUserLogin == null)
+                {
+                    Interlocked.Exchange(ref _processingAuthFailure, 0);
                 }
             }
         }
 
-        protected virtual void OnAuthLevelChanged() {
-           
-            PlatformAccess.Current.InvokeOnUiThread (() => {
-
-                if (this.AuthorizationLevelChanged != null) {
-                    this.AuthorizationLevelChanged (this, EventArgs.Empty);
+        protected virtual void OnAuthLevelChanged()
+        {
+            PlatformAccess.Current.InvokeOnUiThread(() =>
+            {
+                if (this.AuthorizationLevelChanged != null)
+                {
+                    this.AuthorizationLevelChanged(this, EventArgs.Empty);
                 }
             });
         }
 
-        private void UpdateAccessLevel() {
-
+        private void UpdateAccessLevel()
+        {
             var old = AuthLevel;
             AuthenticationLevel authLevel = AuthenticationLevel.None;
             if (_appSettings.DeviceToken != null) authLevel = AuthenticationLevel.Device;
             if (_appSettings.UserToken != null) authLevel = AuthenticationLevel.User;
             AuthLevel = authLevel;
 
-            if (old != authLevel) {
-                OnAuthLevelChanged ();
+            if (old != authLevel)
+            {
+                OnAuthLevelChanged();
             }
-
         }
 
         // User auth.
@@ -874,7 +866,6 @@ namespace BuddySDK
             string email = null, User.UserGender? gender = null, 
             DateTime? dateOfBirth = null, string tag = null)
         {
-
             if (String.IsNullOrEmpty(username))
                 throw new ArgumentException("Can't be null or empty.", "username");
             if (password == null)
@@ -882,7 +873,6 @@ namespace BuddySDK
             if (dateOfBirth > DateTime.Now)
                 throw new ArgumentException("dateOfBirth must be in the past.", "dateOfBirth");
 
-           
             return LoginUserCoreAsync<User>("/users",  new
                 {
                     firstName = firstName,
@@ -894,7 +884,6 @@ namespace BuddySDK
                     dateOfBirth = dateOfBirth,
                     tag = tag
                 });
-         
         }
 
         /// <summary>
@@ -907,16 +896,16 @@ namespace BuddySDK
         public Task<BuddyResult<User>> LoginUserAsync(string username, string password)
         {
             return LoginUserCoreAsync<User>("/users/login", new
-            {
-                Username = username,
-                Password = password
+                {
+                    Username = username,
+                    Password = password
                 });
         }
 
         public Task<BuddyResult<SocialNetworkUser>> SocialLoginUserAsync(string identityProviderName, string identityID, string identityAccessToken)
         {
             return LoginUserCoreAsync<SocialNetworkUser>("/users/login/social", new
-                    {
+                {
                         IdentityProviderName = identityProviderName,
                         IdentityID = identityID,
                         IdentityAccessToken = identityAccessToken
@@ -1069,14 +1058,14 @@ namespace BuddySDK
 
         #region REST
 
-        private async Task<BuddyResult<T>> GenericRestCall<T>(string verb, string path, object parameters, bool allowThrow)
+        private async Task<BuddyResult<T>> GenericRestCall<T>(string verb, string path, object parameters, bool allowThrow, bool skipAuth = false)
         {
             var service = await GetService().ConfigureAwait(false);
 
             var callResult = await service.CallMethodAsync<T>(
                 verb,
                 path,
-                AddLocationToParameters(parameters)).ConfigureAwait(false);
+                AddLocationToParameters(parameters), skipAuth).ConfigureAwait(false);
 
             var procResult = await HandleServiceResult(callResult, allowThrow).ConfigureAwait(false);
 
