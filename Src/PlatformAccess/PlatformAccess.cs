@@ -1,15 +1,5 @@
+using Nito.AsyncEx;
 using System;
-using System.Net;
-using System.Threading;
-using System.Xml.Linq;
-using System.Reflection;
-
-using System.IO;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Text;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BuddySDK
 {
@@ -22,9 +12,9 @@ namespace BuddySDK
 		// device info
 		//
 		public abstract string Platform {get;}
-		public abstract string Model {get;}
+		public abstract AsyncLazy<string> Model {get;}
 		public abstract string DeviceUniqueId { get;}
-		public abstract string OSVersion { get;}
+		public abstract AsyncLazy<string> OSVersion { get;}
 		public abstract bool   IsEmulator { get; }
 		public abstract string ApplicationID {get;}
 		public abstract string AppVersion {get;}
@@ -119,46 +109,47 @@ namespace BuddySDK
 		// platform
 		//
 
-		public virtual bool IsUiThread {
-			get {
-				return 
-
-					
-				   DotNetDeltas.CurrentThreadId == _uiThreadId.GetValueOrDefault ();
-			}
-		}
+        public virtual bool IsUiThread
+        {
+            get
+            {
+                return DotNetDeltas.CurrentThreadId == _uiThreadId.GetValueOrDefault();
+            }
+        }
 
 		protected abstract void InvokeOnUiThreadCore (Action a);
 
-		public void InvokeOnUiThread(Action a) {
+        public void InvokeOnUiThread(Action a)
+        {
+            if (IsUiThread)
+            {
+                a();
+            }
+            else
+            {
+                InvokeOnUiThreadCore(a);
+            }
+        }
 
-			if (IsUiThread) {
-				a ();
-			} else {
-				InvokeOnUiThreadCore (a);
-			}
-		}
+		internal string PushToken { get; set; }
 
-
-		internal string PushToken { get; private set; }
-
-		public virtual Task<string> GetPushTokenAsync()
+		public string GetPushToken()
 		{
 			if (PushToken == null)
 			{
 				PushToken = GetUserSetting("__PushToken");
 			}
 
-			return Task.FromResult(PushToken);
+			return PushToken;
 		}
 
 		public event EventHandler PushTokenChanged;
 
-		public virtual void SetPushToken(string pushToken)
+		public void SetPushToken(string pushToken)
 		{
 			//because the MPNS channel may be updated before the initial call to POST /devices, this was getting nulled out non-deterministically from BuddyClient:240 before we could attach it to the device
 			if (pushToken != null) {
-				if (PushToken != pushToken) {
+				if (GetPushToken() != pushToken) {
 					SetUserSetting ("__PushToken", pushToken);
 					PushToken = null;
 				}
@@ -169,14 +160,12 @@ namespace BuddySDK
 			}
 		}
 
-
 		public class NotificationReceivedEventArgs
 		{
 			public string ID { get; set; }
 		}
 
 		internal event EventHandler<NotificationReceivedEventArgs> NotificationReceived;
-
 
 		internal void OnNotificationReceived(string id)
 		{
@@ -200,15 +189,5 @@ namespace BuddySDK
 				return _current;
 			}
 		}
-		internal static T GetCustomAttribute<T>(Type t) where T : Attribute
-		{
-			#if !NETFX_CORE
-		
-						return t.GetCustomAttribute<T>();
-			#else 
-						return t.GetTypeInfo().GetCustomAttribute<T>();
-			#endif
-		}
-
 	}
 }

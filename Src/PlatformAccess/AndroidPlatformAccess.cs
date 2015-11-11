@@ -1,23 +1,21 @@
-﻿
-#if __ANDROID__
+﻿#if __ANDROID__
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Net;
 using Android.OS;
 using Android.Provider;
+using Nito.AsyncEx;
 
 
 namespace BuddySDK
 {
-
 	internal partial class BuddyClient {
 
 		public void RecordNotificationReceived<T>(T args) {
@@ -54,9 +52,14 @@ namespace BuddySDK
 			get { return "Android"; }
 		}
 
-		public override string Model {
-			// TODO: verify this delimiter is a good one for analytics, and that it doesn't stomp on known Manufacturers and\or Models
-			get { return Build.Manufacturer + " : " + Build.Model; }
+        private readonly AsyncLazy<string> model = new AsyncLazy<string>(() =>
+            {
+                // TODO: verify this delimiter is a good one for analytics, and that it doesn't stomp on known Manufacturers and\or Models
+                return Build.Manufacturer + " : " + Build.Model;
+            });
+        
+        public override AsyncLazy<string> Model {
+            get { return model; }
 		}
 
 		public override string DeviceUniqueId {
@@ -68,8 +71,14 @@ namespace BuddySDK
 			}
 		}
 
-		public override string OSVersion {
-			get { return ((int) Build.VERSION.SdkInt).ToString(); }
+        private readonly AsyncLazy<string> osVersion = new AsyncLazy<string>(() =>
+            {
+                // TODO: verify this delimiter is a good one for analytics, and that it doesn't stomp on known Manufacturers and\or Models
+                return ((int) Build.VERSION.SdkInt).ToString();
+            });
+        
+        public override AsyncLazy<string> OSVersion {
+            get { return osVersion; }
 		}
 
 		public override bool SupportsFlags(BuddyClientFlags flags) {

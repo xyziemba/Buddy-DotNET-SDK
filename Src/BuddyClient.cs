@@ -1,18 +1,11 @@
+using BuddySDK.BuddyServiceClient;
+using BuddySDK.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.ComponentModel;
-using System.Collections.ObjectModel;
 using System.Globalization;
-using BuddySDK.BuddyServiceClient;
-using System.Reflection;
-using System.Collections;
-using Newtonsoft.Json;
+using System.Linq;
 using System.Threading.Tasks;
-using BuddySDK.Models;
 
 
 namespace BuddySDK
@@ -37,14 +30,9 @@ namespace BuddySDK
         }
     }
 
-   
 
-  
     internal partial class BuddyClient : IRestProvider, IBuddyClient
     {
-
-
-
         public event EventHandler<ServiceExceptionEventArgs> ServiceException;
         public event EventHandler<CurrentUserChangedEventArgs> CurrentUserChanged;
         public event EventHandler<ConnectivityLevelChangedArgs> ConnectivityLevelChanged;
@@ -60,8 +48,8 @@ namespace BuddySDK
         private bool _gettingToken = false;
         private User _user;
         private static bool _crashReportingSet = false;
-     
-        private class AppSettings
+
+        internal class AppSettings
         {
             public string AppID {get;set;}
             public string AppKey {get;set;}
@@ -265,26 +253,25 @@ namespace BuddySDK
             };        
         }
 
-        private void PushTokenChanged(object sender, EventArgs args)
+        private async void PushTokenChanged(object sender, EventArgs args)
         {
-            PlatformAccess.Current.GetPushTokenAsync().ContinueWith(t =>
+            var pushToken = PlatformAccess.Current.GetPushToken();
+
+            if (pushToken != null && pushToken != _appSettings.DevicePushToken)
             {
-                if (t.Result != null && t.Result != _appSettings.DevicePushToken)
+                // If we have a device token, send up the new push token,
+                // otherwise it should happen in POST /device.
+                if (_appSettings.DeviceToken != null)
                 {
-                    // if we have a device token, send up the new push token.
-                    if (_appSettings.DeviceToken != null)
+                    var result = await this.UpdateDeviceAsync(pushToken);
+
+                    if (result)
                     {
-                        this.UpdateDeviceAsync(t.Result).ContinueWith(t2 =>
-                        {
-                            if (t2.Result)
-                            {
-                                _appSettings.DevicePushToken = t.Result;
-                                _appSettings.Save();
-                            }
-                        });
+                        _appSettings.DevicePushToken = pushToken;
+                        _appSettings.Save();
                     }
                 }
-            });
+            }
         }
 
         internal class DeviceRegistration
@@ -332,7 +319,7 @@ namespace BuddySDK
 
         private async Task<string> GetDeviceToken()
         {
-
+            var pushToken = PlatformAccess.Current.GetPushToken();
             var reg = PostAsync<DeviceRegistration> ("/devices",
                           new
                 {
@@ -341,9 +328,9 @@ namespace BuddySDK
                     ApplicationId = PlatformAccess.Current.ApplicationID,
                     Platform = PlatformAccess.Current.Platform,
                     UniqueID = PlatformAccess.Current.DeviceUniqueId,
-                    Model = PlatformAccess.Current.Model,
-                    OSVersion = PlatformAccess.Current.OSVersion,
-                    PushToken = await PlatformAccess.Current.GetPushTokenAsync (),
+                    Model = await PlatformAccess.Current.Model,
+                    OSVersion = await PlatformAccess.Current.OSVersion,
+                    PushToken = pushToken,
                     AppVersion = _appSettings.Options.AppVersion ?? PlatformAccess.Current.AppVersion,
                     Tag = _appSettings.Options.DeviceTag
                 });
@@ -370,7 +357,7 @@ namespace BuddySDK
                             _appSettings.ServiceUrl = r2.Value.ServiceRoot;
                         }
 
-                        // If an updated push token wasn't sent due to timing issues, send it now
+                        // POST doesn't accept push tokens, so send it here
                         this.PushTokenChanged(this, EventArgs.Empty);
                     }
                     else if (!r2.IsSuccess){
@@ -651,7 +638,7 @@ namespace BuddySDK
             return tcs.Task;
         }
      
-        private void ClearCredentials(bool clearUser = true, bool clearDevice = true) {
+        internal void ClearCredentials(bool clearUser = true, bool clearDevice = true) {
 
             if (clearDevice) {
 

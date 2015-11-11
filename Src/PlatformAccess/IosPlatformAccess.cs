@@ -1,17 +1,16 @@
-using System.Net;
-
-
 #if __IOS__
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using CoreLocation;
 using CoreFoundation;
-using UIKit;
+using CoreLocation;
 using Foundation;
+using Nito.AsyncEx;
 using SystemConfiguration;
+using UIKit;
 
 
 namespace BuddySDK
@@ -94,16 +93,21 @@ namespace BuddySDK
 		{
 			get
 			{
-				return "iOS";
+                return UIKit.UIDevice.CurrentDevice.SystemName;
 			}
 		}
 
-		public override string Model
+        private readonly AsyncLazy<string> model = new AsyncLazy<string>(() =>
+            {
+                return UIKit.UIDevice.CurrentDevice.Model;
+            });
+        
+        public override AsyncLazy<string> Model
 		{
 			get
 			{
 				// TODO: see code at http://pastebin.com/FJfpGRbQ
-				return "iPhone";
+                return model;
 			}
 		}
 
@@ -115,14 +119,18 @@ namespace BuddySDK
 			}
 		}
 
-		public override string OSVersion
+        private readonly AsyncLazy<string> osVersion = new AsyncLazy<string>(() =>
+            {
+                return UIKit.UIDevice.CurrentDevice.SystemVersion;
+            });
+
+        public override AsyncLazy<string> OSVersion
 		{
 			get
 			{
-				return "1.0";
+                return osVersion;
 			}
 		}
-
 
 		public override bool IsEmulator
 		{
