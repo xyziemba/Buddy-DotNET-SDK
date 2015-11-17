@@ -148,7 +148,8 @@ namespace BuddySDK.BuddyServiceClient
         protected override Task<BuddyCallResult<T>> CallMethodAsyncCore<T>(
              string verb,
              string path,
-             object parameters)
+             object parameters,
+             bool skipAuth)
         {
             // TODO: Refactor to use async/await instead of
             // TCS/callbacks.
@@ -310,7 +311,7 @@ namespace BuddySDK.BuddyServiceClient
 
                 }
 
-            });
+            }, skipAuth);
 
             return tcs.Task;
         }
@@ -366,7 +367,8 @@ namespace BuddySDK.BuddyServiceClient
         {
             return verb + " " + path;
         }
-        private async void MakeRequest<T>(string verb, string path, IDictionary<string, object> parameters, Action<Exception, HttpWebResponse> callback)
+
+        private async void MakeRequest<T>(string verb, string path, IDictionary<string, object> parameters, Action<Exception, HttpWebResponse> callback, bool skipAuth)
         {
             if (!path.StartsWith("/"))
             {
@@ -374,7 +376,7 @@ namespace BuddySDK.BuddyServiceClient
             }
 
             // get the token before generating the request url, as there may be a new ServiceRoot
-            var token = await Client.GetAccessToken();
+            var token = skipAuth ? null : await Client.GetAccessToken();
 
             var url = String.Format(CultureInfo.InvariantCulture, "{0}{1}", ServiceRoot, path);
             var requestType = HttpRequestType.HttpPostJson;
@@ -383,8 +385,6 @@ namespace BuddySDK.BuddyServiceClient
             switch (verb.ToUpperInvariant())
             {
             case "GET":
-
-
                 // For redirects (specifically Azure Blob), if our authentication header is in there
                 // it'll deny us access.  So for that case, we just need to add the access token to the parameters
                 // collection so it doesn't get added as a header.
@@ -397,6 +397,7 @@ namespace BuddySDK.BuddyServiceClient
                 url += "?" + GetUrlEncodedParameters(parameters);
                 requestType = HttpRequestType.HttpGet;
                 break;
+
             default:
                 // do we have any file parameters.
                 //
@@ -448,7 +449,6 @@ namespace BuddySDK.BuddyServiceClient
             {
                 if (SharedSecret != null)
                 {
-
                     string requestSig = GenerateSignatureForRequest(verb, path);
                     if (requestSig != null)
                     {

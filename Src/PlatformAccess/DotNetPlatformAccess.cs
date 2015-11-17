@@ -25,7 +25,7 @@ namespace BuddySDK
         }
     }
 
-    internal class DotNetPlatformAccess: DotNetPlatformAccessBase
+    internal class DotNetPlatformAccess : DotNetPlatformAccessBase
     {
         public override string Platform
         {
@@ -99,7 +99,6 @@ namespace BuddySDK
             }
         }
 
-   
         public override ConnectivityLevel ConnectionType
         {
             get
@@ -108,7 +107,6 @@ namespace BuddySDK
             }
         }
 
-      
         private class DotNetIsoStore : IsolatedStorageSettings
         {
             protected override IsolatedStorageFile GetIsolatedStorageFile()
@@ -142,20 +140,6 @@ namespace BuddySDK
         public override string GetConfigSetting(string key)
         {
             return System.Configuration.ConfigurationManager.AppSettings[key];
-        }
-
-        protected override void InvokeOnUiThreadCore(Action a)
-        {
-            var context = SynchronizationContext.Current;
-
-            if (context != null)
-            {
-                context.Post((s) => { a(); }, null);
-            }
-            else
-            {
-                a();
-            }
         }
     }
 }
