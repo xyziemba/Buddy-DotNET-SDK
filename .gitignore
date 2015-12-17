@@ -8,3 +8,4 @@ obj/
 Resource.designer.cs
 Src/packages/*
 Src/Components/
+*.vs/

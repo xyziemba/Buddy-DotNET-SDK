@@ -210,18 +210,6 @@ To submit a change to the Buddy SDK please do the following:
 3. Before creating your pull request, please sync your repository to the current state of the parent repository: `git pull origin master`
 4. Commit your changes, then [submit a pull request](https://help.github.com/articles/using-pull-requests) for just that commit
 
-## License
+## Questions or need help?
 
-#### Copyright (C) 2014 Buddy Platform, Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not
-use this file except in compliance with the License. You may obtain a copy of
-the License at
-
-  [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations under
-the License.
+This should have given you the basics of how to work with the Buddy .NET SDK. If you have further questions or are stuck, send an email to support@buddy.com.
