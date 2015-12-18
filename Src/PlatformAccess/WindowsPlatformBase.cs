@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
 using Windows.ApplicationModel.Store;
 using Windows.Devices.Enumeration.Pnp;
@@ -45,7 +46,7 @@ namespace BuddySDK
         {
             get
             {
-                return CurrentApp.AppId.ToString();
+                return Package.Current.Id.Name;
             }
         }
 
