@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 //[assembly: System.Reflection.AssemblyTitle("Buddy Platform Client SDK for ------")]
 //[assembly: System.Reflection.AssemblyDescription("Buddy Platform Client SDK for ----------")]
  
-[assembly: AssemblyCompany("Buddy Platform Limited")]
+[assembly: AssemblyCompany("Buddy Platform, Inc.")]
 [assembly: AssemblyProduct("Buddy Platform Client SDK")]
 [assembly: AssemblyCopyright("Copyright © 2016")]
 [assembly: AssemblyTrademark("")]
