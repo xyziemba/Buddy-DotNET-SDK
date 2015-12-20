@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using BuddySDK.Models;
 using System.Collections.Generic;
@@ -31,6 +31,8 @@ namespace BuddySDK
         event EventHandler AuthorizationNeedsUserLogin;
 
         event EventHandler AuthorizationLevelChanged;
+
+		event EventHandler<ConnectivityLevelChangedArgs> ConnectivityLevelChanged;
 
         Task<BuddyResult<Metric>> RecordMetricAsync(string key, IDictionary<string, object> value, TimeSpan? timeout, DateTime? timeStamp);
     }

@@ -27,7 +27,9 @@
     <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_PHONE_APP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>Bin\Debug\WP81\Buddy.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
+    <NoWarn>1591, 1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -36,8 +38,10 @@
     <DefineConstants>TRACE;NETFX_CORE;WINDOWS_PHONE_APP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>Bin\Release\WP81\Buddy.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
     <GenerateLibraryLayout>false</GenerateLibraryLayout>
+    <NoWarn>1591, 1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
@@ -84,10 +88,6 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <None Include="packages.Buddy.WP81.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="AsyncLock.cs" />
     <Compile Include="Buddy.cs" />
     <Compile Include="BuddyFile.cs" />
@@ -106,11 +106,9 @@
     <Compile Include="DateRange.cs" />
     <Compile Include="IBuddyClient.cs" />
     <Compile Include="IRestProvider.cs" />
-    <Compile Include="Models\Album.cs" />
-    <Compile Include="Models\AlbumItem.cs" />
     <Compile Include="Models\Blob.cs" />
     <Compile Include="Models\Checkin.cs" />
-    <Compile Include="Models\Location.cs" />
+    <Compile Include="Models\Identity.cs" />
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\MessageType.cs" />
     <Compile Include="Models\MetadataItem.cs" />
@@ -122,19 +120,24 @@
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserList.cs" />
     <Compile Include="Models\UserListItem.cs" />
+    <Compile Include="PlatformAccess\AsyncLazy.cs" />
+    <Compile Include="PlatformAccess\DotNetDeltas.cs" />
     <Compile Include="PlatformAccess\DotNetPlatformBase.cs" />
+    <Compile Include="PlatformAccess\IdManager.cs" />
     <Compile Include="PlatformAccess\PlatformAccess.cs" />
+    <Compile Include="PlatformAccess\TaskShim.cs" />
     <Compile Include="PlatformAccess\WindowsPlatformAccess.cs" />
+    <Compile Include="PlatformAccess\WindowsPlatformBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BuddyClient.cs" />
-    <Compile Include="Properties\AssemblyInfoWindows.cs" />
+    <Compile Include="Properties\AssemblyInfoWindowsPhone81.cs" />
     <Compile Include="ServiceExceptionEventArgs.cs" />
     <Compile Include="Models\BinaryModelBase.cs" />
     <Compile Include="Models\Video.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>packages\Newtonsoft.Json.6.0.3\lib\portable-net45+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.7.0.1\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>

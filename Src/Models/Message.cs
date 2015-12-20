@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -64,7 +64,7 @@ namespace BuddySDK.Models
         }
 
 
-        [Newtonsoft.Json.JsonProperty("send")]
+        [Newtonsoft.Json.JsonProperty("sent")]
         public DateTime Sent
         {
             get;
@@ -78,7 +78,7 @@ namespace BuddySDK.Models
             set;
         }
 
-        [Newtonsoft.Json.JsonProperty("messageType")]
+        [Newtonsoft.Json.JsonProperty("type")]
         public BuddySDK.Models.Message.MessageType Type
         {
             get;

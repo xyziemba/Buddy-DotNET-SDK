@@ -1,4 +1,20 @@
-﻿using System;
+/*
+ * Copyright (C) 2016 Buddy Platform, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+using System;
 using System.Diagnostics;
 using System.Resources;
 using System.Windows;
@@ -8,6 +24,9 @@ using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using PhoneApp5.Resources;
 using BuddySDK;
+using Microsoft.Phone.Notification;
+using System.Windows.Threading;
+
 namespace PhoneApp5
 {
     public partial class App : Application
@@ -23,6 +42,8 @@ namespace PhoneApp5
         public const string AppId = "\Your App ID";
         public const string AppKey = "\Your App Key";
         public const string PushChannelName = "SamplePushChannel";
+
+        public const string PushChannelName = "SamplePushChannel11";
 
         /// <summary>
         /// Constructor for the Application object.
@@ -69,12 +90,61 @@ namespace PhoneApp5
         {
             try
             {
-                Buddy.Init(AppId, AppKey);
+                Buddy.Init(AppId, AppKey, BuddyClientFlags.AutoCrashReport);
             }
             catch (InvalidOperationException)
             {
                 //already initialized
             }
+            BuddyPushSetup();
+        }
+        private void BuddyPushSetup()
+        {
+            Microsoft.Phone.Notification.HttpNotificationChannel channel;
+            channel = Microsoft.Phone.Notification.HttpNotificationChannel.Find(App.PushChannelName);
+            if (channel == null)
+            {
+                channel = new Microsoft.Phone.Notification.HttpNotificationChannel(App.PushChannelName);
+            }
+            if (channel.ChannelUri != null)
+            {
+                Buddy.Instance.SetPushToken(channel.ChannelUri.AbsoluteUri);
+            }
+            channel.ChannelUriUpdated += (object sender, NotificationChannelUriEventArgs args) =>
+            {
+                Buddy.Instance.SetPushToken(channel.ChannelUri.AbsoluteUri);
+            };
+            channel.ErrorOccurred += (object sender, NotificationChannelErrorEventArgs args) =>
+            {
+                MessageBox.Show(args.Message);
+            };
+            if (!channel.IsShellTileBound)
+            {
+                channel.BindToShellTile();
+            }
+            if (!channel.IsShellToastBound)
+            {
+                channel.BindToShellToast();
+            }
+            channel.Open();
+
+
+
+            channel.ShellToastNotificationReceived += (object sender, NotificationEventArgs args) =>
+            {
+                string message = null;
+                if (args.Collection.TryGetValue("wp:Text1", out message))
+                {
+                    MessageBox.Show(String.Format(message));
+                }
+            };
+        }
+
+        
+
+        private void PushChannel_ChannelUriUpdated(object sender, NotificationChannelUriEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         // Code to execute when the application is activated (brought to foreground)

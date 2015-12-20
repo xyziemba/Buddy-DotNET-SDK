@@ -4,7 +4,7 @@
 // actions made in the UI designer. If it is removed, they will be lost.
 // Manual changes to this file may not be handled correctly.
 //
-using MonoTouch.Foundation;
+using Foundation;
 using System.CodeDom.Compiler;
 
 namespace BuddySquare.iOS
@@ -13,16 +13,16 @@ namespace BuddySquare.iOS
 	partial class AddCheckinViewController
 	{
 		[Outlet]
-		MonoTouch.UIKit.UIImageView imageView { get; set; }
+		UIKit.UIImageView imageView { get; set; }
 
 		[Outlet]
-		MonoTouch.MapKit.MKMapView mapView { get; set; }
+		MapKit.MKMapView mapView { get; set; }
 
 		[Outlet]
-		MonoTouch.UIKit.UITableView tableLocations { get; set; }
+		UIKit.UITableView tableLocations { get; set; }
 
 		[Outlet]
-		MonoTouch.UIKit.UITextView txtComment { get; set; }
+		UIKit.UITextView txtComment { get; set; }
 		
 		void ReleaseDesignerOutlets ()
 		{

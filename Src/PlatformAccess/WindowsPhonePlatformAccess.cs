@@ -1,6 +1,6 @@
-﻿#if WINDOWS_PHONE
-
+﻿using Microsoft.Phone.Info;
 using Microsoft.Phone.Notification;
+using Nito.AsyncEx;
 using System;
 using System.IO.IsolatedStorage;
 using System.Linq;
@@ -80,11 +80,17 @@ namespace BuddySDK
                 return "WindowsPhone"; 
             }
         }
-        public override string Model
+
+        private readonly AsyncLazy<string> model = new AsyncLazy<string>(() =>
+        {
+            return DeviceStatus.DeviceName;
+        });
+
+        public override AsyncLazy<string> Model
         {
             get
             {
-                return Microsoft.Phone.Info.DeviceStatus.DeviceName;
+                return model;
             }
         }
 
@@ -129,11 +135,16 @@ namespace BuddySDK
             }
         }
 
-        public override string OSVersion
+        private readonly AsyncLazy<string> osVersion = new AsyncLazy<string>(() =>
+        {
+            return Environment.OSVersion.Version.ToString();
+        });
+
+        public override AsyncLazy<string> OSVersion
         {
             get
             {
-                return System.Environment.OSVersion.Version.ToString();
+                return osVersion;
             }
         }
 
@@ -149,7 +160,7 @@ namespace BuddySDK
         {
             get
             {
-                return ConnectivityLevel.Carrier;
+                return ConnectivityLevel.Connected;
             }
         }
 
@@ -159,6 +170,8 @@ namespace BuddySDK
             {
                 return IsolatedStorageFile.GetUserStoreForApplication();
             }
+
+            protected override string ExecutionBinDir { get { return null; } }
         }
 
         private IsolatedStorageSettings _settings = new WindowsPhoneIsoStore();
@@ -187,8 +200,7 @@ namespace BuddySDK
 
         public override bool SupportsFlags(BuddyClientFlags flags)
         {
-            return (flags & (BuddyClientFlags.AutoCrashReport)) == flags;
+            return (flags & (BuddyClientFlags.AutoCrashReport | BuddyClientFlags.AllowReinitialize)) == flags;
         }
     }
 }
-#endif

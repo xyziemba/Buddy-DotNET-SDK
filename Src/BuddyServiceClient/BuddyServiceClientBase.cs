@@ -1,4 +1,4 @@
-﻿using BuddySDK;
+using BuddySDK;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -128,23 +128,16 @@ namespace BuddySDK.BuddyServiceClient
             PlatformAccess.Current.InvokeOnUiThread(callback);
         }
 
-        public Task<BuddyCallResult<T>> CallMethodAsync<T>(string verb, string path, object parameters = null)
-        {   
-            var tcs = new TaskCompletionSource<BuddyCallResult<T>>();
-
-
-
-            CallMethodAsync<T>(verb, path, parameters, (bcr) =>
-            {
-
-                tcs.TrySetResult(bcr);
-
-
-            });
-            return tcs.Task;
+        public async Task<BuddyCallResult<T>> CallMethodAsync<T>(
+           string verb,
+           string path,
+           object parameters = null,
+           bool skipAuth = false)
+        {
+            return await CallMethodAsyncCore<T>(verb, path, parameters, skipAuth).ConfigureAwait(false);
         }
 
-        protected abstract void CallMethodAsync<T>(string verb, string path, object parameters, Action<BuddyCallResult<T>> callback);
+        protected abstract Task<BuddyCallResult<T>> CallMethodAsyncCore<T>(string verb, string path, object parameters, bool skipAuth);
 
         private string serviceRoot;
         public string ServiceRoot

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,22 +12,66 @@ namespace BuddySDK
     {
         protected abstract IsolatedStorageFile GetIsolatedStorageFile();
 
+        protected abstract string ExecutionBinDir { get; }
 
-        public IDictionary<string, string> LoadSettings()
+        protected virtual IsoStoreFileStream GetFileStream(bool create)
         {
-            var isoStore = GetIsolatedStorageFile();
+            IsolatedStorageFile isoStore = null;
+
+            try
+            {
+                isoStore = GetIsolatedStorageFile();
+            }
+            catch (IsolatedStorageException)
+            {
+                // isolated storage not available, fall back to file.
+                //
+            }
+            catch (ApplicationException)
+            {
+                // isolated storage not available, fall back to file.
+                //
+            }
+
+            IsoStoreFileStream isfs = null;
+
+            if (isoStore != null)
+            {
+                if (isoStore.FileExists("_buddy") || create)
+                {
+                    var fs = isoStore.OpenFile("_buddy", FileMode.OpenOrCreate);
+                    isfs = new IsoStoreFileStream(isoStore, fs);
+                }
+            }
+            else
+            {
+                // if we didn't get an iso store file back, use a file in the local dir.
+                string path = Path.Combine(ExecutionBinDir, "_buddy");
+
+                if (File.Exists(path) || create)
+                {
+                    var fs = File.Open(path, FileMode.OpenOrCreate);
+                    isfs = new IsoStoreFileStream(null, fs);
+                }
+            }
+
+            return isfs;
+        }
+
+        public virtual IDictionary<string, string> LoadSettings()
+        {
             string existing = "";
 
-            if (isoStore.FileExists("_buddy"))
+            var isfs = GetFileStream(false);
+            if (isfs != null)
             {
-
-                using (var fs = isoStore.OpenFile("_buddy", FileMode.Open))
-                {
-                    using (var sr = new StreamReader(fs))
+                isfs.Using((fs) =>
                     {
-                        existing = sr.ReadToEnd();
-                    }
-                }
+                        using (var sr = new StreamReader(fs))
+                        {
+                            existing = sr.ReadToEnd();
+                        }
+                    });
             }
 
             var d = new Dictionary<string, string>();
@@ -45,8 +89,6 @@ namespace BuddySDK
 
         public void SaveSettings(IDictionary<string, string> values)
         {
-            var isoStore = GetIsolatedStorageFile();
-
             var sb = new StringBuilder();
 
             foreach (var kvp in values)
@@ -54,26 +96,28 @@ namespace BuddySDK
                 sb.AppendFormat(CultureInfo.InvariantCulture, "{0}={1};", kvp.Key, kvp.Value ?? "");
             }
 
-            using (var fs = isoStore.OpenFile("_buddy", FileMode.Create))
-            {
-                using (var sw = new StreamWriter(fs))
+            var isfs = GetFileStream(true);
+            isfs.Using((fs) =>
                 {
-                    sw.WriteLine(sb.ToString());
-                }
-            }
+                    var sbString = sb.ToString();
+                    using (var sw = new StreamWriter(fs))
+                    {
+                        sw.WriteLine(sbString);
+                        fs.SetLength(sbString.Length);
+                    }
+                });
         }
 
         public void SetUserSetting(string key, string value, DateTime? expires = default(DateTime?))
         {
             if (key == null) throw new ArgumentNullException("key");
 
-           
             // parse it
             var parsed = LoadSettings();
             string encodedValue = PlatformAccess.EncodeUserSetting(value, expires);
             parsed[key] = encodedValue;
 
-            SaveSettings( parsed);
+            SaveSettings(parsed);
         }
 
         public string GetUserSetting(string key)
@@ -103,6 +147,37 @@ namespace BuddySDK
             {
                 parsed.Remove(key);
                 SaveSettings(parsed);
+            }
+        }
+    }
+
+    internal class IsoStoreFileStream
+    {
+        private IsolatedStorageFile isoStore;
+        private FileStream fs;
+
+        public IsoStoreFileStream(IsolatedStorageFile isoStore, FileStream fs)
+        {
+            this.isoStore = isoStore;
+            this.fs = fs;
+        }
+
+        public void Using(Action<FileStream> action)
+        {
+            if (isoStore == null)
+            {
+                using (fs)
+                {
+                    action(fs);
+                }
+            }
+            else
+            {
+                using (isoStore)
+                using (fs)
+                {
+                    action(fs);
+                }
             }
         }
     }

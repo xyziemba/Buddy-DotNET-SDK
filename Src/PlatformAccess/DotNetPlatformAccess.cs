@@ -1,15 +1,10 @@
-﻿#if DOTNET
+﻿using Nito.AsyncEx;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.IsolatedStorage;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace BuddySDK
 {
@@ -20,9 +15,8 @@ namespace BuddySDK
         }
     }
 
-    public abstract partial class PlatformAccess {
-
-
+    public abstract partial class PlatformAccess
+    {
         public const BuddyClientFlags DefaultFlags = BuddyClientFlags.AllowReinitialize;
 
         static PlatformAccess CreatePlatformAccess()
@@ -31,43 +25,37 @@ namespace BuddySDK
         }
     }
 
-    internal class DotNetPlatformAccess: DotNetPlatformAccessBase
+    internal class DotNetPlatformAccess : DotNetPlatformAccessBase
     {
         public override string Platform
         {
             get { return ".NET"; }
         }
 
-        public override string Model
+        private readonly AsyncLazy<string> model = new AsyncLazy<string>(() =>
         {
-            get { return null; }
+            return (string)null;
+        });
+
+        public override AsyncLazy<string> Model
+        {
+            get { return model; }
         }
 
-        public override string DeviceUniqueId
+        private readonly AsyncLazy<string> osVersion = new AsyncLazy<string>(() =>
         {
-            get {
+            var osVersionProperty = typeof(Environment).GetRuntimeProperty("OSVersion");
+            object osVersion = osVersionProperty.GetValue(null, null);
+            var versionStringProperty = osVersion.GetType().GetRuntimeProperty("VersionString");
+            var versionString = (string)versionStringProperty.GetValue(osVersion, null);
+            return versionString;
+        });
 
-                var uniqueId = GetUserSetting("UniqueId");
-                if (uniqueId == null)
-                {
-                    uniqueId = Guid.NewGuid().ToString();
-                    SetUserSetting("UniqueId", uniqueId);
-                }
-                return uniqueId;
-            }
-        }
-
-        public override string OSVersion
+        public override AsyncLazy<string> OSVersion
         {
-            get {
-
-                 
-                    var osVersionProperty = typeof(Environment).GetRuntimeProperty("OSVersion");
-                    object osVersion = osVersionProperty.GetValue(null, null);
-                    var versionStringProperty = osVersion.GetType().GetRuntimeProperty("VersionString");
-                    var versionString = versionStringProperty.GetValue(osVersion, null);
-                    return (string)versionString;
-                
+            get
+            {
+                return osVersion;
             }
         }
 
@@ -78,9 +66,10 @@ namespace BuddySDK
 
         public override bool IsEmulator
         {
-            get {
+            get
+            {
                 return false;
-                }
+            }
         }
 
         public override bool IsUiThread
@@ -98,9 +87,10 @@ namespace BuddySDK
 
         public override string AppVersion
         {
-            get {
-
-                if (EntryAssembly != null) {
+            get
+            {
+                if (EntryAssembly != null)
+                {
                     var attr = EntryAssembly.GetCustomAttribute<AssemblyFileVersionAttribute>();
                     return attr.Version;
                 }
@@ -109,21 +99,24 @@ namespace BuddySDK
             }
         }
 
-   
         public override ConnectivityLevel ConnectionType
         {
-            get {
-                return ConnectivityLevel.WiFi;
+            get
+            {
+                return ConnectivityLevel.Connected;
             }
         }
 
-      
         private class DotNetIsoStore : IsolatedStorageSettings
         {
-
             protected override IsolatedStorageFile GetIsolatedStorageFile()
             {
                 return IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
+            }
+
+            protected override string ExecutionBinDir
+            {
+                get { return Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath); }
             }
         }
 
@@ -148,25 +141,5 @@ namespace BuddySDK
         {
             return System.Configuration.ConfigurationManager.AppSettings[key];
         }
-
-        protected override void InvokeOnUiThreadCore(Action a)
-        {
-            var context = SynchronizationContext.Current;
-
-            if (context != null)
-            {
-                context.Post((s) => { a(); }, null);
-            }
-            else
-            {
-                a();
-            }
-        }
     }
-
-
-     // default
- 
 }
-
-#endif

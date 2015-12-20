@@ -1,5 +1,3 @@
-﻿
-
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -8,14 +6,14 @@ using System.Runtime.InteropServices;
 //[assembly: System.Reflection.AssemblyTitle("Buddy Platform Client SDK for ------")]
 //[assembly: System.Reflection.AssemblyDescription("Buddy Platform Client SDK for ----------")]
  
-[assembly: AssemblyCompany("Buddy Platform Inc.")]
+[assembly: AssemblyCompany("Buddy Platform, Inc.")]
 [assembly: AssemblyProduct("Buddy Platform Client SDK")]
-[assembly: AssemblyCopyright("Copyright © 2014")]
+[assembly: AssemblyCopyright("Copyright © 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("3.0.1.0")]
-[assembly: AssemblyFileVersion("3.0.1.0")]
+[assembly: AssemblyVersion("3.0.2.0")]
+[assembly: AssemblyFileVersion("3.0.2.0")]
 
 [assembly: InternalsVisibleTo("BuddySDK.ClientTest")]
 [assembly: InternalsVisibleTo("BuddyWebserviceTestProject")]

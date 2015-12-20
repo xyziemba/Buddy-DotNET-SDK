@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using Nito.AsyncEx;
+using System;
 using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace BuddySDK
 {
@@ -20,7 +15,7 @@ namespace BuddySDK
             }
         }
 
-        public override string Model
+        public override AsyncLazy<string> Model
         {
             get
             {
@@ -32,7 +27,6 @@ namespace BuddySDK
         {
             get
             {
-
                 var uniqueId = GetUserSetting("UniqueId");
                 if (uniqueId == null)
                 {
@@ -43,7 +37,7 @@ namespace BuddySDK
             }
         }
 
-        public override string OSVersion
+        public override AsyncLazy<string> OSVersion
         {
             get
             {
@@ -64,12 +58,10 @@ namespace BuddySDK
             get
             {
                 return EntryAssembly.FullName;
-
             }
         }
 
         protected abstract Assembly EntryAssembly { get; }
-
 
         public override string AppVersion
         {
@@ -86,21 +78,18 @@ namespace BuddySDK
             }
         }
 
-
         public override ConnectivityLevel ConnectionType
         {
             get
             {
-                return ConnectivityLevel.Carrier;
+                return ConnectivityLevel.Connected;
             }
         }
-
 
         public override string GetConfigSetting(string key)
         {
             throw new NotImplementedException();
         }
-
 
         protected override void InvokeOnUiThreadCore(Action a)
         {
@@ -115,6 +104,5 @@ namespace BuddySDK
                 a();
             }
         }
-
     }
 }

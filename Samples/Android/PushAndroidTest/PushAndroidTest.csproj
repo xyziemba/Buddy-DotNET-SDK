@@ -86,11 +86,4 @@
       <Visible>False</Visible>
     </XamarinComponentReference>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Src\Buddy.Android.csproj">
-      <Project>{6051EF7E-1A39-4C5C-A06B-82A9A2B5304F}</Project>
-      <Name>Buddy.Android</Name>
-      <Private>False</Private>
-    </ProjectReference>
-  </ItemGroup>
 </Project>
