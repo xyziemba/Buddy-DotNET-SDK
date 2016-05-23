@@ -277,7 +277,7 @@ namespace BuddySDK
                 return dictionary.TryGetValue(key, out value) ? value : default(TValue);
             }
 
-            [DllImport("kernel32.dll")]
+            [DllImport("api-ms-win-core-sysinfo-l1-2-0.dll")]
             static extern void GetNativeSystemInfo(ref _SYSTEM_INFO lpSystemInfo);
 
             [StructLayout(LayoutKind.Sequential)]
