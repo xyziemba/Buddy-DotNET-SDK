@@ -27,11 +27,6 @@ namespace BuddySDK
                 // isolated storage not available, fall back to file.
                 //
             }
-            catch (ApplicationException)
-            {
-                // isolated storage not available, fall back to file.
-                //
-            }
 
             IsoStoreFileStream isfs = null;
 
