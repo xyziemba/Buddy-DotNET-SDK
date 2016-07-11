@@ -1,4 +1,4 @@
-﻿#if NETFX_CORE
+﻿#if WINDOWS_APP_MODEL
 
 using System;
 using System.Collections.Generic;

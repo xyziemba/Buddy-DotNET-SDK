@@ -506,7 +506,7 @@ namespace BuddySDK.BuddyServiceClient
                             }
                         }
                     };
-#if NETFX_CORE
+#if WINDOWS_APP_MODEL
                     TimeSpan delay = TimeSpan.FromMilliseconds(TimeoutMilliseconds);
 
                     Windows.System.Threading.ThreadPoolTimer.CreateTimer(
