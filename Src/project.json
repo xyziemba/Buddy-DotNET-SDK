@@ -1,0 +1,81 @@
+﻿{
+  "name": "BuddyPlatformSdkNetCore",
+  "version": "0.0.1-pre1",
+  "packOptions": {
+    "projectUrl": "http://github.com/BuddyPlatform/Buddy-DotNet-SDK",
+    "licenseUrl": "https://raw.githubusercontent.com/BuddyPlatform/Buddy-DotNET-SDK/master/LICENSE.md",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/BuddyPlatform/Buddy-DotNet-SDK"
+    }
+  },
+
+  "dependencies": {
+    "NETStandard.Library": "1.6.0",
+    "Newtonsoft.Json": "9.0.1",
+    "System.IO.IsolatedStorage": "4.0.0",
+    "System.Net.Requests": "4.0.11",
+    "System.Threading.Thread": "4.0.0",
+    "System.AppDomain": "2.0.11"
+  },
+
+  "frameworks": {
+    "netstandard1.6": {
+      "imports": "dnxcore50"
+    }
+  },
+
+  "buildOptions": {
+    "define": ["NETCORE"],
+    "compile": {
+      "exclude": "**/*.cs",
+      "includeFiles": [
+        "AsyncLock.cs",
+        "BuddyUtils.cs",
+        "BuddyPermissions.cs",
+        "BuddyResult.cs",
+        "BuddyServiceClient/DateRangeJsonConverter.cs",
+        "BuddyServiceClient/BuddyLocationGeoConverter.cs",
+        "ConnectivityLevel.cs",
+        "Buddy.cs",
+        "BuddyClient.cs",
+        "BuddyServiceClient/BuddyServiceClientBase.cs",
+        "BuddyServiceClient/BuddyServiceClientHttp.cs",
+        "BuddyServiceException.cs",
+        "Models/Identity.cs",
+        "Models/PagedResult.cs",
+        "PlatformAccess/AsyncLazy.cs",
+        "PlatformAccess/DotNetDeltas.cs",
+        "PlatformAccess/DotNetCorePlatformAccess.cs",
+        "PlatformAccess/DotNetPlatformBase.cs",
+        "PlatformAccess/IdManager.cs",
+        "PlatformAccess/IsolatedStorageSettings.cs",
+        "PlatformAccess/PlatformAccess.cs",
+        "PlatformAccess/TaskShim.cs",
+        "Properties/AssemblyInfo.cs",
+        "CurrentUserChangedEventArgs.cs",
+        "Properties/AssemblyInfoNetCore.cs",
+        "ServiceExceptionEventArgs.cs",
+        "BuddyServiceClient/IRemoteMethodProvider.cs",
+        "IRestProvider.cs",
+        "Models/Blob.cs",
+        "Models/Checkin.cs",
+        "Models/Message.cs",
+        "Models/MetadataItem.cs",
+        "Models/Notification.cs",
+        "Models/Picture.cs",
+        "Models/User.cs",
+        "Models/UserList.cs",
+        "BuddyGeoLocation.cs",
+        "Models/ModelBase.cs",
+        "Models/SocialAuthenticatedUser.cs",
+        "DateRange.cs",
+        "Models/UserListItem.cs",
+        "IBuddyClient.cs",
+        "BuddyFile.cs",
+        "Models/BinaryModelBase.cs",
+        "Models/Video.cs"
+      ]
+    }
+  }
+}

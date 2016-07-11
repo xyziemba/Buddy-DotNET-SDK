@@ -5,9 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Windows.Security.Cryptography;
-using Windows.Security.Cryptography.Core;
-using Windows.UI.Xaml;
 
 namespace BuddySDK
 {
@@ -131,7 +128,7 @@ namespace BuddySDK
 
         public static T GetCustomAttribute<T>(this System.Type t) where T : System.Attribute
         {
-            return System.Reflection.CustomAttributeExtensions.GetCustomAttribute<T>(t);
+            return System.Reflection.CustomAttributeExtensions.GetCustomAttribute<T>(t.GetTypeInfo());
         }
 
         public static System.Collections.Generic.IEnumerable<PropertyInfo> GetProperties(this System.Type t)
@@ -141,7 +138,7 @@ namespace BuddySDK
 
         public static bool IsAssignableFrom(this System.Type t, System.Type other)
         {
-            return t.IsAssignableFrom(other.GetTypeInfo());
+            return t.IsAssignableFrom(other);
         }
 
         public static bool IsInstanceOfType(this System.Type t, object obj)
@@ -164,14 +161,26 @@ namespace BuddySDK
 
         public static System.StringComparer InvariantComparer(bool ignoreCase = false)
         {
+#if NETCORE
+            //TODO: InvariantComparer should become available in .NET Core 1.1.
             if (ignoreCase)
             {
-                return System.StringComparer.InvariantCultureIgnoreCase;
+                return System.StringComparer.Ordinal;
             }
             else
             {
+                return System.StringComparer.OrdinalIgnoreCase;
+            }
+#else
+            if (ignoreCase)
+            {
                 return System.StringComparer.InvariantCulture;
             }
+            else
+            {
+                return System.StringComparer.InvariantCultureIgnoreCase;
+            }
+#endif
         }
 
         public class ExceptionEventArgs

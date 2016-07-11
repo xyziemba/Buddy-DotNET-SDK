@@ -9,3 +9,5 @@ Resource.designer.cs
 Src/packages/*
 Src/Components/
 *.vs/
+*.lock.json
+*.user
