@@ -14,7 +14,7 @@ namespace BuddySDK
 
         protected abstract string ExecutionBinDir { get; }
 
-        protected virtual IsoStoreFileStream GetFileStream(bool create)
+        protected virtual IsoStoreStream GetFileStream(bool create)
         {
             IsolatedStorageFile isoStore = null;
 
@@ -28,14 +28,14 @@ namespace BuddySDK
                 //
             }
 
-            IsoStoreFileStream isfs = null;
+            IsoStoreStream isfs = null;
 
             if (isoStore != null)
             {
                 if (isoStore.FileExists("_buddy") || create)
                 {
                     var fs = isoStore.OpenFile("_buddy", FileMode.OpenOrCreate);
-                    isfs = new IsoStoreFileStream(isoStore, fs);
+                    isfs = new IsoStoreStream(isoStore, fs);
                 }
             }
             else
@@ -46,7 +46,7 @@ namespace BuddySDK
                 if (File.Exists(path) || create)
                 {
                     var fs = File.Open(path, FileMode.OpenOrCreate);
-                    isfs = new IsoStoreFileStream(null, fs);
+                    isfs = new IsoStoreStream(null, fs);
                 }
             }
 
@@ -146,18 +146,18 @@ namespace BuddySDK
         }
     }
 
-    internal class IsoStoreFileStream
+    internal class IsoStoreStream
     {
         private IsolatedStorageFile isoStore;
-        private FileStream fs;
+        private Stream fs;
 
-        public IsoStoreFileStream(IsolatedStorageFile isoStore, FileStream fs)
+        public IsoStoreStream(IsolatedStorageFile isoStore, Stream fs)
         {
             this.isoStore = isoStore;
             this.fs = fs;
         }
 
-        public void Using(Action<FileStream> action)
+        public void Using(Action<Stream> action)
         {
             if (isoStore == null)
             {
