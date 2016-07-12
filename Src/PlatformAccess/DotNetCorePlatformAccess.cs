@@ -1,10 +1,10 @@
 ﻿using Nito.AsyncEx;
 using System;
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace BuddySDK
 {
@@ -44,11 +44,7 @@ namespace BuddySDK
 
         private readonly AsyncLazy<string> osVersion = new AsyncLazy<string>(() =>
         {
-            var osVersionProperty = typeof(Environment).GetRuntimeProperty("OSVersion");
-            object osVersion = osVersionProperty.GetValue(null, null);
-            var versionStringProperty = osVersion.GetType().GetRuntimeProperty("VersionString");
-            var versionString = (string)versionStringProperty.GetValue(osVersion, null);
-            return versionString;
+            return "Unavailable on .NET Core";
         });
 
         public override AsyncLazy<string> OSVersion
@@ -99,37 +95,27 @@ namespace BuddySDK
             }
         }
 
-        
-        private class DotNetIsoStore : IsolatedStorageSettings
-        {
-            protected override IsolatedStorageFile GetIsolatedStorageFile()
-            {
-                return IsolatedStorageFile.GetUserStoreForApplication();
-            }
-
-            protected override string ExecutionBinDir
-            {
-                get { return null; }
-            }
-        }
-
-        private IsolatedStorageSettings _settings = new DotNetIsoStore();
-        
+        private Dictionary<string, string> _settings = new Dictionary<string,string>();
 
         public override void ClearUserSetting(string str)
         {
-            _settings.ClearUserSetting(str);
+            _settings.Remove(str);
         }
 
         public override void SetUserSetting(string key, string value, DateTime? expires = null)
         {
-            _settings.SetUserSetting(key, value, expires);
+            _settings[key] = value;
         }
 
         public override string GetUserSetting(string key)
         {
-            return _settings.GetUserSetting(key);
+            string setting;
+            return _settings.TryGetValue(key, out setting) ? setting : null;
         }
         
+        public override string GetConfigSetting(string key)
+        {
+            return null;
+        }
     }
 }
