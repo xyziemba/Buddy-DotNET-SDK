@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using System.Reflection;
 using Newtonsoft.Json;
 
 namespace BuddySDK.BuddyServiceClient

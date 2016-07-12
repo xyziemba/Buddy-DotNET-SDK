@@ -126,24 +126,14 @@ namespace BuddySDK
             return System.Reflection.CustomAttributeExtensions.GetCustomAttribute<T>(pi);
         }
 
-        public static T GetCustomAttribute<T>(this System.Type t) where T : System.Attribute
-        {
-            return System.Reflection.CustomAttributeExtensions.GetCustomAttribute<T>(t.GetTypeInfo());
-        }
-
         public static System.Collections.Generic.IEnumerable<PropertyInfo> GetProperties(this System.Type t)
         {
-            return t.GetProperties();
+            return t.GetTypeInfo().GetProperties();
         }
 
         public static bool IsAssignableFrom(this System.Type t, System.Type other)
         {
-            return t.IsAssignableFrom(other);
-        }
-
-        public static bool IsInstanceOfType(this System.Type t, object obj)
-        {
-            return t.IsInstanceOfType(obj);
+            return t.GetTypeInfo().IsAssignableFrom(other);
         }
 
         public static void Sleep(int ms)
