@@ -192,7 +192,7 @@ namespace BuddySDK
 
         public static event System.EventHandler<ExceptionEventArgs> UnhandledException;
 
-        static DotNetDeltas()
+        /*static DotNetDeltas()
         {
             System.AppDomain.CurrentDomain.UnhandledException += (s, args) =>
             {
@@ -207,7 +207,7 @@ namespace BuddySDK
                 }
 
             };
-        }
+        }*/
 
         public static string SignString(string key, string stringToSign)
         {
